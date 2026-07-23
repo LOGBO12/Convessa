@@ -46,7 +46,6 @@ const Sessions = () => {
         setShowQRModal(false);
         setPollingStatus(false);
         refreshSession();
-        alert('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
       }
     });
 
@@ -483,6 +482,124 @@ const Sessions = () => {
                     </button>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Modal - API Key */}
+      <AnimatePresence>
+        {apiKey && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 50 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden"
+            >
+              {/* Success Header */}
+              <div className="bg-gradient-to-r from-green-500 to-green-600 px-8 py-6 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                  className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center"
+                >
+                  <CheckCircle className="text-green-600" size={48} />
+                </motion.div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  🎉 Connexion Réussie !
+                </h2>
+                <p className="text-green-100">
+                  Votre WhatsApp est maintenant connecté à Convessa
+                </p>
+              </div>
+
+              {/* API Key Content */}
+              <div className="p-8">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                      </svg>
+                      <span>Votre Clé API Unique</span>
+                    </h3>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-4 border-2 border-purple-400 mb-4">
+                    <code className="text-sm font-mono text-gray-900 break-all block">
+                      {apiKey}
+                    </code>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(apiKey);
+                      setCopiedApiKey(true);
+                      setTimeout(() => setCopiedApiKey(false), 2000);
+                    }}
+                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg font-medium"
+                  >
+                    {copiedApiKey ? (
+                      <>
+                        <CheckCircle size={20} />
+                        <span>Copié !</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={20} />
+                        <span>Copier la Clé API</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Important Notice */}
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+                    <div>
+                      <h4 className="font-bold text-red-900 mb-1">⚠️ Important - À lire attentivement</h4>
+                      <ul className="text-sm text-red-800 space-y-1">
+                        <li>• <strong>Cette clé ne sera affichée qu'une seule fois</strong></li>
+                        <li>• Copiez-la et stockez-la dans un endroit sûr (gestionnaire de mots de passe, .env, etc.)</li>
+                        <li>• Ne la partagez JAMAIS publiquement (GitHub, forums, etc.)</li>
+                        <li>• Utilisez-la dans vos requêtes HTTP avec le header: <code className="bg-red-100 px-1 rounded">X-Api-Key</code></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Next Steps */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                  <h4 className="font-bold text-blue-900 mb-3 flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                    <span>Prochaines étapes</span>
+                  </h4>
+                  <ol className="text-sm text-blue-900 space-y-2 list-decimal list-inside">
+                    <li>Allez dans <strong>Envoyer Message</strong> pour tester l'envoi</li>
+                    <li>Consultez la <strong>Documentation</strong> pour intégrer l'API dans votre application</li>
+                    <li>Utilisez votre clé API dans toutes vos requêtes HTTP</li>
+                  </ol>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setApiKey(null)}
+                  className="w-full bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors font-medium"
+                >
+                  J'ai copié ma clé, continuer
+                </button>
               </div>
             </motion.div>
           </motion.div>

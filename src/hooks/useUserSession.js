@@ -23,13 +23,10 @@ export function useUserSession() {
       // Récupérer toutes les sessions
       const response = await tenantsAPI.list();
       
-      // Trouver la session de l'utilisateur connecté (par son numéro de téléphone)
-      // Le numéro de téléphone de l'utilisateur est stocké dans user.phone (auth phone)
-      const userPhone = user.phone?.replace(/[^0-9]/g, '');
-      
-      if (userPhone) {
+      // Trouver la session de l'utilisateur connecté via son userUid Firebase
+      if (user.uid) {
         const userSession = response.tenants?.find(
-          t => t.phone.replace(/[^0-9]/g, '') === userPhone
+          t => t.userUid === user.uid
         );
         setSession(userSession || null);
       } else {
