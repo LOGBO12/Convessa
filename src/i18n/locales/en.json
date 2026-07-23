@@ -1,0 +1,247 @@
+{
+  "nav": {
+    "home": "Home",
+    "docs": "Documentation",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "login": "Login",
+    "signup": "Sign Up",
+    "dashboard": "Dashboard"
+  },
+  "home": {
+    "hero": {
+      "title": "Integrate WhatsApp into your apps in minutes",
+      "subtitle": "Simple and powerful API to send and receive WhatsApp messages. Perfect for developers.",
+      "cta": "Start for free",
+      "secondaryCta": "View documentation"
+    },
+    "features": {
+      "title": "Why choose Convessa?",
+      "feature1": {
+        "title": "Simple API",
+        "description": "An intuitive REST API with complete documentation"
+      },
+      "feature2": {
+        "title": "Quick Setup",
+        "description": "Connect your WhatsApp by scanning a QR code"
+      },
+      "feature3": {
+        "title": "Real-time",
+        "description": "Receive webhooks for every message instantly"
+      },
+      "feature4": {
+        "title": "Secure",
+        "description": "End-to-end encryption and GDPR compliance"
+      }
+    },
+    "howItWorks": {
+      "title": "How does it work?",
+      "step1": {
+        "title": "Sign Up",
+        "description": "Create your developer account for free"
+      },
+      "step2": {
+        "title": "Get your API key",
+        "description": "Retrieve your unique authentication key"
+      },
+      "step3": {
+        "title": "Connect WhatsApp",
+        "description": "Scan the QR code to link your account"
+      },
+      "step4": {
+        "title": "Integrate",
+        "description": "Use our API in your application"
+      }
+    },
+    "pricing": {
+      "title": "Pricing tailored to your needs",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "period": "/month",
+        "features": [
+          "100 messages/month",
+          "1 WhatsApp session",
+          "Community support",
+          "Complete documentation"
+        ],
+        "cta": "Get started"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$29",
+        "period": "/month",
+        "features": [
+          "5000 messages/month",
+          "3 WhatsApp sessions",
+          "Priority support",
+          "Advanced webhooks",
+          "Detailed analytics"
+        ],
+        "cta": "Choose Pro"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Custom",
+        "period": "",
+        "features": [
+          "Unlimited messages",
+          "Unlimited sessions",
+          "24/7 dedicated support",
+          "Guaranteed SLA",
+          "Dedicated infrastructure"
+        ],
+        "cta": "Contact us"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "question": "Is Convessa official WhatsApp?",
+        "answer": "No, Convessa uses the WhatsApp Web API to connect to your account. It's the same technology used by WhatsApp Web in your browser."
+      },
+      "q2": {
+        "question": "Can I use Convessa with WhatsApp Business?",
+        "answer": "Yes! Convessa works with both personal WhatsApp AND WhatsApp Business accounts. You can use any type of WhatsApp account."
+      },
+      "q3": {
+        "question": "Is my data secure?",
+        "answer": "Absolutely. We use end-to-end encryption and don't store any messages. Your data stays between you and WhatsApp."
+      },
+      "q4": {
+        "question": "What's the message limit per minute?",
+        "answer": "To prevent spam, we limit to 20 messages per minute on the free plan and 100 messages/minute on paid plans."
+      }
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Join hundreds of developers who trust Convessa",
+      "button": "Create a free account"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to your Convessa account",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Create account",
+      "orContinueWith": "Or continue with"
+    },
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Start for free with Convessa",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone number",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Sign up",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "orContinueWith": "Or continue with",
+      "acceptTerms": "I accept the",
+      "terms": "terms of service",
+      "and": "and",
+      "privacy": "privacy policy"
+    },
+    "social": {
+      "google": "Google",
+      "github": "GitHub"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome to your dashboard",
+    "apiKey": "API Key",
+    "sessions": "WhatsApp Sessions",
+    "usage": "Usage",
+    "settings": "Settings",
+    "hello": "Hello",
+    "manageApi": "Manage your WhatsApp API and track your statistics",
+    "whatsappSession": "My WhatsApp Session",
+    "noSessionConnected": "No session connected",
+    "connectWhatsApp": "Connect your WhatsApp number to get your API key",
+    "connectButton": "Connect WhatsApp",
+    "status": "Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "phone": "Phone",
+    "yourApiKey": "Your API Key",
+    "keepSecretWarning": "Keep your API key secret. It was also sent to your WhatsApp.",
+    "scanQrCode": "Scan QR Code",
+    "usageThisMonth": "My Usage This Month",
+    "messagesSent": "messages sent",
+    "monthlyLimit": "monthly limit",
+    "remaining": "messages remaining",
+    "used": "used",
+    "successRate": "Success Rate",
+    "avgDeliveryTime": "Avg Delivery",
+    "myPlan": "My Plan",
+    "perMonth": "/month",
+    "messagesPerMonth": "messages/month",
+    "prioritySupport": "Priority support",
+    "unlimitedWebhooks": "Unlimited webhooks",
+    "renewal": "Renewal",
+    "upgradeToEnterprise": "Upgrade to Enterprise",
+    "quickActions": "Quick Actions",
+    "sendMessage": "Send a message",
+    "apiDocumentation": "API Documentation",
+    "historyLogs": "History & Logs",
+    "configureWebhook": "Configure Webhook"
+  },
+  "sessions": {
+    "title": "My WhatsApp Session",
+    "subtitle": "Connect your WhatsApp number to get your API key",
+    "connectWhatsApp": "Connect your WhatsApp",
+    "connectDescription": "To use the Convessa API, you must first connect your WhatsApp number. You will receive your unique API key after connection.",
+    "connectButton": "Connect WhatsApp",
+    "creating": "Creating...",
+    "scanQrCode": "Scan QR Code",
+    "instructions": "Instructions",
+    "step1": "Open WhatsApp on your phone",
+    "step2": "Tap on Menu (⋮) then \"Linked devices\"",
+    "step3": "Tap \"Link a device\"",
+    "step4": "Point your phone at this screen to scan the code",
+    "qrExpires": "QR code expires after 60 seconds",
+    "afterScan": "After scanning, your API key will be generated automatically",
+    "refreshQr": "Refresh QR code",
+    "yourApiKey": "Your API Key",
+    "keepSecret": "Keep your API key secret. It was also sent to your WhatsApp.",
+    "howToUseApi": "How to use your API key",
+    "apiStep1": "Copy your API key above",
+    "apiStep2": "Add it to your HTTP headers",
+    "apiStep3": "Check the documentation for available endpoints",
+    "apiStep4": "Start sending messages via REST API",
+    "sessionId": "Session ID",
+    "connectedOn": "Connected on"
+  },
+  "sendMessage": {
+    "title": "Send a WhatsApp Message",
+    "subtitle": "Send text messages or with media (images, videos, audio, documents)",
+    "phoneNumber": "Phone number",
+    "phoneFormat": "International format required",
+    "message": "Message",
+    "messageOptional": "optional if media",
+    "messagePlaceholder": "Enter your message here...",
+    "maxCharacters": "Maximum 4096 characters",
+    "addMedia": "Add media",
+    "mediaOptional": "optional",
+    "image": "Image",
+    "video": "Video",
+    "audio": "Audio",
+    "document": "Document",
+    "fileTooLarge": "File too large. Max size",
+    "sendButton": "Send message",
+    "sending": "Sending...",
+    "successTitle": "Message queued successfully!",
+    "queuePosition": "Queue position",
+    "mediaLimits": "Media limits",
+    "imageLimit": "Images: 16 MB max (JPEG, PNG, GIF, WebP)",
+    "videoLimit": "Videos: 64 MB max (MP4, 3GPP)",
+    "audioLimit": "Audio: 16 MB max (MP3, OGG, AAC)",
+    "documentLimit": "Documents: 100 MB max (PDF, DOC, TXT, etc.)"
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "docs": "Documentation",
+    "pricing": "Tarifs",
+    "faq": "FAQ",
+    "login": "Connexion",
+    "signup": "S'inscrire",
+    "dashboard": "Tableau de bord"
+  },
+  "home": {
+    "hero": {
+      "title": "Intégrez WhatsApp à vos applications en quelques minutes",
+      "subtitle": "API simple et puissante pour envoyer et recevoir des messages WhatsApp. Parfait pour les développeurs.",
+      "cta": "Commencer gratuitement",
+      "secondaryCta": "Voir la documentation"
+    },
+    "features": {
+      "title": "Pourquoi choisir Convessa ?",
+      "feature1": {
+        "title": "API Simple",
+        "description": "Une API REST intuitive avec une documentation complète"
+      },
+      "feature2": {
+        "title": "Configuration Rapide",
+        "description": "Connectez votre WhatsApp en scannant un QR code"
+      },
+      "feature3": {
+        "title": "Temps Réel",
+        "description": "Recevez des webhooks pour chaque message instantanément"
+      },
+      "feature4": {
+        "title": "Sécurisé",
+        "description": "Chiffrement de bout en bout et conformité RGPD"
+      }
+    },
+    "howItWorks": {
+      "title": "Comment ça marche ?",
+      "step1": {
+        "title": "Inscrivez-vous",
+        "description": "Créez votre compte développeur gratuitement"
+      },
+      "step2": {
+        "title": "Obtenez votre clé API",
+        "description": "Récupérez votre clé d'authentification unique"
+      },
+      "step3": {
+        "title": "Connectez WhatsApp",
+        "description": "Scannez le QR code pour lier votre compte"
+      },
+      "step4": {
+        "title": "Intégrez",
+        "description": "Utilisez notre API dans votre application"
+      }
+    },
+    "pricing": {
+      "title": "Des tarifs adaptés à vos besoins",
+      "free": {
+        "name": "Gratuit",
+        "price": "0€",
+        "period": "/mois",
+        "features": [
+          "100 messages/mois",
+          "1 session WhatsApp",
+          "Support communautaire",
+          "Documentation complète"
+        ],
+        "cta": "Commencer"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "29€",
+        "period": "/mois",
+        "features": [
+          "5000 messages/mois",
+          "3 sessions WhatsApp",
+          "Support prioritaire",
+          "Webhooks avancés",
+          "Analytics détaillés"
+        ],
+        "cta": "Choisir Pro"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Sur mesure",
+        "period": "",
+        "features": [
+          "Messages illimités",
+          "Sessions illimitées",
+          "Support dédié 24/7",
+          "SLA garanti",
+          "Infrastructure dédiée"
+        ],
+        "cta": "Nous contacter"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "q1": {
+        "question": "Est-ce que Convessa est officiel WhatsApp ?",
+        "answer": "Non, Convessa utilise l'API WhatsApp Web pour se connecter à votre compte. C'est la même technologie utilisée par WhatsApp Web dans votre navigateur."
+      },
+      "q2": {
+        "question": "Puis-je utiliser Convessa avec WhatsApp Business ?",
+        "answer": "Oui ! Convessa fonctionne avec les comptes WhatsApp personnels ET WhatsApp Business. Vous pouvez utiliser n'importe quel type de compte WhatsApp."
+      },
+      "q3": {
+        "question": "Mes données sont-elles sécurisées ?",
+        "answer": "Absolument. Nous utilisons le chiffrement de bout en bout et ne stockons aucun message. Vos données restent entre vous et WhatsApp."
+      },
+      "q4": {
+        "question": "Quelle est la limite de messages par minute ?",
+        "answer": "Pour éviter le spam, nous limitons à 20 messages par minute sur le plan gratuit et 100 messages/minute sur les plans payants."
+      }
+    },
+    "cta": {
+      "title": "Prêt à démarrer ?",
+      "subtitle": "Rejoignez des centaines de développeurs qui font confiance à Convessa",
+      "button": "Créer un compte gratuit"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Connectez-vous à votre compte Convessa",
+      "email": "Email",
+      "password": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "submit": "Se connecter",
+      "noAccount": "Pas encore de compte ?",
+      "signupLink": "Créer un compte",
+      "orContinueWith": "Ou continuer avec"
+    },
+    "signup": {
+      "title": "Créer un compte",
+      "subtitle": "Commencez gratuitement avec Convessa",
+      "fullName": "Nom complet",
+      "email": "Email",
+      "phone": "Numéro de téléphone",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "submit": "S'inscrire",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Se connecter",
+      "orContinueWith": "Ou continuer avec",
+      "acceptTerms": "J'accepte les",
+      "terms": "conditions d'utilisation",
+      "and": "et la",
+      "privacy": "politique de confidentialité"
+    },
+    "social": {
+      "google": "Google",
+      "github": "GitHub"
+    }
+  },
+  "dashboard": {
+    "welcome": "Bienvenue sur votre tableau de bord",
+    "apiKey": "Clé API",
+    "sessions": "Sessions WhatsApp",
+    "usage": "Utilisation",
+    "settings": "Paramètres",
+    "hello": "Bonjour",
+    "manageApi": "Gérez votre API WhatsApp et suivez vos statistiques",
+    "whatsappSession": "Ma Session WhatsApp",
+    "noSessionConnected": "Aucune session connectée",
+    "connectWhatsApp": "Connectez votre numéro WhatsApp pour obtenir votre clé API",
+    "connectButton": "Connecter WhatsApp",
+    "status": "Statut",
+    "connected": "Connecté",
+    "disconnected": "Déconnecté",
+    "phone": "Numéro",
+    "yourApiKey": "Votre Clé API",
+    "keepSecretWarning": "Gardez votre clé API secrète. Elle a également été envoyée sur votre WhatsApp.",
+    "scanQrCode": "Scanner le QR Code",
+    "usageThisMonth": "Mon Usage Ce Mois-Ci",
+    "messagesSent": "messages envoyés",
+    "monthlyLimit": "limite mensuelle",
+    "remaining": "messages restants",
+    "used": "utilisé",
+    "successRate": "Taux de succès",
+    "avgDeliveryTime": "Délai moyen",
+    "myPlan": "Mon Plan",
+    "perMonth": "/mois",
+    "messagesPerMonth": "messages/mois",
+    "prioritySupport": "Support prioritaire",
+    "unlimitedWebhooks": "Webhooks illimités",
+    "renewal": "Renouvellement",
+    "upgradeToEnterprise": "Passer au plan Enterprise",
+    "quickActions": "Actions Rapides",
+    "sendMessage": "Envoyer un message",
+    "apiDocumentation": "Documentation API",
+    "historyLogs": "Historique & Logs",
+    "configureWebhook": "Configurer Webhook"
+  },
+  "sessions": {
+    "title": "Ma Session WhatsApp",
+    "subtitle": "Connectez votre numéro WhatsApp pour obtenir votre clé API",
+    "connectWhatsApp": "Connectez votre WhatsApp",
+    "connectDescription": "Pour utiliser l'API Convessa, vous devez d'abord connecter votre numéro WhatsApp. Vous recevrez votre clé API unique après la connexion.",
+    "connectButton": "Connecter WhatsApp",
+    "creating": "Création en cours...",
+    "scanQrCode": "Scanner le QR Code",
+    "instructions": "Instructions",
+    "step1": "Ouvrez WhatsApp sur votre téléphone",
+    "step2": "Appuyez sur Menu (⋮) puis sur \"Appareils liés\"",
+    "step3": "Appuyez sur \"Lier un appareil\"",
+    "step4": "Pointez votre téléphone vers cet écran pour scanner le code",
+    "qrExpires": "Le QR code expire après 60 secondes",
+    "afterScan": "Après le scan, votre clé API sera générée automatiquement",
+    "refreshQr": "Actualiser le QR code",
+    "yourApiKey": "Votre Clé API",
+    "keepSecret": "Gardez votre clé API secrète. Elle a également été envoyée sur votre WhatsApp.",
+    "howToUseApi": "Comment utiliser votre clé API",
+    "apiStep1": "Copiez votre clé API ci-dessus",
+    "apiStep2": "Ajoutez-la dans vos en-têtes HTTP",
+    "apiStep3": "Consultez la documentation pour les endpoints disponibles",
+    "apiStep4": "Commencez à envoyer des messages via l'API REST",
+    "sessionId": "ID Session",
+    "connectedOn": "Connecté le"
+  },
+  "sendMessage": {
+    "title": "Envoyer un Message WhatsApp",
+    "subtitle": "Envoyez des messages texte ou avec des médias (images, vidéos, audio, documents)",
+    "phoneNumber": "Numéro de téléphone",
+    "phoneFormat": "Format international requis",
+    "message": "Message",
+    "messageOptional": "optionnel si média",
+    "messagePlaceholder": "Entrez votre message ici...",
+    "maxCharacters": "Maximum 4096 caractères",
+    "addMedia": "Ajouter un média",
+    "mediaOptional": "optionnel",
+    "image": "Image",
+    "video": "Vidéo",
+    "audio": "Audio",
+    "document": "Document",
+    "fileTooLarge": "Fichier trop volumineux. Taille max",
+    "sendButton": "Envoyer le message",
+    "sending": "Envoi en cours...",
+    "successTitle": "Message mis en file d'attente avec succès !",
+    "queuePosition": "Position dans la file",
+    "mediaLimits": "Limites des médias",
+    "imageLimit": "Images: 16 MB max (JPEG, PNG, GIF, WebP)",
+    "videoLimit": "Vidéos: 64 MB max (MP4, 3GPP)",
+    "audioLimit": "Audio: 16 MB max (MP3, OGG, AAC)",
+    "documentLimit": "Documents: 100 MB max (PDF, DOC, TXT, etc.)"
+  }
+}
