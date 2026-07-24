@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Smartphone,
@@ -17,10 +17,15 @@ import {
   Key,
   X,
 } from 'lucide-react';
-import { tenantsAPI } from '../services/api';
+import { tenantsAPI, saveTenantApiKey } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
-import { connectSocket, onTenantConnected, onTenantQR } from '../services/socket';
+import {
+  connectSocket,
+  onTenantConnected,
+  onTenantQR,
+  onTenantError,
+} from '../services/socket';
 
 const Sessions = () => {
   const { user } = useAuth();
@@ -37,8 +42,9 @@ const Sessions = () => {
   const [copiedApiKey, setCopiedApiKey] = useState(false);
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   // Modal clé API après connexion réussie
-  const [apiKeyModal, setApiKeyModal] = useState(null); // { key, hint } | null
+  const [apiKeyModal, setApiKeyModal] = useState(null); // { key, hint, expiresAt } | null
   const [apiKeyModalCopied, setApiKeyModalCopied] = useState(false);
+  const [errorFromSocket, setErrorFromSocket] = useState('');
   const [phoneInputValue, setPhoneInputValue] = useState(() => {
     if (!user?.uid) return '';
     return localStorage.getItem(`wa_phone_${user.uid}`) ?? '';
@@ -47,15 +53,27 @@ const Sessions = () => {
   // Ref pour avoir accès au tenantId courant dans les callbacks socket
   // sans recréer les listeners à chaque render
   const activeTenantIdRef = useRef(null);
+  // Ref pour avoir accès au user.uid dans les callbacks socket (stable)
+  const userUidRef = useRef(user?.uid ?? null);
 
   useEffect(() => {
     activeTenantIdRef.current = userSession?.tenantId ?? null;
   }, [userSession?.tenantId]);
 
-  // Si pas de session et qu'un numéro est sauvegardé pour cet utilisateur,
-  // afficher directement le formulaire pré-rempli (sans cliquer sur "Connecter")
   useEffect(() => {
-    if (!sessionLoading && !userSession && user?.uid) {
+    userUidRef.current = user?.uid ?? null;
+  }, [user?.uid]);
+
+  // Si pas de session et qu'un numéro est sauvegardé pour cet utilisateur,
+  // afficher directement le formulaire pré-rempli.
+  // Si une session existe, s'assurer que le formulaire est caché.
+  useEffect(() => {
+    if (sessionLoading) return; // attendre la fin du chargement
+    if (userSession) {
+      // Session active → masquer le formulaire de saisie
+      setShowPhoneInput(false);
+    } else if (user?.uid) {
+      // Pas de session → pré-remplir avec le numéro sauvegardé
       const saved = localStorage.getItem(`wa_phone_${user.uid}`);
       if (saved) {
         setPhoneInputValue(saved);
@@ -74,9 +92,17 @@ const Sessions = () => {
       if (!currentId || data.tenantId === currentId) {
         setShowQRModal(false);
         setPollingStatus(false);
+        // Sauvegarder la clé API en localStorage
+        if (data.apiKey && userUidRef.current) {
+          saveTenantApiKey(userUidRef.current, data.apiKey);
+        }
         // Ouvrir le modal clé API si la clé est dans l'event
         if (data.apiKey || data.apiKeyHint) {
-          setApiKeyModal({ key: data.apiKey ?? null, hint: data.apiKeyHint ?? null });
+          setApiKeyModal({
+            key:       data.apiKey ?? null,
+            hint:      data.apiKeyHint ?? null,
+            expiresAt: data.apiKeyExpiresAt ?? null,
+          });
         } else {
           setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
         }
@@ -95,9 +121,22 @@ const Sessions = () => {
       }
     });
 
+    const unsubError = onTenantError((data) => {
+      console.log('[Socket] tenant_error', data);
+      const currentId = activeTenantIdRef.current;
+      if (!currentId || data.tenantId === currentId) {
+        const msg = data.message || data.error || 'Une erreur est survenue.';
+        setErrorFromSocket(msg);
+        setShowQRModal(false);
+        setPollingStatus(false);
+        setQrLoading(false);
+      }
+    });
+
     return () => {
       unsubConnected();
       unsubQR();
+      unsubError();
       // Ne pas déconnecter le socket ici — il est partagé
     };
   }, []); // ← dépendances vides : listeners créés une seule fois, la ref se met à jour en dehors
@@ -395,6 +434,24 @@ const Sessions = () => {
         </motion.div>
       )}
 
+      {/* Erreur Socket.io (ex: PHONE_MISMATCH, session error) */}
+      {errorFromSocket && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-800"
+        >
+          <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <span className="flex-1 font-medium">{errorFromSocket}</span>
+          <button
+            onClick={() => setErrorFromSocket('')}
+            className="ml-auto text-red-500 hover:text-red-700"
+          >
+            <X size={18} />
+          </button>
+        </motion.div>
+      )}
+
       {/* Session Display */}
       {!userSession ? (
         <motion.div
@@ -687,6 +744,14 @@ const Sessions = () => {
                       <RefreshCw size={18} className={qrLoading ? 'animate-spin' : ''} />
                       <span>Actualiser le QR code</span>
                     </button>
+
+                    {/* Erreur socket dans le modal QR */}
+                    {errorFromSocket && (
+                      <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-700">{errorFromSocket}</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12">
@@ -781,13 +846,27 @@ const Sessions = () => {
                   )}
                 </div>
 
-                <p className="text-xs text-gray-500 flex items-start gap-1.5">
-                  <AlertCircle size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Gardez cette clé secrète — elle ne sera plus jamais affichée en clair. Elle a aussi été
-                    envoyée sur votre WhatsApp.
-                  </span>
+                <p className="text-sm text-gray-700">
+                  Votre WhatsApp est connecté et votre clé API est prête.
                 </p>
+
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertCircle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-800 font-medium">
+                    ⚠️ Copiez cette clé maintenant. Elle ne sera plus affichée en clair.
+                  </p>
+                </div>
+
+                {apiKeyModal.expiresAt && (
+                  <p className="text-xs text-gray-500">
+                    Valide jusqu'au{' '}
+                    <span className="font-medium text-gray-700">
+                      {new Date(apiKeyModal.expiresAt).toLocaleDateString('fr-FR', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                      })}
+                    </span>
+                  </p>
+                )}
 
                 <button
                   onClick={() => setApiKeyModal(null)}

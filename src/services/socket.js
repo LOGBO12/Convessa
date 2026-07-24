@@ -63,6 +63,12 @@ export function onQueueUpdate(callback) {
   return () => socket?.off('queue_update', callback);
 }
 
+export function onTenantError(callback) {
+  if (!socket) connectSocket();
+  socket.on('tenant_error', callback);
+  return () => socket?.off('tenant_error', callback);
+}
+
 export function getSocket() {
   return socket;
 }
@@ -74,5 +80,6 @@ export default {
   onTenantQR,
   onTenantStatusUpdate,
   onQueueUpdate,
+  onTenantError,
   getSocket,
 };
