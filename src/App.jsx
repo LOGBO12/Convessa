@@ -1,11 +1,13 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Auth from './pages/Auth';
-import VerifyOTP from './pages/VerifyOTP';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import VerifyLogin from './pages/VerifyLogin';
+import VerifyRegister from './pages/VerifyRegister';
 import Dashboard from './pages/Dashboard';
 import SendMessage from './pages/SendMessage';
 import Sessions from './pages/Sessions';
@@ -17,109 +19,118 @@ function App() {
     <AuthProvider>
       <div className="min-h-screen bg-white flex flex-col">
         <Routes>
-        {/* Public routes with Navbar (Footer déjà dans Home) */}
-        <Route
-          path="/"
-          element={
-            <>
-              <Navbar />
-              <Home />
-            </>
-          }
-        />
-        
-        {/* Documentation - with Navbar + Footer */}
-        <Route 
-          path="/docs" 
-          element={
-            <>
-              <Navbar />
-              <Docs />
-              <Footer />
-            </>
-          } 
-        />
-        
-        {/* Auth routes - no Navbar, no Footer */}
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/login" element={<Auth />} />
-        <Route path="/signup" element={<Auth />} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
-        
-        {/* Protected routes - with Navbar + Footer */}
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
+          {/* Public routes with Navbar (Footer already in Home) */}
+          <Route
+            path="/"
+            element={
               <>
                 <Navbar />
-                <Dashboard />
+                <Home />
+              </>
+            }
+          />
+
+          {/* Documentation - with Navbar + Footer */}
+          <Route
+            path="/docs"
+            element={
+              <>
+                <Navbar />
+                <Docs />
                 <Footer />
               </>
-            </ProtectedRoute>
-          } 
-        />
+            }
+          />
 
-        <Route 
-          path="/send-message" 
-          element={
-            <ProtectedRoute>
+          {/* Auth routes - no Navbar, no Footer */}
+
+          {/* New dedicated login / register pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* OTP verification pages */}
+          <Route path="/verify-register" element={<VerifyRegister />} />
+          <Route path="/verify-login" element={<VerifyLogin />} />
+
+          {/* Legacy routes – redirect to new equivalents */}
+          <Route path="/auth" element={<Navigate to="/login" replace />} />
+          <Route path="/verify-otp" element={<Navigate to="/login" replace />} />
+
+          {/* Protected routes - with Navbar + Footer */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <Dashboard />
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/send-message"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <div className="pt-16 min-h-screen bg-gray-50 flex-grow">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                      <SendMessage />
+                    </div>
+                  </div>
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/sessions"
+            element={
+              <ProtectedRoute>
+                <>
+                  <Navbar />
+                  <div className="pt-16 min-h-screen bg-gray-50 flex-grow">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                      <Sessions />
+                    </div>
+                  </div>
+                  <Footer />
+                </>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Placeholder routes with Navbar + Footer */}
+          <Route
+            path="/pricing"
+            element={
               <>
                 <Navbar />
-                <div className="pt-16 min-h-screen bg-gray-50 flex-grow">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <SendMessage />
-                  </div>
+                <div className="pt-24 px-4 text-center flex-grow">
+                  <h1 className="text-4xl font-bold">Tarifs</h1>
+                  <p className="text-gray-600 mt-4">Page en construction...</p>
                 </div>
                 <Footer />
               </>
-            </ProtectedRoute>
-          } 
-        />
-
-        <Route 
-          path="/sessions" 
-          element={
-            <ProtectedRoute>
+            }
+          />
+          <Route
+            path="/faq"
+            element={
               <>
                 <Navbar />
-                <div className="pt-16 min-h-screen bg-gray-50 flex-grow">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <Sessions />
-                  </div>
-                </div>
+                <FAQ />
                 <Footer />
               </>
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* Placeholder routes with Navbar + Footer */}
-        <Route
-          path="/pricing"
-          element={
-            <>
-              <Navbar />
-              <div className="pt-24 px-4 text-center flex-grow">
-                <h1 className="text-4xl font-bold">Tarifs</h1>
-                <p className="text-gray-600 mt-4">Page en construction...</p>
-              </div>
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/faq"
-          element={
-            <>
-              <Navbar />
-              <FAQ />
-              <Footer />
-            </>
-          }
-        />
-      </Routes>
-    </div>
+            }
+          />
+        </Routes>
+      </div>
     </AuthProvider>
   );
 }
