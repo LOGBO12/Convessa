@@ -1,460 +1,331 @@
 # Documentation API Convessa
 
-**Version 1.0 | Dernière mise à jour : 23 juillet 2026**
+## Introduction
 
-## Démarrage Rapide
+Convessa vous permet d'envoyer des messages WhatsApp via une API REST simple et puissante. Cette documentation vous guide dans l'intégration de l'API dans votre application.
 
-### 1. Inscription
-Créez votre compte sur [convessa.dev/auth](https://convessa.dev/auth)
+## Ce que vous avez reçu après inscription
 
-### 2. Récupération de votre clé API
-Connectez-vous à votre tableau de bord pour obtenir votre clé API unique :
+### Clé API Unique
+
+Après avoir connecté votre WhatsApp, vous avez reçu une **clé API unique** de la forme :
+
 ```
-sk_live_xxxxxxxxxxxxxxxxxxxxx
+wag_live_a3f8c2d1e9b4f7a0c5e2d8b1f6a3c9e4d7b0f2a5c8e1d4b7f0a3c6e9d2b5f8a1
 ```
 
-**Important :** Ne partagez JAMAIS votre clé API publiquement !
+### URL de Base
 
-### 3. Configuration WhatsApp
-Avant d'utiliser l'API, vous devez connecter un numéro WhatsApp :
+```
+https://api.convessa.com   (ou http://localhost:3005 en local)
+```
 
-1. Allez dans **Dashboard > Sessions WhatsApp**
-2. Cliquez sur **"Ajouter une session"**
-3. Scannez le QR code avec votre WhatsApp (comme WhatsApp Web)
-4. Attendez la confirmation de connexion
-
-**Recommandation :** Utilisez un compte **WhatsApp Business** dédié.
+> ⚠️ **Important** : La clé n'est affichée qu'une seule fois au moment de la connexion. Stockez-la dans les variables d'environnement de votre application, jamais dans le code source.
 
 ---
 
-## Authentification
+## Comment ça marche
 
-Toutes les requêtes API doivent inclure votre clé API dans le header :
+Vous envoyez une requête HTTP POST à notre service avec :
+- Le numéro de téléphone du destinataire
+- Le message à envoyer
 
-```bash
-Authorization: Bearer YOUR_API_KEY
+Notre service envoie le message via **votre numéro WhatsApp** connecté au scan du QR.
+
 ```
-
-### Exemple avec cURL
-```bash
-curl -X POST https://api.convessa.dev/v1/messages/send \
-  -H "Authorization: Bearer sk_live_xxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "+33612345678",
-    "message": "Hello from Convessa!"
-  }'
+Votre Application
+      │
+      │  POST /api/v1/messages/send
+      │  X-Api-Key: wag_live_votre-cle
+      │  { "to": "22994119476", "message": "..." }
+      ▼
+Convessa API
+      │
+      ▼
+Destinataire reçoit le message
+(depuis votre numéro connecté)
 ```
 
 ---
 
-## 📨 Envoyer un Message
+## Envoyer un message texte
 
-### Endpoint
-```
-POST https://api.convessa.dev/v1/messages/send
-```
+### Requête
 
-### Paramètres
-
-| Paramètre | Type | Requis | Description |
-|-----------|------|--------|-------------|
-| `to` | string | ✅ | Numéro au format international (+33...) |
-| `message` | string | ✅ | Contenu du message (max 4096 caractères) |
-| `session_id` | string | ❌ | ID de la session (si multiple) |
-
-### Exemple : Message Texte Simple
-
-```javascript
-// Node.js avec fetch
-const response = await fetch('https://api.convessa.dev/v1/messages/send', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer sk_live_xxxxx',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    to: '+33612345678',
-    message: 'Bonjour ! Ceci est un message test.'
-  })
-});
-
-const data = await response.json();
-console.log(data);
+```http
+POST https://api.convessa.com/api/v1/messages/send
+Content-Type: application/json
+X-Api-Key: wag_live_votre-cle
 ```
 
-### Réponse Succès (200)
+```json
+{
+  "to": "22994119476",
+  "message": "Bonjour, votre commande est prête !"
+}
+```
+
+> 📌 **Note** : Le numéro `to` doit inclure l'indicatif international, sans le `+`.  
+> **Exemples** : `33612345678` (France), `22994119476` (Bénin), `12025550123` (USA)
+
+### Réponse succès (202)
+
 ```json
 {
   "success": true,
-  "message_id": "3EB0XXXXXXXXXXXXXXXX",
-  "status": "sent",
-  "to": "+33612345678",
-  "timestamp": "2026-07-23T14:30:00Z"
+  "queued": true,
+  "messageId": "550e8400-e29b-41d4-a716-446655440000",
+  "position": 1
 }
 ```
 
-### Réponse Erreur (400/401/429/500)
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_PHONE_NUMBER",
-    "message": "Le numéro de téléphone n'est pas valide"
-  }
-}
-```
+Conservez le `messageId` pour vérifier l'état de l'envoi.
 
 ---
 
-## 📸 Envoyer une Image
+## Vérifier le statut d'un message
 
-### Endpoint
-```
-POST https://api.convessa.dev/v1/messages/send-media
-```
-
-### Paramètres
-
-| Paramètre | Type | Requis | Description |
-|-----------|------|--------|-------------|
-| `to` | string | ✅ | Numéro au format international |
-| `type` | string | ✅ | Type de média (`image`, `video`, `audio`, `document`) |
-| `media_url` | string | ✅ | URL publique du fichier |
-| `caption` | string | ❌ | Légende (pour image/video) |
-| `filename` | string | ❌ | Nom du fichier (pour document) |
-
-### Exemple
-
-```javascript
-const response = await fetch('https://api.convessa.dev/v1/messages/send-media', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer sk_live_xxxxx',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    to: '+33612345678',
-    type: 'image',
-    media_url: 'https://example.com/image.jpg',
-    caption: 'Regardez cette belle image !'
-  })
-});
-```
-
-**Formats supportés :**
-- Images : JPG, PNG, GIF (max 5MB)
-- Vidéos : MP4, 3GP (max 16MB)
-- Audio : MP3, OGG, AAC (max 16MB)
-- Documents : PDF, DOC, XLSX, etc. (max 100MB)
-
----
-
-## 📩 Recevoir des Messages (Webhooks)
-
-Pour recevoir les messages entrants, configurez un webhook dans votre dashboard.
-
-### Configuration
-
-1. Allez dans **Dashboard > Paramètres > Webhooks**
-2. Entrez votre URL de webhook : `https://votreapp.com/webhook`
-3. Choisissez les événements à recevoir
-4. Sauvegardez
-
-### Format des Webhooks
-
-Convessa enverra une requête POST à votre URL :
-
-```json
-{
-  "event": "message.received",
-  "timestamp": "2026-07-23T14:30:00Z",
-  "data": {
-    "message_id": "3EB0XXXXXXXXXXXXXXXX",
-    "from": "+33698765432",
-    "message": "Bonjour !",
-    "type": "text",
-    "timestamp": "2026-07-23T14:29:55Z"
-  }
-}
-```
-
-### Sécurisation du Webhook
-
-Chaque requête webhook inclut une signature HMAC dans le header `X-Convessa-Signature`.
-
-```javascript
-// Vérification de la signature (Node.js)
-const crypto = require('crypto');
-
-function verifyWebhook(payload, signature, secret) {
-  const hash = crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(payload))
-    .digest('hex');
-  
-  return hash === signature;
-}
-
-// Dans votre endpoint webhook
-app.post('/webhook', (req, res) => {
-  const signature = req.headers['x-convessa-signature'];
-  const isValid = verifyWebhook(req.body, signature, YOUR_WEBHOOK_SECRET);
-  
-  if (!isValid) {
-    return res.status(401).send('Invalid signature');
-  }
-  
-  // Traiter le message...
-  console.log('Message reçu:', req.body);
-  res.status(200).send('OK');
-});
-```
-
----
-
-## 📊 Vérifier le Statut d'une Session
-
-### Endpoint
-```
-GET https://api.convessa.dev/v1/sessions/{session_id}/status
-```
-
-### Exemple
-
-```javascript
-const response = await fetch('https://api.convessa.dev/v1/sessions/sess_xxxxx/status', {
-  headers: {
-    'Authorization': 'Bearer sk_live_xxxxx'
-  }
-});
-
-const data = await response.json();
-console.log(data);
+```http
+GET https://api.convessa.com/api/v1/messages/{messageId}
+X-Api-Key: wag_live_votre-cle
 ```
 
 ### Réponse
+
 ```json
 {
   "success": true,
-  "session_id": "sess_xxxxx",
-  "status": "connected",
-  "phone_number": "+33612345678",
-  "connected_at": "2026-07-23T10:00:00Z",
-  "battery_level": 85,
-  "battery_charging": false
+  "messageId": "550e8400-...",
+  "status": "sent",
+  "to": "229XXXXX476",
+  "sentAt": "2026-07-23T10:30:05.000Z",
+  "attempts": 1
 }
 ```
 
-**Statuts possibles :**
-- `connected` : Session active
-- `disconnected` : Déconnecté
-- `connecting` : Connexion en cours
-- `qr_code` : En attente de scan QR
+**Statuts possibles** : `queued` → `sending` → `sent` ou `failed`
 
 ---
 
-## ⚠️ Gestion des Erreurs
+## Envoyer un fichier (PDF, image, vidéo…)
 
-### Codes d'Erreur
+### Exemple avec PDF
 
-| Code | Statut HTTP | Description |
-|------|-------------|-------------|
-| `UNAUTHORIZED` | 401 | Clé API invalide ou manquante |
-| `RATE_LIMIT_EXCEEDED` | 429 | Trop de requêtes |
-| `INVALID_PHONE_NUMBER` | 400 | Format de numéro invalide |
-| `SESSION_NOT_CONNECTED` | 400 | Session WhatsApp déconnectée |
-| `MESSAGE_TOO_LONG` | 400 | Message > 4096 caractères |
-| `MEDIA_DOWNLOAD_FAILED` | 400 | Impossible de télécharger le média |
-| `QUOTA_EXCEEDED` | 403 | Quota mensuel dépassé |
-| `INTERNAL_ERROR` | 500 | Erreur serveur |
-
-### Exemple de Gestion
-
-```javascript
-try {
-  const response = await fetch('https://api.convessa.dev/v1/messages/send', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer sk_live_xxxxx',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ to: '+33612345678', message: 'Hello' })
-  });
-  
-  const data = await response.json();
-  
-  if (!response.ok) {
-    switch (data.error.code) {
-      case 'RATE_LIMIT_EXCEEDED':
-        console.error('Trop de messages envoyés, attendez 1 minute');
-        break;
-      case 'SESSION_NOT_CONNECTED':
-        console.error('WhatsApp déconnecté, reconnectez-vous');
-        break;
-      default:
-        console.error('Erreur:', data.error.message);
-    }
-    return;
+```json
+{
+  "to": "22994119476",
+  "message": "Voici votre facture",
+  "media": {
+    "type": "document",
+    "mime": "application/pdf",
+    "name": "facture-2026-07.pdf",
+    "base64": "JVBERi0xLjQK..."
   }
-  
-  console.log('Message envoyé avec succès !');
-} catch (error) {
-  console.error('Erreur réseau:', error);
 }
 ```
+
+### Exemple avec Image
+
+```json
+{
+  "to": "22994119476",
+  "media": {
+    "type": "image",
+    "mime": "image/jpeg",
+    "base64": "/9j/4AAQSkZJRgAB..."
+  }
+}
+```
+
+### Formats et limites
+
+| Type | Formats | Taille max |
+|---|---|---|
+| `image` | JPEG, PNG | 5 MB |
+| `video` | MP4 | 16 MB |
+| `audio` | MP3, M4A, OGG | 16 MB |
+| `document` | PDF, Word, Excel, PPT, ZIP, TXT | 100 MB |
 
 ---
 
-## 🔒 Bonnes Pratiques
+## Exemples par langage
 
-### 1. Rate Limiting
-Respectez les limites :
-- **1 seconde minimum** entre chaque message
-- Maximum 20 msg/min (Plan Gratuit) ou 100 msg/min (Pro)
+### Node.js / Express
 
 ```javascript
-// Exemple avec délai
-async function sendMessages(messages) {
-  for (const msg of messages) {
-    await sendMessage(msg);
-    await sleep(1000); // Attendre 1 seconde
-  }
-}
+// .env : API_URL=http://... API_KEY=wag_live_...
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-```
-
-### 2. Gestion des Reconnexions
-Surveillez le statut de votre session et reconnectez si nécessaire :
-
-```javascript
-async function checkSession() {
-  const status = await getSessionStatus();
-  
-  if (status.status !== 'connected') {
-    console.warn('Session déconnectée, veuillez vous reconnecter');
-    // Notifier l'utilisateur ou rediriger vers le scan QR
-  }
-}
-
-// Vérifier toutes les 5 minutes
-setInterval(checkSession, 5 * 60 * 1000);
-```
-
-### 3. Validation des Numéros
-Validez les numéros avant d'envoyer :
-
-```javascript
-function isValidPhoneNumber(phone) {
-  // Doit commencer par + et contenir 10-15 chiffres
-  return /^\+[1-9]\d{9,14}$/.test(phone);
+async function sendWhatsApp(to, message) {
+    const res = await fetch(`${process.env.API_URL}/api/v1/messages/send`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Api-Key':    process.env.API_KEY,
+        },
+        body: JSON.stringify({ to, message }),
+    })
+    const data = await res.json()
+    if (!data.success) throw new Error(data.error?.message)
+    return data.messageId
 }
 ```
 
-### 4. Sécurité de la Clé API
-- ✅ Stockez dans une variable d'environnement (`.env`)
-- ✅ Ne committez JAMAIS la clé dans Git
-- ✅ Utilisez côté serveur uniquement (pas dans le front)
-- ✅ Régénérez si compromise
-
-```javascript
-// .env
-CONVESSA_API_KEY=sk_live_xxxxx
-
-// Dans votre code
-require('dotenv').config();
-const apiKey = process.env.CONVESSA_API_KEY;
-```
-
----
-
-## 📚 Bibliothèques Clientes
-
-### Node.js
-
-```bash
-npm install @convessa/sdk
-```
-
-```javascript
-const Convessa = require('@convessa/sdk');
-
-const client = new Convessa('sk_live_xxxxx');
-
-// Envoyer un message
-await client.messages.send({
-  to: '+33612345678',
-  message: 'Hello from Node.js!'
-});
-
-// Écouter les messages entrants
-client.on('message', (message) => {
-  console.log('Message reçu:', message);
-});
-```
-
-### Python
-
-```bash
-pip install convessa
-```
+### Python (Django / Flask)
 
 ```python
-from convessa import Convessa
+import os, requests
 
-client = Convessa('sk_live_xxxxx')
+API_URL = os.environ['API_URL']
+API_KEY = os.environ['API_KEY']
 
-# Envoyer un message
-response = client.messages.send(
-    to='+33612345678',
-    message='Hello from Python!'
-)
-
-print(response)
+def send_whatsapp(to: str, message: str) -> str:
+    resp = requests.post(
+        f'{API_URL}/api/v1/messages/send',
+        json={'to': to, 'message': message},
+        headers={'X-Api-Key': API_KEY},
+        timeout=10
+    )
+    resp.raise_for_status()
+    return resp.json()['messageId']
 ```
 
-### PHP
-
-```bash
-composer require convessa/sdk
-```
+### PHP (Laravel)
 
 ```php
-<?php
-require 'vendor/autoload.php';
+// Config dans config/services.php
+// 'whatsapp' => ['url' => env('API_URL'), 'key' => env('API_KEY')]
 
-use Convessa\ConvessaClient;
+$response = Http::withHeaders(['X-Api-Key' => config('services.whatsapp.key')])
+    ->post(config('services.whatsapp.url') . '/api/v1/messages/send', [
+        'to'      => $user->phone,
+        'message' => "Bonjour {$user->name}, votre commande est confirmée.",
+    ]);
 
-$client = new ConvessaClient('sk_live_xxxxx');
+if ($response->successful()) {
+    $messageId = $response->json('messageId');
+}
+```
 
-$response = $client->messages->send([
-    'to' => '+33612345678',
-    'message' => 'Hello from PHP!'
-]);
+### Java (Spring Boot)
 
-echo $response->message_id;
+```java
+// application.properties : api.url=... api.key=wag_live_...
+
+@Service
+public class WhatsAppService {
+    @Value("${api.url}")     private String apiUrl;
+    @Value("${api.key}")     private String apiKey;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    public String send(String to, String message) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Api-Key", apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, String> body = Map.of("to", to, "message", message);
+        ResponseEntity<Map> resp = restTemplate.exchange(
+            apiUrl + "/api/v1/messages/send",
+            HttpMethod.POST,
+            new HttpEntity<>(body, headers),
+            Map.class
+        );
+        return (String) resp.getBody().get("messageId");
+    }
+}
+```
+
+### C# (.NET)
+
+```csharp
+// appsettings.json : "Api": { "Url": "...", "Key": "wag_live_..." }
+
+public class WhatsAppService
+{
+    private readonly HttpClient _http;
+    private readonly string _apiKey;
+
+    public WhatsAppService(HttpClient http, IConfiguration config)
+    {
+        _http   = http;
+        _apiKey = config["Api:Key"]!;
+        _http.BaseAddress = new Uri(config["Api:Url"]!);
+    }
+
+    public async Task<string> SendAsync(string to, string message)
+    {
+        _http.DefaultRequestHeaders.Remove("X-Api-Key");
+        _http.DefaultRequestHeaders.Add("X-Api-Key", _apiKey);
+
+        var resp = await _http.PostAsJsonAsync("/api/v1/messages/send",
+            new { to, message });
+        resp.EnsureSuccessStatusCode();
+
+        var data = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        return data.GetProperty("messageId").GetString()!;
+    }
+}
 ```
 
 ---
 
-## 🆘 Support
+## Variables d'environnement recommandées
 
-- 📧 Email : support@convessa.dev
-- 💬 Discord : [discord.gg/convessa](https://discord.gg/convessa)
-- 📖 Documentation : [docs.convessa.dev](https://docs.convessa.dev)
-- 🐛 Signaler un bug : [github.com/convessa/issues](https://github.com/convessa/issues)
+Peu importe le langage, stockez toujours :
+
+```env
+API_URL=https://api.convessa.com
+API_KEY=wag_live_a3f8c2d1e9b4f7a0...
+```
+
+**Ne mettez jamais la clé en dur dans le code source.**
 
 ---
 
-## ⚖️ Limitations et Responsabilités
+## Erreurs courantes
 
-⚠️ **Rappel Important :**
-- Convessa utilise Baileys, une bibliothèque non officielle
-- L'utilisation viole les Conditions d'Utilisation de WhatsApp
-- Votre compte WhatsApp peut être banni
-- Utilisez à vos propres risques
+| Erreur | Cause | Solution |
+|---|---|---|
+| `401 UNAUTHORIZED` | Clé API absente ou invalide | Vérifiez le header `X-Api-Key` |
+| `400 VALIDATION_ERROR` | Numéro invalide | Numéro en chiffres uniquement, avec indicatif |
+| `503 SERVICE_NOT_CONNECTED` | Votre WhatsApp est déconnecté | Reconnectez-vous depuis le dashboard |
+| `404 PHONE_NOT_ON_WHATSAPP` | Destinataire n'a pas WhatsApp | Vérifiez le numéro |
+| `429 RATE_LIMIT_EXCEEDED` | Trop de requêtes rapides | Ajoutez un délai entre les appels |
 
-Consultez nos [Conditions d'Utilisation](https://convessa.dev/terms) pour plus de détails.
+---
+
+## Bonnes pratiques
+
+1. **Stockez votre clé API de manière sécurisée**
+   - Utilisez des variables d'environnement (`.env`)
+   - Ne commitez jamais la clé dans votre repository
+
+2. **Gérez les erreurs correctement**
+   - Implémentez des retry avec backoff exponentiel
+   - Loggez les erreurs pour debugging
+
+3. **Respectez les limites de taux**
+   - Ajoutez un délai entre les messages
+   - Utilisez une file d'attente pour les envois en masse
+
+4. **Validez les numéros de téléphone**
+   - Format international sans `+`
+   - Vérifiez que le numéro existe sur WhatsApp
+
+5. **Monitorer vos envois**
+   - Conservez les `messageId` retournés
+   - Vérifiez régulièrement le statut des messages
+
+---
+
+## Support
+
+Besoin d'aide ? Contactez-nous :
+
+- **Email** : support@convessa.com
+- **Documentation** : https://docs.convessa.com
+- **Dashboard** : https://app.convessa.com
+
+---
+
+*Dernière mise à jour : 2026-07-23*

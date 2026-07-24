@@ -10,4 +10,3 @@ export function useUserSession() {
 }
 
 export default useUserSession;
-

@@ -802,11 +802,20 @@ const Sessions = () => {
                   Votre WhatsApp est connecté et votre clé API est prête.
                 </p>
 
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <AlertCircle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800 font-medium">
-                    ⚠️ Copiez cette clé maintenant. Elle ne sera plus affichée en clair.
-                  </p>
+                {/* Avertissement détaillé */}
+                <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <h4 className="font-bold text-red-900 mb-1 text-sm">⚠️ Important — À lire attentivement</h4>
+                      <ul className="text-xs text-red-800 space-y-1">
+                        <li>• Cette clé ne sera plus affichée en clair par la suite</li>
+                        <li>• Copiez-la et stockez-la dans un endroit sûr (gestionnaire de mots de passe, .env, etc.)</li>
+                        <li>• Ne la partagez JAMAIS publiquement (GitHub, forums, etc.)</li>
+                        <li>• Utilisez-la dans vos requêtes HTTP avec le header : <code className="bg-red-100 px-1 rounded">X-Api-Key</code></li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 {apiKeyModal.expiresAt && (
@@ -820,11 +829,27 @@ const Sessions = () => {
                   </p>
                 )}
 
+                {/* Prochaines étapes */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h4 className="font-bold text-blue-900 mb-2 text-sm flex items-center space-x-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                    <span>Prochaines étapes</span>
+                  </h4>
+                  <ol className="text-xs text-blue-900 space-y-1 list-decimal list-inside">
+                    <li>Allez dans <strong>Envoyer Message</strong> pour tester l'envoi</li>
+                    <li>Consultez la <strong>Documentation</strong> pour intégrer l'API</li>
+                    <li>Utilisez votre clé API dans toutes vos requêtes HTTP</li>
+                  </ol>
+                </div>
+
                 <button
                   onClick={() => setApiKeyModal(null)}
                   className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium"
                 >
-                  Fermer
+                  J'ai copié ma clé, fermer
                 </button>
               </div>
             </motion.div>

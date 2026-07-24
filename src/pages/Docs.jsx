@@ -33,8 +33,7 @@ const Docs = () => {
       icon: Book,
       items: [
         { id: 'getting-started', label: 'Démarrage Rapide', file: 'getting-started.md' },
-        { id: 'authentication', label: 'Authentification', file: 'getting-started.md' },
-        { id: 'rate-limits', label: 'Limites de Taux', file: 'getting-started.md' },
+        { id: 'api-documentation', label: 'Documentation API', file: 'api-documentation.md' },
       ]
     },
     {
@@ -42,18 +41,19 @@ const Docs = () => {
       icon: Code,
       items: [
         { id: 'send-message', label: 'Envoyer un Message', file: 'send-message.md' },
-        { id: 'send-media', label: 'Envoyer des Médias', file: 'send-message.md' },
-        { id: 'webhooks', label: 'Webhooks', file: 'send-message.md' },
-        { id: 'sessions', label: 'Gestion des Sessions', file: 'send-message.md' },
+        { id: 'send-media', label: 'Envoyer des Médias', file: 'api-documentation.md' },
+        { id: 'error-handling', label: 'Gestion des Erreurs', file: 'api-documentation.md' },
       ]
     },
     {
-      title: 'Guides',
+      title: 'Exemples de Code',
       icon: Rocket,
       items: [
-        { id: 'best-practices', label: 'Bonnes Pratiques', file: 'send-message.md' },
-        { id: 'error-handling', label: 'Gestion des Erreurs', file: 'send-message.md' },
-        { id: 'sdks', label: 'SDKs & Bibliothèques', file: 'send-message.md' },
+        { id: 'nodejs', label: 'Node.js', file: 'api-documentation.md' },
+        { id: 'python', label: 'Python', file: 'api-documentation.md' },
+        { id: 'php', label: 'PHP / Laravel', file: 'api-documentation.md' },
+        { id: 'java', label: 'Java / Spring', file: 'api-documentation.md' },
+        { id: 'csharp', label: 'C# / .NET', file: 'api-documentation.md' },
       ]
     },
     {
@@ -62,7 +62,6 @@ const Docs = () => {
       items: [
         { id: 'legal-warnings', label: 'Avertissements Légaux', file: 'legal-warnings.md', important: true },
         { id: 'terms', label: 'Conditions d\'Utilisation', file: 'terms-of-service.md' },
-        { id: 'gdpr', label: 'Conformité RGPD', file: 'terms-of-service.md' },
       ]
     },
   ];
