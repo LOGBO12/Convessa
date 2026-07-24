@@ -1,10 +1,10 @@
 /**
  * Service API pour communiquer avec le backend WhatsApp Service
- * Base URL: http://localhost:3005/api/v1
+ * Utilise des chemins relatifs pour passer par le proxy Vite en dev.
  */
 
-const API_BASE_URL = 'http://localhost:3005/api/v1';
-const API_KEY = 'a2054a71236e85e152d3e1903d6dc81e94bbff54c3dd01b1591aec940c5b6024';
+const API_BASE_URL = '/api/v1';
+const API_KEY = '';
 
 /**
  * Fonction utilitaire pour effectuer des requêtes HTTP
@@ -191,12 +191,13 @@ export const tenantsAPI = {
   /**
    * Créer un nouveau tenant (session WhatsApp)
    */
-  create: async ({ phone, name, webhookUrl }) => {
+  create: async ({ phone, name, webhookUrl, userUid }) => {
     return fetchAPI('/tenants', {
       method: 'POST',
       requiresApiKey: true,
-      body: JSON.stringify({ phone, name, webhookUrl }),
+      body: JSON.stringify({ phone, name, webhookUrl, userUid }),
     });
+  
   },
 
   /**

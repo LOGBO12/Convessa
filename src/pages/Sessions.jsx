@@ -17,7 +17,7 @@ import {
   Key,
   X,
 } from 'lucide-react';
-import { tenantsAPI, saveTenantApiKey } from '../services/api';
+import { tenantsAPI, saveTenantApiKey, getTenantApiKey } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
 import {
@@ -82,7 +82,21 @@ const Sessions = () => {
     }
   }, [sessionLoading, userSession, user?.uid]);
 
-  // Socket.io — un seul effet, listeners stables
+  // Au chargement : si session connectée et pas de clé en localStorage → la récupérer depuis le backend
+  useEffect(() => {
+    if (!userSession || userSession.status !== 'connected' || !user?.uid) return;
+    const existing = getTenantApiKey(user.uid);
+    if (!existing) {
+      // La clé n'est pas en localStorage → la récupérer via l'API
+      tenantsAPI.getApiKey(userSession.tenantId)
+        .then(res => {
+          if (res.apiKey) {
+            saveTenantApiKey(user.uid, res.apiKey);
+          }
+        })
+        .catch(err => console.warn('Impossible de récupérer la clé API:', err));
+    }
+  }, [userSession, user?.uid]);
   useEffect(() => {
     connectSocket();
 
@@ -343,8 +357,11 @@ const Sessions = () => {
   };
 
   const copyApiKey = () => {
-    if (userSession?.apiKeyHint) {
-      navigator.clipboard.writeText(userSession.apiKeyHint);
+    // Copier la vraie clé complète depuis localStorage, ou le hint en fallback
+    const fullKey = getTenantApiKey(user?.uid);
+    const keyToCopy = fullKey || userSession?.apiKeyHint;
+    if (keyToCopy) {
+      navigator.clipboard.writeText(keyToCopy);
       setCopiedApiKey(true);
       setTimeout(() => setCopiedApiKey(false), 2000);
     }
@@ -573,7 +590,10 @@ const Sessions = () => {
               </div>
 
               {/* API Key Section */}
-              {userSession.status === 'connected' && userSession.apiKeyHint && (
+              {userSession.status === 'connected' && userSession.apiKeyHint && (() => {
+                const fullKey = getTenantApiKey(user?.uid);
+                const displayKey = fullKey || userSession.apiKeyHint;
+                return (
                 <div className="bg-gradient-to-r from-primary-50 to-purple-50 border-2 border-primary-200 rounded-xl p-6 mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-gray-900 flex items-center space-x-2">
@@ -585,11 +605,11 @@ const Sessions = () => {
                   </div>
                   
                   <div className="bg-white rounded-lg p-4 border border-primary-300">
-                    <div className="flex items-center justify-between">
-                      <code className="text-sm font-mono text-gray-900">
-                        {showApiKey ? userSession.apiKeyHint : `${userSession.apiKeyHint.substring(0, 8)}${'•'.repeat(20)}`}
+                    <div className="flex items-center justify-between gap-2">
+                      <code className="text-xs font-mono text-gray-900 flex-1 break-all">
+                        {showApiKey ? displayKey : `${displayKey.substring(0, 20)}${'•'.repeat(16)}`}
                       </code>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0">
                         <button
                           onClick={() => setShowApiKey(!showApiKey)}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -604,7 +624,7 @@ const Sessions = () => {
                         <button
                           onClick={copyApiKey}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                          title="Copier"
+                          title="Copier la clé complète"
                         >
                           {copiedApiKey ? (
                             <CheckCircle size={18} className="text-green-600" />
@@ -617,10 +637,11 @@ const Sessions = () => {
                   </div>
                   
                   <p className="text-sm text-gray-600 mt-3">
-                    ⚠️ Gardez votre clé API secrète. Elle a également été envoyée sur votre WhatsApp.
+                     Gardez votre clé API secrète. Elle a également été envoyée sur votre WhatsApp.
                   </p>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Actions */}
               {(userSession.status === 'pending_qr' || userSession.status === 'disconnected') && (
