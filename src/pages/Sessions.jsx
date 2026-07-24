@@ -30,7 +30,7 @@ import {
 const Sessions = () => {
   const { user } = useAuth();
   const { session: userSession, loading: sessionLoading, refresh: refreshSession } = useUserSession();
-  
+
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrCode, setQrCode] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
@@ -87,8 +87,8 @@ const Sessions = () => {
     if (!userSession || userSession.status !== 'connected' || !user?.uid) return;
     const existing = getTenantApiKey(user.uid);
     if (!existing) {
-      // La clé n'est pas en localStorage → la récupérer via l'API
-      tenantsAPI.getApiKey(userSession.tenantId)
+      // La clé n'est pas en localStorage → la récupérer via l'API (self-service, "moi")
+      tenantsAPI.getApiKey()
         .then(res => {
           if (res.apiKey) {
             saveTenantApiKey(user.uid, res.apiKey);
@@ -97,6 +97,7 @@ const Sessions = () => {
         .catch(err => console.warn('Impossible de récupérer la clé API:', err));
     }
   }, [userSession, user?.uid]);
+
   useEffect(() => {
     connectSocket();
 
@@ -160,30 +161,6 @@ const Sessions = () => {
     if (user?.uid) localStorage.setItem(`wa_phone_${user.uid}`, phone);
   };
 
-  // Cherche un tenant existant pour ce numéro — uniquement parmi ceux
-  // appartenant à l'utilisateur courant (un numéro = un seul utilisateur,
-  // on ne doit jamais reprendre la session d'un autre compte).
-  const findExistingTenantForPhone = async (cleanPhone) => {
-    try {
-      const response = await tenantsAPI.list();
-      const tenants = response.tenants ?? [];
-      const matches = tenants.filter(t =>
-        t.phone?.replace(/[^0-9]/g, '') === cleanPhone &&
-        (t.status === 'pending_qr' || t.status === 'disconnected' || t.status === 'connected')
-      );
-
-      const ownedByOther = matches.find(t => t.userUid && t.userUid !== user?.uid);
-      if (ownedByOther) {
-        throw new Error('PHONE_ALREADY_USED');
-      }
-
-      return matches.find(t => t.userUid === user?.uid) ?? null;
-    } catch (err) {
-      if (err?.message === 'PHONE_ALREADY_USED') throw err;
-      return null;
-    }
-  };
-
   const handleCreateSession = async () => {
     setCreating(true);
     setError('');
@@ -196,7 +173,6 @@ const Sessions = () => {
 
       if (!cleanPhone) {
         // Pas de phone sur le compte — afficher le formulaire
-        // Pré-remplir avec le numéro sauvegardé si disponible
         const saved = localStorage.getItem(`wa_phone_${user?.uid}`) ?? '';
         setPhoneInputValue(saved);
         setError(saved ? '' : 'Pour créer une session, entrez le numéro WhatsApp que vous souhaitez utiliser.');
@@ -205,7 +181,7 @@ const Sessions = () => {
         return;
       }
 
-      await _createOrReuseSession(cleanPhone);
+      await handleCreateWithPhone(cleanPhone);
     } catch (err) {
       console.error('Erreur création session:', err);
       setError(err.message || 'Erreur lors de la création de la session');
@@ -214,6 +190,11 @@ const Sessions = () => {
     }
   };
 
+  // Crée SA session WhatsApp. Le backend (self-service, résolu depuis le
+  // token Firebase) refuse avec 409 si l'utilisateur a déjà une session
+  // (USER_ALREADY_HAS_SESSION → on récupère alors le QR de cette session
+  // existante) ou si le numéro est déjà pris par un autre compte
+  // (PHONE_ALREADY_USED).
   const handleCreateWithPhone = async (phoneNumber) => {
     const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
 
@@ -227,97 +208,49 @@ const Sessions = () => {
     setSuccessMsg('');
 
     try {
-      // 1. Vérifier si ce numéro a déjà un tenant (le nôtre, ou celui d'un autre compte)
-      const existing = await findExistingTenantForPhone(cleanPhone).catch((err) => {
-        if (err?.message === 'PHONE_ALREADY_USED') {
-          throw new Error('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
-        }
-        throw err;
-      });
-
-      if (existing) {
-        // Le numéro existe déjà — réutiliser ce tenant
-        savePhone(cleanPhone);
-        setShowPhoneInput(false);
-        activeTenantIdRef.current = existing.tenantId;
-
-        if (existing.status === 'connected') {
-          // Déjà connecté — juste rafraîchir
-          await refreshSession();
-          setSuccessMsg(' Session déjà active récupérée.');
-        } else {
-          // Relancer le QR pour ce tenant existant
-          setTimeout(() => handleShowQR(existing.tenantId), 500);
-        }
-        return;
-      }
-
-      // 2. Numéro nouveau — créer le tenant
       savePhone(cleanPhone);
       setShowPhoneInput(false);
 
       const response = await tenantsAPI.create({
-        phone:      cleanPhone,
-        name:       `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
-        userUid:    user.uid,
-        webhookUrl: undefined,
+        phone: cleanPhone,
+        name:  `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
       });
 
       activeTenantIdRef.current = response.tenantId;
-
-      setTimeout(() => handleShowQR(response.tenantId), 2000);
+      setTimeout(() => handleShowQR(), 2000);
 
     } catch (err) {
-      console.error('Erreur création session:', err);
-      setError(err.message || 'Erreur lors de la création de la session');
+      if (err.code === 'USER_ALREADY_HAS_SESSION') {
+        // On a déjà une session — la récupérer plutôt que d'échouer
+        activeTenantIdRef.current = err.data?.tenantId ?? activeTenantIdRef.current;
+        if (err.data?.status === 'connected') {
+          await refreshSession();
+          setSuccessMsg('Session déjà active récupérée.');
+        } else {
+          setTimeout(() => handleShowQR(), 300);
+        }
+      } else if (err.code === 'PHONE_ALREADY_USED') {
+        setError('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
+      } else {
+        console.error('Erreur création session:', err);
+        setError(err.message || 'Erreur lors de la création de la session');
+      }
     } finally {
       setCreating(false);
     }
   };
 
-  // Logique partagée : créer ou réutiliser un tenant pour un numéro donné
-  const _createOrReuseSession = async (cleanPhone) => {
-    const existing = await findExistingTenantForPhone(cleanPhone).catch((err) => {
-      if (err?.message === 'PHONE_ALREADY_USED') {
-        throw new Error('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
-      }
-      throw err;
-    });
-
-    if (existing) {
-      savePhone(cleanPhone);
-      activeTenantIdRef.current = existing.tenantId;
-
-      if (existing.status === 'connected') {
-        await refreshSession();
-        setSuccessMsg(' Session déjà active récupérée.');
-      } else {
-        setTimeout(() => handleShowQR(existing.tenantId), 500);
-      }
-      return;
-    }
-
-    savePhone(cleanPhone);
-    const response = await tenantsAPI.create({
-      phone:      cleanPhone,
-      name:       `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
-      userUid:    user.uid,
-      webhookUrl: undefined,
-    });
-
-    activeTenantIdRef.current = response.tenantId;
-    setTimeout(() => handleShowQR(response.tenantId), 2000);
-  };
-
-  const handleShowQR = async (tenantId) => {
+  // Récupère MON QR code (self-service — jamais de tenantId dans l'appel :
+  // le backend résout "moi" depuis le token Firebase).
+  const handleShowQR = async () => {
     setShowQRModal(true);
     setQrLoading(true);
     setQrCode(null);
     setPollingStatus(true);
 
     try {
-      const response = await tenantsAPI.getQRCode(tenantId);
-      
+      const response = await tenantsAPI.getQRCode();
+
       if (response.status === 'connected') {
         setError('Cette session est déjà connectée');
         setQrLoading(false);
@@ -339,13 +272,11 @@ const Sessions = () => {
   };
 
   const handleRefreshQR = async () => {
-    const tenantId = activeTenantIdRef.current ?? userSession?.tenantId;
-    if (!tenantId) return;
     setQrLoading(true);
     setQrCode(null);
 
     try {
-      const response = await tenantsAPI.getQRCode(tenantId);
+      const response = await tenantsAPI.getQRCode();
       if (response.qrCode) {
         setQrCode(response.qrCode);
       }
@@ -565,7 +496,7 @@ const Sessions = () => {
           {/* Status Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className={`h-2 ${getStatusConfig(userSession.status).bg}`}></div>
-            
+
             <div className="p-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center space-x-4">
@@ -582,7 +513,7 @@ const Sessions = () => {
                     <p className="text-gray-600">{userSession.phone}</p>
                   </div>
                 </div>
-                
+
                 <div className={`flex items-center space-x-2 ${getStatusConfig(userSession.status).bg} ${getStatusConfig(userSession.status).text} px-4 py-2 rounded-full font-medium`}>
                   {React.createElement(getStatusConfig(userSession.status).icon, { size: 18 })}
                   <span>{getStatusConfig(userSession.status).label}</span>
@@ -603,7 +534,7 @@ const Sessions = () => {
                       <span>Votre Clé API</span>
                     </h4>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg p-4 border border-primary-300">
                     <div className="flex items-center justify-between gap-2">
                       <code className="text-xs font-mono text-gray-900 flex-1 break-all">
@@ -635,7 +566,7 @@ const Sessions = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 mt-3">
                      Gardez votre clé API secrète.
                   </p>
@@ -646,14 +577,14 @@ const Sessions = () => {
               {/* Actions */}
               {(userSession.status === 'pending_qr' || userSession.status === 'disconnected') && (
                 <button
-                  onClick={() => handleShowQR(userSession.tenantId)}
+                  onClick={() => handleShowQR()}
                   className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg font-medium"
                 >
                   <QrCode size={20} />
                   <span>Scanner le QR Code</span>
                 </button>
               )}
-              
+
               {/* Session Info */}
               <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -725,7 +656,7 @@ const Sessions = () => {
                     {/* QR Code Image */}
                     <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200 flex justify-center relative">
                       <img src={qrCode} alt="QR Code" className="w-64 h-64" />
-                      
+
                       {/* Polling indicator */}
                       {pollingStatus && (
                         <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs flex items-center space-x-2 animate-pulse">

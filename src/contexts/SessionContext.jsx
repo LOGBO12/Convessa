@@ -4,6 +4,12 @@
  *
  * Un seul appel API est fait au niveau du Provider, toutes les pages
  * consomment le même état via useSession().
+ *
+ * IMPORTANT — On n'appelle JAMAIS tenantsAPI.list() ici : cette route est
+ * réservée au backoffice admin et renvoie les données de TOUS les tenants.
+ * On utilise exclusivement /tenants/me (self-service, résolu depuis le
+ * token Firebase côté backend) afin qu'un tenant ne voie jamais les données
+ * d'un autre tenant.
  */
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
@@ -27,24 +33,19 @@ export function SessionProvider({ children }) {
 
     try {
       setLoading(true);
-      const response = await tenantsAPI.list();
-      const tenants  = response.tenants ?? [];
-
-      // Chercher par UID Firebase en priorité
-      let found = tenants.find(t => t.userUid === user.uid);
-
-      // Fallback : numéro de téléphone
-      if (!found && user.phone) {
-        const userPhone = user.phone.replace(/[^0-9]/g, '');
-        found = tenants.find(t => t.phone?.replace(/[^0-9]/g, '') === userPhone);
-      }
-
-      setSession(found ?? null);
+      const data = await tenantsAPI.getMe();
+      setSession(data);
       setError(null);
     } catch (err) {
-      console.error('[SessionContext] Erreur:', err.message);
-      setError(err.message);
-      setSession(null);
+      if (err.status === 404) {
+        // Cas normal : l'utilisateur n'a pas encore de session WhatsApp
+        setSession(null);
+        setError(null);
+      } else {
+        console.error('[SessionContext] Erreur:', err.message);
+        setError(err.message);
+        setSession(null);
+      }
     } finally {
       setLoading(false);
     }
