@@ -61,8 +61,6 @@ const Dashboard = () => {
     return Math.min((usage.messagesSent / usage.messagesLimit) * 100, 100);
   };
 
-  // Une seule famille de couleur (vert) : on encode l'urgence par l'intensité,
-  // pas par une nouvelle teinte, sauf pour l'état réellement critique (>=90%).
   const getUsageBarClass = () => {
     const pct = getUsagePercentage();
     if (pct >= 90) return 'bg-red-600';
