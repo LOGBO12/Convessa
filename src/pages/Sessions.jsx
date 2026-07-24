@@ -637,7 +637,7 @@ const Sessions = () => {
                   </div>
                   
                   <p className="text-sm text-gray-600 mt-3">
-                     Gardez votre clé API secrète. Elle a également été envoyée sur votre WhatsApp.
+                     Gardez votre clé API secrète.
                   </p>
                 </div>
                 );

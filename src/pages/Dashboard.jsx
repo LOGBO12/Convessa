@@ -228,7 +228,7 @@ const Dashboard = () => {
 
                         <p className="text-xs text-gray-600 mt-3 flex items-start gap-1.5">
                           <ShieldCheck size={14} className="text-green-700 shrink-0 mt-0.5" />
-                          <span>Gardez votre clé secrète. Elle a aussi été envoyée sur votre WhatsApp.</span>
+                          <span>Gardez votre clé secrète.</span>
                         </p>
                       </div>
                     )}

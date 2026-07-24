@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { SessionProvider } from './contexts/SessionContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -17,6 +18,7 @@ import FAQ from './pages/FAQ';
 function App() {
   return (
     <AuthProvider>
+      <SessionProvider>
       <div className="min-h-screen bg-white flex flex-col">
         <Routes>
           {/* Public routes with Navbar (Footer already in Home) */}
@@ -131,6 +133,7 @@ function App() {
           />
         </Routes>
       </div>
+      </SessionProvider>
     </AuthProvider>
   );
 }
