@@ -1,5 +1,6 @@
 /**
  * Service d'authentification - gère Firebase Auth + Backend API
+ * Flux : Registration (register OTP → verify-otp) + Login (login OTP → login/verify-otp) + OAuth
  */
 
 import {
@@ -11,240 +12,284 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { authAPI } from './api';
 
-// Providers
+// ---------------------------------------------------------------------------
+// Providers OAuth
+// ---------------------------------------------------------------------------
 const googleProvider = new GoogleAuthProvider();
 const githubProvider = new GithubAuthProvider();
 
+// ---------------------------------------------------------------------------
+// Error code → French message map
+// ---------------------------------------------------------------------------
+const ERROR_MESSAGES = {
+  DEVICE_ALREADY_REGISTERED:      'Cet appareil a déjà un compte. Utilisez la connexion.',
+  DEVICE_BOUND_TO_ANOTHER_ACCOUNT:'Cet appareil est lié à un autre compte. Accès refusé.',
+  PHONE_ALREADY_REGISTERED:       'Ce numéro est déjà inscrit. Utilisez la connexion.',
+  DEVICE_BLOCKED:                 'Cet appareil a été bloqué. Contactez le support.',
+  PHONE_NOT_REGISTERED:           'Aucun compte avec ce numéro. Inscrivez-vous d\'abord.',
+  ACCOUNT_DISABLED:               'Ce compte a été désactivé.',
+  INVALID:                        'Code incorrect.',
+  EXPIRED:                        'Code expiré. Demandez un nouveau code.',
+  EXCEEDED:                       'Trop de tentatives. Demandez un nouveau code.',
+  WHATSAPP_UNAVAILABLE:           'Service temporairement indisponible. Réessayez plus tard.',
+};
+
+function mapErrorCode(code, fallbackMessage) {
+  if (code && ERROR_MESSAGES[code]) {
+    return ERROR_MESSAGES[code];
+  }
+  return fallbackMessage || 'Une erreur est survenue.';
+}
+
+// ---------------------------------------------------------------------------
+// Private helpers
+// ---------------------------------------------------------------------------
+
 /**
- * Sauvegarde le token Firebase dans localStorage et met à jour les headers API
+ * apiFetch – wraps fetch with JSON headers, error mapping and network guard.
+ * Throws an object `{ code, message }` on non-OK responses.
  */
+async function apiFetch(path, options = {}) {
+  const { headers: extraHeaders, ...rest } = options;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...extraHeaders,
+  };
+
+  let response;
+  try {
+    response = await fetch(`/api/v1${path}`, { headers, ...rest });
+  } catch (_networkErr) {
+    throw { code: 'NETWORK_ERROR', message: 'Impossible de joindre le serveur.' };
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok) {
+    const code = data?.error?.code || data?.code || null;
+    const backendMsg = data?.error?.message || data?.message || null;
+    throw {
+      code,
+      message: mapErrorCode(code, backendMsg),
+    };
+  }
+
+  return data;
+}
+
 function saveToken(token) {
   localStorage.setItem('firebaseToken', token);
 }
 
-/**
- * Supprime le token du localStorage
- */
-function clearToken() {
+function clearStorage() {
   localStorage.removeItem('firebaseToken');
   localStorage.removeItem('userData');
 }
 
-// ============================================================================
-// AUTH WITH GOOGLE
-// ============================================================================
+// ---------------------------------------------------------------------------
+// OAuth
+// ---------------------------------------------------------------------------
+
+async function _handleOAuthPopup(provider) {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const idToken = await result.user.getIdToken();
+    saveToken(idToken);
+
+    const data = await apiFetch('/auth/verify', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${idToken}` },
+    });
+
+    localStorage.setItem('userData', JSON.stringify(data.user));
+
+    return { success: true, user: data.user, isNewAccount: data.isNewAccount ?? false };
+  } catch (err) {
+    // Firebase popup errors
+    if (err?.code === 'auth/popup-closed-by-user') {
+      return { success: false, error: 'Connexion annulée.' };
+    }
+    if (err?.code === 'auth/popup-blocked') {
+      return { success: false, error: 'Popup bloquée par le navigateur. Autorisez les popups pour ce site.' };
+    }
+    if (err?.code === 'auth/unauthorized-domain') {
+      return { success: false, error: 'Domaine non autorisé. Vérifiez la configuration Firebase.' };
+    }
+    if (err?.code === 'auth/operation-not-allowed') {
+      return { success: false, error: 'Ce fournisseur OAuth n\'est pas activé. Contactez l\'administrateur.' };
+    }
+
+    // apiFetch errors (have .message already mapped)
+    const message = err?.message || 'Une erreur est survenue.';
+    return { success: false, error: message };
+  }
+}
 
 export async function signInWithGoogle() {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const token = await result.user.getIdToken();
-    saveToken(token);
-
-    // Vérifier le token côté backend et créer/mettre à jour le profil
-    const response = await authAPI.verifyToken(token);
-    localStorage.setItem('userData', JSON.stringify(response.user));
-
-    return {
-      success: true,
-      user: response.user,
-    };
-  } catch (error) {
-    console.error('Google Sign-In Error:', error);
-    return {
-      success: false,
-      error: error.message,
-    };
-  }
+  return _handleOAuthPopup(googleProvider);
 }
-
-// ============================================================================
-// AUTH WITH GITHUB
-// ============================================================================
 
 export async function signInWithGithub() {
-  try {
-    const result = await signInWithPopup(auth, githubProvider);
-    const token = await result.user.getIdToken();
-    saveToken(token);
-
-    // Vérifier le token côté backend
-    const response = await authAPI.verifyToken(token);
-    localStorage.setItem('userData', JSON.stringify(response.user));
-
-    return {
-      success: true,
-      user: response.user,
-    };
-  } catch (error) {
-    console.error('GitHub Sign-In Error:', error);
-    
-    // Messages d'erreur plus explicites
-    let errorMessage = error.message;
-    if (error.code === 'auth/popup-closed-by-user') {
-      errorMessage = 'Connexion annulée';
-    } else if (error.code === 'auth/popup-blocked') {
-      errorMessage = 'Popup bloquée par le navigateur. Autorisez les popups pour ce site.';
-    } else if (error.code === 'auth/unauthorized-domain') {
-      errorMessage = 'Domaine non autorisé. Vérifiez la configuration Firebase.';
-    } else if (error.code === 'auth/operation-not-allowed') {
-      errorMessage = 'GitHub OAuth non activé. Contactez l\'administrateur.';
-    }
-    
-    return {
-      success: false,
-      error: errorMessage,
-    };
-  }
+  return _handleOAuthPopup(githubProvider);
 }
 
-// ============================================================================
-// AUTH WITH PHONE (OTP via WhatsApp)
-// ============================================================================
+// ---------------------------------------------------------------------------
+// Registration flow
+// ---------------------------------------------------------------------------
 
 /**
- * Étape 1: Envoyer le code OTP via WhatsApp
- * @param {string} phone - Numéro au format international (ex: 22960000000)
- * @param {boolean} isRegistration - true pour inscription, false pour connexion
+ * Step 1 – send OTP for registration.
+ * POST /auth/phone/register { phone }
+ * Returns { success, devOtp?, error? }
  */
-export async function sendPhoneOTP(phone, isRegistration = true) {
+export async function sendRegisterOTP(phone) {
   try {
-    let response;
-    
-    if (isRegistration) {
-      response = await authAPI.registerPhone(phone);
-    } else {
-      response = await authAPI.loginPhone(phone);
-    }
-
-    return {
-      success: true,
-      message: response.message,
-      // En mode dev, le backend peut renvoyer le code OTP
-      devOtp: response.devOtp,
-    };
-  } catch (error) {
-    console.error('Send OTP Error:', error);
-    return {
-      success: false,
-      error: error.message,
-    };
+    const data = await apiFetch('/auth/phone/register', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    });
+    return { success: true, devOtp: data.devOtp ?? null };
+  } catch (err) {
+    return { success: false, error: err.message, code: err.code };
   }
 }
 
 /**
- * Étape 2: Vérifier le code OTP et obtenir le token Firebase
- * @param {string} phone - Numéro au format international
- * @param {string} code - Code OTP à 6 chiffres
+ * Step 2 – verify OTP for registration.
+ * POST /auth/phone/verify-otp { phone, code }
+ * Then signInWithCustomToken.
+ * Returns { success, user, isNewAccount, error? }
  */
-export async function verifyPhoneOTP(phone, code) {
+export async function verifyRegisterOTP(phone, code) {
   try {
-    // Vérifier l'OTP côté backend et obtenir un custom token
-    const response = await authAPI.verifyOTP(phone, code);
+    const data = await apiFetch('/auth/phone/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone, code }),
+    });
 
-    // Échanger le custom token contre un ID token Firebase
-    const userCredential = await signInWithCustomToken(auth, response.customToken);
+    const userCredential = await signInWithCustomToken(auth, data.customToken);
     const idToken = await userCredential.user.getIdToken();
     saveToken(idToken);
 
-    // Sauvegarder les données utilisateur
-    localStorage.setItem('userData', JSON.stringify(response.user));
+    const user = data.user || {
+      uid: userCredential.user.uid,
+      phone: userCredential.user.phoneNumber,
+    };
+    localStorage.setItem('userData', JSON.stringify(user));
 
-    return {
-      success: true,
-      user: response.user,
-    };
-  } catch (error) {
-    console.error('Verify OTP Error:', error);
-    return {
-      success: false,
-      error: error.message,
-    };
+    return { success: true, user, isNewAccount: data.isNewAccount ?? true };
+  } catch (err) {
+    // Firebase custom token errors
+    if (err?.code?.startsWith?.('auth/')) {
+      return { success: false, error: 'Erreur lors de la connexion Firebase. Réessayez.' };
+    }
+    return { success: false, error: err.message || 'Une erreur est survenue.' };
   }
 }
 
-// ============================================================================
-// GET CURRENT USER
-// ============================================================================
+// ---------------------------------------------------------------------------
+// Login flow
+// ---------------------------------------------------------------------------
 
 /**
- * Obtenir le profil de l'utilisateur connecté depuis le backend
+ * Step 1 – send OTP for login.
+ * POST /auth/phone/login { phone }
+ * Returns { success, devOtp?, error? }
  */
-export async function getCurrentUser() {
+export async function sendLoginOTP(phone) {
   try {
-    const response = await authAPI.getProfile();
-    localStorage.setItem('userData', JSON.stringify(response.user));
-    return {
-      success: true,
-      user: response.user,
-    };
-  } catch (error) {
-    console.error('Get User Error:', error);
-    return {
-      success: false,
-      error: error.message,
-    };
+    const data = await apiFetch('/auth/phone/login', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    });
+    return { success: true, devOtp: data.devOtp ?? null };
+  } catch (err) {
+    return { success: false, error: err.message, code: err.code };
   }
 }
 
 /**
- * Obtenir les données utilisateur depuis le cache localStorage
+ * Step 2 – verify OTP for login.
+ * POST /auth/phone/login/verify-otp { phone, code }
+ * Then signInWithCustomToken.
+ * Returns { success, user, error? }
  */
-export function getCachedUser() {
-  const userData = localStorage.getItem('userData');
-  return userData ? JSON.parse(userData) : null;
+export async function verifyLoginOTP(phone, code) {
+  try {
+    const data = await apiFetch('/auth/phone/login/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ phone, code }),
+    });
+
+    const userCredential = await signInWithCustomToken(auth, data.customToken);
+    const idToken = await userCredential.user.getIdToken();
+    saveToken(idToken);
+
+    const user = data.user || {
+      uid: userCredential.user.uid,
+      phone: userCredential.user.phoneNumber,
+    };
+    localStorage.setItem('userData', JSON.stringify(user));
+
+    return { success: true, user };
+  } catch (err) {
+    if (err?.code?.startsWith?.('auth/')) {
+      return { success: false, error: 'Erreur lors de la connexion Firebase. Réessayez.' };
+    }
+    return { success: false, error: err.message || 'Une erreur est survenue.' };
+  }
 }
 
-// ============================================================================
-// SIGN OUT
-// ============================================================================
+// ---------------------------------------------------------------------------
+// Session
+// ---------------------------------------------------------------------------
 
 export async function signOut() {
   try {
-    // Révoquer les tokens côté backend
-    await authAPI.logout().catch(() => {
-      // Ignorer les erreurs - continuer la déconnexion
-    });
-
-    // Déconnexion Firebase
+    const token = localStorage.getItem('firebaseToken');
+    if (token) {
+      await apiFetch('/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
     await firebaseSignOut(auth);
+  } catch (_err) {
+    // Intentionally swallowed – always complete sign-out
+  } finally {
+    clearStorage();
+  }
+  return { success: true };
+}
 
-    // Nettoyer le localStorage
-    clearToken();
-
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error('Sign Out Error:', error);
-    // Même en cas d'erreur, nettoyer le localStorage
-    clearToken();
-    return {
-      success: false,
-      error: error.message,
-    };
+export function getCachedUser() {
+  const raw = localStorage.getItem('userData');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
 }
 
-// ============================================================================
-// AUTH STATE OBSERVER
-// ============================================================================
-
 /**
- * Écouter les changements d'état d'authentification Firebase
- * @param {Function} callback - Fonction appelée quand l'état change
- * @returns {Function} Fonction pour se désabonner
+ * Subscribe to Firebase auth state changes.
+ * @param {(user: object|null) => void} callback
+ * @returns unsubscribe function
  */
 export function onAuthChange(callback) {
   return onAuthStateChanged(auth, async (firebaseUser) => {
     if (firebaseUser) {
-      // Utilisateur connecté - obtenir le token
       const token = await firebaseUser.getIdToken();
       saveToken(token);
 
-      // Construire l'objet user à partir de Firebase directement
-      // (évite l'appel à /auth/me qui rejette les providers 'phone')
       const userData = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
@@ -253,26 +298,23 @@ export function onAuthChange(callback) {
         phone: firebaseUser.phoneNumber,
         provider: firebaseUser.providerData[0]?.providerId || 'phone',
       };
-
       localStorage.setItem('userData', JSON.stringify(userData));
       callback(userData);
     } else {
-      // Utilisateur déconnecté
-      clearToken();
-      localStorage.removeItem('userData');
+      clearStorage();
       callback(null);
     }
   });
 }
 
-// Export par défaut
 export default {
   signInWithGoogle,
   signInWithGithub,
-  sendPhoneOTP,
-  verifyPhoneOTP,
-  getCurrentUser,
-  getCachedUser,
+  sendRegisterOTP,
+  verifyRegisterOTP,
+  sendLoginOTP,
+  verifyLoginOTP,
   signOut,
+  getCachedUser,
   onAuthChange,
 };
