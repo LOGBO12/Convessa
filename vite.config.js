@@ -6,11 +6,18 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // Toutes les requêtes /api/... sont proxiées vers le backend
+      // Requêtes API REST
       '/api': {
         target: 'http://127.0.0.1:3005',
         changeOrigin: true,
         secure: false,
+      },
+      // Socket.io (polling HTTP + upgrade WebSocket)
+      '/socket.io': {
+        target: 'http://127.0.0.1:3005',
+        changeOrigin: true,
+        secure: false,
+        ws: true,   // ← active le proxy WebSocket
       },
     },
   },

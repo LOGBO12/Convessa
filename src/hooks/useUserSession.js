@@ -1,6 +1,9 @@
 /**
- * Hook pour gérer la session WhatsApp de l'utilisateur connecté
- * Un utilisateur = une session WhatsApp avec son propre numéro
+ * Hook pour gérer la session WhatsApp de l'utilisateur connecté.
+ * Un utilisateur = une session WhatsApp.
+ *
+ * La session est retrouvée par Firebase UID (userUid) stocké sur le tenant,
+ * ce qui fonctionne quel que soit le mode de connexion (Google, GitHub, téléphone).
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -15,27 +18,25 @@ export function useUserSession() {
 
   const fetchUserSession = useCallback(async () => {
     if (!user) {
+      setSession(null);
       setLoading(false);
       return;
     }
 
     try {
-      // Récupérer toutes les sessions
       const response = await tenantsAPI.list();
-      
-      // Trouver la session de l'utilisateur connecté (par son numéro de téléphone)
-      // Le numéro de téléphone de l'utilisateur est stocké dans user.phone (auth phone)
-      const userPhone = user.phone?.replace(/[^0-9]/g, '');
-      
-      if (userPhone) {
-        const userSession = response.tenants?.find(
-          t => t.phone.replace(/[^0-9]/g, '') === userPhone
-        );
-        setSession(userSession || null);
-      } else {
-        setSession(null);
+      const tenants  = response.tenants ?? [];
+
+      // Chercher la session par uid Firebase (fiable quel que soit le provider)
+      let userSession = tenants.find(t => t.userUid === user.uid);
+
+      // Fallback : chercher par numéro de téléphone si présent
+      if (!userSession && user.phone) {
+        const userPhone = user.phone.replace(/[^0-9]/g, '');
+        userSession = tenants.find(t => t.phone?.replace(/[^0-9]/g, '') === userPhone);
       }
-      
+
+      setSession(userSession ?? null);
       setError(null);
     } catch (err) {
       console.error('Error fetching user session:', err);
