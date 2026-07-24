@@ -1,219 +1,43 @@
-# Avertissements Légaux Importants
+# Avertissements légaux
 
-## Service Non Officiel WhatsApp
+> ⚠️ Merci de lire attentivement cette page avant d'intégrer l'API dans votre application.
 
-**CONVESSA N'EST PAS AFFILIÉ, APPROUVÉ, AUTORISÉ OU SPONSORISÉ PAR WHATSAPP, META PLATFORMS, INC. OU L'UNE DE SES FILIALES.**
+## Ce service n'est pas affilié à WhatsApp / Meta
 
----
+Cette plateforme utilise une bibliothèque non officielle (Baileys) qui se connecte à WhatsApp de la même manière qu'un client WhatsApp Web. Elle **n'est ni fournie, ni approuvée, ni affiliée à WhatsApp Inc. ou Meta Platforms, Inc.**
 
-## RISQUES MAJEURS
+## Risque de bannissement
 
-### 1. Bannissement de Compte
-- Votre numéro WhatsApp **PEUT ÊTRE BANNI** définitivement
-- Meta/WhatsApp détecte et bannit les comptes utilisant des API non officielles
-- **Aucun recours possible** en cas de bannissement
-- Le bannissement peut être **immédiat et sans préavis**
+WhatsApp interdit officiellement l'utilisation de clients non officiels dans ses [Conditions d'utilisation](https://www.whatsapp.com/legal/terms-of-service). En conséquence :
 
-### 2. Violation des Conditions WhatsApp
-L'utilisation de Convessa viole explicitement les [Conditions d'Utilisation de WhatsApp](https://www.whatsapp.com/legal/terms-of-service), notamment :
+- Le numéro connecté peut être **temporairement ou définitivement banni** par WhatsApp, en particulier en cas d'envoi massif, de messages non sollicités (spam), ou de comportement jugé automatisé et abusif.
+- Ni la plateforme ni ses opérateurs ne peuvent garantir la continuité de service ni être tenus responsables d'un bannissement de votre numéro.
 
-**Section 3.3 :**
-> "Vous ne devez pas utiliser de systèmes automatisés (incluant les 'bots', 'robots', 'araignées', 'scrapers') pour accéder à nos Services."
+## Utilisation responsable — obligatoire
 
-**Section 3.5 :**
-> "Vous ne devez pas tenter d'accéder à nos Services par tout autre moyen que l'interface que nous fournissons."
+Vous vous engagez à :
 
-### 3. Aucune Garantie
-- Convessa ne peut **PAS garantir** que le service fonctionnera demain
-- WhatsApp peut modifier son protocole à tout moment
-- Le service peut cesser de fonctionner sans préavis
+- **N'envoyer des messages qu'à des destinataires ayant explicitement consenti** à être contactés (opt-in).
+- Respecter un **volume d'envoi raisonnable** — éviter les envois massifs et rapprochés qui ressemblent à du spam.
+- Ne pas utiliser ce service pour du **démarchage non sollicité**, de la désinformation, du harcèlement ou tout contenu illégal.
+- Vous conformer au **RGPD** ou à toute réglementation applicable sur la protection des données lorsque vous traitez des numéros de téléphone ou données personnelles de vos destinataires.
 
----
+## Cas d'usage strictement interdits
 
-## Comment Se Protéger
+Il est formellement interdit d'utiliser ce service pour :
 
-### WhatsApp Business OBLIGATOIRE
+- **Spam ou envoi massif non sollicité** — bannissement du numéro quasi garanti par WhatsApp, et suspension de votre clé API sur cette plateforme.
+- **Phishing ou fraude** — illégal, poursuites judiciaires possibles, suspension immédiate.
+- **Contenu illégal** — incitation à la violence, contenu terroriste, vente de biens illicites, exploitation de mineurs (signalement immédiat aux autorités compétentes).
+- **Harcèlement ou intimidation** d'un tiers.
+- **Violation de droits d'un tiers** — propriété intellectuelle, vie privée, données personnelles récoltées ou utilisées sans consentement.
 
-**Convessa fonctionne UNIQUEMENT avec des comptes WhatsApp Business.**
+Toute violation constatée entraîne la suspension immédiate de votre session WhatsApp et de votre clé API, sans préavis.
 
-**Pourquoi WhatsApp Business est obligatoire :**
-- Conçu pour un usage professionnel et automatisation
-- Meilleure tolérance de Meta envers l'utilisation d'API
-- Séparation claire entre usage personnel et professionnel
-- Fonctionnalités professionnelles intégrées
-- Statistiques et insights
+## Limitation de responsabilité
 
-**Comment obtenir WhatsApp Business :**
-1. Téléchargez l'application WhatsApp Business (Android/iOS)
-2. Créez un compte avec un numéro dédié professionnel
-3. Configurez votre profil d'entreprise
-4. N'utilisez JAMAIS votre numéro personnel
+Ce service est fourni **« en l'état »**, sans garantie de disponibilité continue. En cas de panne, de déconnexion de session, ou de blocage par WhatsApp, la plateforme s'efforcera de rétablir le service mais ne saurait être tenue responsable des pertes commerciales en résultant.
 
-### Option 1 : Utiliser WhatsApp Business API (Officiel)
-**FORTEMENT RECOMMANDÉ**
+## Des questions ?
 
-**Avantages :**
-- Légal et conforme aux règles WhatsApp
-- Aucun risque de bannissement
-- Support officiel de Meta
-- Stable et fiable
-
-**Inconvénients :**
-- Processus de validation par Meta
-- Coûts par conversation
-- Plus complexe à mettre en place
-
-**Commencer :** [WhatsApp Business Platform](https://business.whatsapp.com/products/business-platform)
-
-### Option 2 : Utiliser Convessa avec Précautions
-
-Si vous choisissez quand même d'utiliser Convessa :
-
-1. **Utilisez un numéro WhatsApp Business dédié**
-   - OBLIGATOIRE : Compte WhatsApp Business uniquement
-   - Achetez un numéro professionnel dédié
-   - Ne mélangez JAMAIS avec votre usage personnel
-
-2. **Comportement "humain"**
-   - Envoyez moins de 50 messages/jour
-   - Espacez les messages (minimum 3-5 secondes)
-   - Ne spammez JAMAIS
-   - Répondez aux messages entrants
-
-3. **Acceptez le risque**
-   - Ayez un plan B si le numéro est banni
-   - Ne dépendez pas uniquement de WhatsApp
-   - Diversifiez vos canaux de communication
-
----
-
-## Checklist Avant de Commencer
-
-Avant d'utiliser Convessa, assurez-vous de :
-
-- J'ai lu et compris les risques de bannissement
-- J'utilise un compte WhatsApp Business dédié (OBLIGATOIRE)
-- J'ai un plan B si mon compte est banni
-- Je n'enverrai PAS de spam
-- Je respecterai les limites de taux
-- J'ai informé mes clients/utilisateurs des risques
-- Je comprends que Convessa n'est pas responsable des bannissements
-- J'accepte la responsabilité totale de l'utilisation
-
----
-
-## Alternatives Légales
-
-### 1. WhatsApp Business API (Officiel)
-- **Site :** https://business.whatsapp.com/
-- **Avantages :** Légal, stable, support officiel
-- **Coût :** Variable selon le volume
-
-### 2. Twilio API for WhatsApp
-- **Site :** https://www.twilio.com/whatsapp
-- **Avantages :** Intégration facile, conforme
-- **Coût :** À partir de $0.005/message
-
-### 3. 360dialog
-- **Site :** https://www.360dialog.com/
-- **Avantages :** Business Solution Provider officiel
-- **Coût :** Tarifs compétitifs
-
-### 4. Autres Canaux
-- **SMS** (Twilio, Vonage)
-- **Telegram** (API officielle gratuite)
-- **Email**
-- **Push Notifications**
-
----
-
-## Conformité RGPD
-
-Si vous traitez des données de citoyens européens :
-
-### Obligations Légales
-1. **Consentement explicite** requis avant d'envoyer des messages
-2. **Droit d'accès** : les utilisateurs peuvent demander leurs données
-3. **Droit à l'effacement** : les utilisateurs peuvent demander la suppression
-4. **Déclaration CNIL** : obligatoire en France
-5. **Politique de confidentialité** : obligatoire
-
-### Sanctions RGPD
-- Amendes jusqu'à **20 millions d'euros** ou **4% du chiffre d'affaires annuel**
-- Poursuites judiciaires possibles
-- Atteinte à la réputation
-
-### Ressources
-- CNIL : https://www.cnil.fr/
-- RGPD officiel : https://gdpr.eu/
-
----
-
-## Cas d'Usage Interdits
-
-N'utilisez **JAMAIS** Convessa pour :
-
-**Spam ou envoi massif non sollicité**
-- Bannissement garanti
-- Illégal dans la plupart des pays
-- Atteinte à la réputation
-
-**Phishing ou fraude**
-- Illégal
-- Poursuites judiciaires
-- Suspension immédiate du compte Convessa
-
-**Contenu illégal**
-- Pédopornographie (signalement immédiat aux autorités)
-- Incitation à la violence
-- Terrorisme
-- Vente de drogues/armes
-
-**Harcèlement**
-- Illégal
-- Bannissement du service
-- Poursuites possibles
-
-**Violation de droits**
-- Propriété intellectuelle
-- Vie privée
-- Données personnelles sans consentement
-
----
-
-## Signalement d'Abus
-
-Si vous constatez un abus de notre plateforme :
-
-**Email :** abuse@convessa.dev  
-**Formulaire :** https://convessa.dev/report-abuse
-
-Nous prenons les abus très au sérieux et suspendrons immédiatement les comptes violant nos conditions.
-
----
-
-## Documents Légaux
-
-- [Conditions d'Utilisation Complètes](https://convessa.dev/terms)
-- [Politique de Confidentialité](https://convessa.dev/privacy)
-- [Politique de Cookies](https://convessa.dev/cookies)
-
----
-
-## Conclusion
-
-**Nous vous recommandons vivement d'utiliser l'API WhatsApp Business officielle** pour éviter tout risque légal ou de bannissement.
-
-Si vous choisissez quand même Convessa, vous le faites **EN TOUTE CONNAISSANCE DE CAUSE** et **À VOS PROPRES RISQUES**.
-
-Convessa décline toute responsabilité en cas de :
-- Bannissement de compte
-- Perte de données
-- Poursuites par WhatsApp/Meta
-- Tout autre dommage
-
-**Votre utilisation de Convessa constitue votre acceptation de ces risques.**
-
----
-
-**Date de dernière mise à jour : 23 juillet 2026**
+Pour toute question sur l'usage conforme de l'API, contactez le support avant d'intégrer un cas d'usage à fort volume (notifications transactionnelles massives, campagnes marketing, etc.).

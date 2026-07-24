@@ -1,331 +1,199 @@
-# Documentation API Convessa
+# Documentation API
 
-## Introduction
+## Vue d'ensemble
 
-Convessa vous permet d'envoyer des messages WhatsApp via une API REST simple et puissante. Cette documentation vous guide dans l'intégration de l'API dans votre application.
+Cette API vous permet d'envoyer des messages WhatsApp (texte et médias) depuis le numéro que vous avez connecté sur votre tableau de bord, en un seul appel HTTP.
 
-## Ce que vous avez reçu après inscription
+- **Base URL** : `https://votre-domaine.com/api/v1`
+- **Format** : JSON
+- **Authentification** : header `X-Api-Key`
 
-### Clé API Unique
+## Authentification
 
-Après avoir connecté votre WhatsApp, vous avez reçu une **clé API unique** de la forme :
-
-```
-wag_live_a3f8c2d1e9b4f7a0c5e2d8b1f6a3c9e4d7b0f2a5c8e1d4b7f0a3c6e9d2b5f8a1
-```
-
-### URL de Base
+Chaque requête d'envoi doit inclure votre clé API dans le header :
 
 ```
-https://api.convessa.com   (ou http://localhost:3005 en local)
+X-Api-Key: pk_convessa_VOTRE_CLE
 ```
 
-> ⚠️ **Important** : La clé n'est affichée qu'une seule fois au moment de la connexion. Stockez-la dans les variables d'environnement de votre application, jamais dans le code source.
+Cette clé identifie de façon unique votre session WhatsApp — inutile de préciser un expéditeur, il est déduit automatiquement de votre clé.
 
----
-
-## Comment ça marche
-
-Vous envoyez une requête HTTP POST à notre service avec :
-- Le numéro de téléphone du destinataire
-- Le message à envoyer
-
-Notre service envoie le message via **votre numéro WhatsApp** connecté au scan du QR.
-
-```
-Votre Application
-      │
-      │  POST /api/v1/messages/send
-      │  X-Api-Key: wag_live_votre-cle
-      │  { "to": "22994119476", "message": "..." }
-      ▼
-Convessa API
-      │
-      ▼
-Destinataire reçoit le message
-(depuis votre numéro connecté)
-```
-
----
-
-## Envoyer un message texte
-
-### Requête
-
-```http
-POST https://api.convessa.com/api/v1/messages/send
-Content-Type: application/json
-X-Api-Key: wag_live_votre-cle
-```
-
-```json
-{
-  "to": "22994119476",
-  "message": "Bonjour, votre commande est prête !"
-}
-```
-
-> 📌 **Note** : Le numéro `to` doit inclure l'indicatif international, sans le `+`.  
-> **Exemples** : `33612345678` (France), `22994119476` (Bénin), `12025550123` (USA)
-
-### Réponse succès (202)
-
-```json
-{
-  "success": true,
-  "queued": true,
-  "messageId": "550e8400-e29b-41d4-a716-446655440000",
-  "position": 1
-}
-```
-
-Conservez le `messageId` pour vérifier l'état de l'envoi.
-
----
-
-## Vérifier le statut d'un message
-
-```http
-GET https://api.convessa.com/api/v1/messages/{messageId}
-X-Api-Key: wag_live_votre-cle
-```
-
-### Réponse
-
-```json
-{
-  "success": true,
-  "messageId": "550e8400-...",
-  "status": "sent",
-  "to": "229XXXXX476",
-  "sentAt": "2026-07-23T10:30:05.000Z",
-  "attempts": 1
-}
-```
-
-**Statuts possibles** : `queued` → `sending` → `sent` ou `failed`
-
----
-
-## Envoyer un fichier (PDF, image, vidéo…)
-
-### Exemple avec PDF
-
-```json
-{
-  "to": "22994119476",
-  "message": "Voici votre facture",
-  "media": {
-    "type": "document",
-    "mime": "application/pdf",
-    "name": "facture-2026-07.pdf",
-    "base64": "JVBERi0xLjQK..."
-  }
-}
-```
-
-### Exemple avec Image
-
-```json
-{
-  "to": "22994119476",
-  "media": {
-    "type": "image",
-    "mime": "image/jpeg",
-    "base64": "/9j/4AAQSkZJRgAB..."
-  }
-}
-```
-
-### Formats et limites
-
-| Type | Formats | Taille max |
+| Erreur | Code HTTP | Cause |
 |---|---|---|
-| `image` | JPEG, PNG | 5 MB |
-| `video` | MP4 | 16 MB |
-| `audio` | MP3, M4A, OGG | 16 MB |
-| `document` | PDF, Word, Excel, PPT, ZIP, TXT | 100 MB |
+| `UNAUTHORIZED` | 401 | Header `X-Api-Key` manquant |
+| `INVALID_API_KEY_FORMAT` | 401 | La clé ne commence pas par `pk_convessa_` |
+| `INVALID_API_KEY` | 401 | Clé inconnue ou révoquée |
+| `SESSION_NOT_ACTIVE` | 403 | Session déconnectée ou révoquée — reconnectez-vous depuis le dashboard |
 
----
+## Endpoints
 
-## Exemples par langage
+| Méthode | Endpoint | Description |
+|---|---|---|
+| `POST` | `/send` | Envoyer un message (texte et/ou média) |
+| `GET` | `/send/info` | Vérifier l'état de votre session et vos limites média |
 
-### Node.js / Express
+### POST /send
+
+Voir la page dédiée [Envoyer un message](/docs?section=send-message) pour le détail complet des paramètres.
+
+Résumé rapide :
+
+```bash
+curl -X POST https://votre-domaine.com/api/v1/send \
+  -H "X-Api-Key: pk_convessa_VOTRE_CLE" \
+  -H "Content-Type: application/json" \
+  -d '{ "to": "22960000000", "message": "Bonjour !" }'
+```
+
+### GET /send/info
+
+Retourne l'état actuel de votre session (utile pour un healthcheck avant envoi en masse) :
+
+```json
+{
+  "success": true,
+  "tenantId": "a1b2c3...",
+  "from": "229****919",
+  "status": "connected",
+  "connected": true,
+  "connectedAt": "2026-07-20T10:00:00.000Z",
+  "mediaLimits": {
+    "image":    "Image (JPEG, PNG — max 5 MB)",
+    "video":    "Vidéo MP4 (H.264 + AAC — max 16 MB)",
+    "audio":    "Audio MP3, M4A ou OGG/Opus (max 16 MB)",
+    "document": "Document PDF, Word, Excel, PowerPoint, ZIP, TXT (max 100 MB)"
+  }
+}
+```
+
+## Gestion des erreurs
+
+Toutes les erreurs suivent le même format :
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "CODE_ERREUR",
+    "message": "Description lisible de l'erreur"
+  }
+}
+```
+
+| Code HTTP | Code erreur | Signification | Action recommandée |
+|---|---|---|---|
+| 400 | `VALIDATION_ERROR` | Champ manquant ou mal formé (`to`, `message`, `media`) | Vérifiez le corps de la requête |
+| 401 | `UNAUTHORIZED` / `INVALID_API_KEY` / `INVALID_API_KEY_FORMAT` | Clé API absente, invalide ou mal formée | Vérifiez le header `X-Api-Key` |
+| 403 | `SESSION_NOT_ACTIVE` | Session déconnectée ou révoquée | Reconnectez votre WhatsApp depuis le dashboard |
+| 429 | `RATE_LIMIT_EXCEEDED` | Trop de requêtes (max 60 / minute / IP) | Espacez vos appels ou mettez en file d'attente côté client |
+| 500 | `SEND_ERROR` | Erreur lors de l'envoi effectif du message | Réessayez ; contactez le support si persistant |
+| 503 | `SESSION_NOT_CONNECTED` | Session WhatsApp non connectée en temps réel | Vérifiez `/send/info`, rescannez le QR si besoin |
+
+### Limite de débit
+
+Chaque adresse IP peut effectuer **60 requêtes par minute** sur les endpoints sensibles (création de session, récupération de QR, envoi de message). Au-delà, l'API répond `429 RATE_LIMIT_EXCEEDED`.
+
+## Exemples de code
+
+### Node.js
 
 ```javascript
-// .env : API_URL=http://... API_KEY=wag_live_...
-
 async function sendWhatsApp(to, message) {
-    const res = await fetch(`${process.env.API_URL}/api/v1/messages/send`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Api-Key':    process.env.API_KEY,
-        },
-        body: JSON.stringify({ to, message }),
-    })
-    const data = await res.json()
-    if (!data.success) throw new Error(data.error?.message)
-    return data.messageId
+  const res = await fetch('https://votre-domaine.com/api/v1/send', {
+    method: 'POST',
+    headers: {
+      'X-Api-Key': process.env.CONVESSA_API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ to, message }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message ?? 'Erreur envoi WhatsApp');
+  }
+
+  return res.json();
 }
+
+await sendWhatsApp('22960000000', 'Bonjour depuis Node.js !');
 ```
 
-### Python (Django / Flask)
+### Python
 
 ```python
-import os, requests
+import os
+import requests
 
-API_URL = os.environ['API_URL']
-API_KEY = os.environ['API_KEY']
-
-def send_whatsapp(to: str, message: str) -> str:
-    resp = requests.post(
-        f'{API_URL}/api/v1/messages/send',
-        json={'to': to, 'message': message},
-        headers={'X-Api-Key': API_KEY},
-        timeout=10
+def send_whatsapp(to: str, message: str) -> dict:
+    response = requests.post(
+        "https://votre-domaine.com/api/v1/send",
+        headers={"X-Api-Key": os.environ["CONVESSA_API_KEY"]},
+        json={"to": to, "message": message},
+        timeout=15,
     )
-    resp.raise_for_status()
-    return resp.json()['messageId']
+    response.raise_for_status()
+    return response.json()
+
+send_whatsapp("22960000000", "Bonjour depuis Python !")
 ```
 
-### PHP (Laravel)
+### PHP / Laravel
 
 ```php
-// Config dans config/services.php
-// 'whatsapp' => ['url' => env('API_URL'), 'key' => env('API_KEY')]
+use Illuminate\Support\Facades\Http;
 
-$response = Http::withHeaders(['X-Api-Key' => config('services.whatsapp.key')])
-    ->post(config('services.whatsapp.url') . '/api/v1/messages/send', [
-        'to'      => $user->phone,
-        'message' => "Bonjour {$user->name}, votre commande est confirmée.",
-    ]);
+$response = Http::withHeaders([
+    'X-Api-Key' => config('services.convessa.api_key'),
+])->post('https://votre-domaine.com/api/v1/send', [
+    'to'      => '22960000000',
+    'message' => 'Bonjour depuis Laravel !',
+]);
 
-if ($response->successful()) {
-    $messageId = $response->json('messageId');
+if ($response->failed()) {
+    throw new \RuntimeException($response->json('error.message'));
 }
 ```
 
-### Java (Spring Boot)
+### Java / Spring
 
 ```java
-// application.properties : api.url=... api.key=wag_live_...
+RestTemplate restTemplate = new RestTemplate();
 
-@Service
-public class WhatsAppService {
-    @Value("${api.url}")     private String apiUrl;
-    @Value("${api.key}")     private String apiKey;
+HttpHeaders headers = new HttpHeaders();
+headers.set("X-Api-Key", System.getenv("CONVESSA_API_KEY"));
+headers.setContentType(MediaType.APPLICATION_JSON);
 
-    private final RestTemplate restTemplate = new RestTemplate();
+Map<String, String> body = Map.of(
+    "to", "22960000000",
+    "message", "Bonjour depuis Java !"
+);
 
-    public String send(String to, String message) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Api-Key", apiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
-        Map<String, String> body = Map.of("to", to, "message", message);
-        ResponseEntity<Map> resp = restTemplate.exchange(
-            apiUrl + "/api/v1/messages/send",
-            HttpMethod.POST,
-            new HttpEntity<>(body, headers),
-            Map.class
-        );
-        return (String) resp.getBody().get("messageId");
-    }
-}
+ResponseEntity<String> response = restTemplate.postForEntity(
+    "https://votre-domaine.com/api/v1/send", request, String.class
+);
 ```
 
-### C# (.NET)
+### C# / .NET
 
 ```csharp
-// appsettings.json : "Api": { "Url": "...", "Key": "wag_live_..." }
+using var client = new HttpClient();
+client.DefaultRequestHeaders.Add("X-Api-Key", Environment.GetEnvironmentVariable("CONVESSA_API_KEY"));
 
-public class WhatsAppService
-{
-    private readonly HttpClient _http;
-    private readonly string _apiKey;
+var payload = new { to = "22960000000", message = "Bonjour depuis .NET !" };
 
-    public WhatsAppService(HttpClient http, IConfiguration config)
-    {
-        _http   = http;
-        _apiKey = config["Api:Key"]!;
-        _http.BaseAddress = new Uri(config["Api:Url"]!);
-    }
+var response = await client.PostAsJsonAsync(
+    "https://votre-domaine.com/api/v1/send", payload
+);
 
-    public async Task<string> SendAsync(string to, string message)
-    {
-        _http.DefaultRequestHeaders.Remove("X-Api-Key");
-        _http.DefaultRequestHeaders.Add("X-Api-Key", _apiKey);
-
-        var resp = await _http.PostAsJsonAsync("/api/v1/messages/send",
-            new { to, message });
-        resp.EnsureSuccessStatusCode();
-
-        var data = await resp.Content.ReadFromJsonAsync<JsonElement>();
-        return data.GetProperty("messageId").GetString()!;
-    }
-}
+response.EnsureSuccessStatusCode();
 ```
-
----
-
-## Variables d'environnement recommandées
-
-Peu importe le langage, stockez toujours :
-
-```env
-API_URL=https://api.convessa.com
-API_KEY=wag_live_a3f8c2d1e9b4f7a0...
-```
-
-**Ne mettez jamais la clé en dur dans le code source.**
-
----
-
-## Erreurs courantes
-
-| Erreur | Cause | Solution |
-|---|---|---|
-| `401 UNAUTHORIZED` | Clé API absente ou invalide | Vérifiez le header `X-Api-Key` |
-| `400 VALIDATION_ERROR` | Numéro invalide | Numéro en chiffres uniquement, avec indicatif |
-| `503 SERVICE_NOT_CONNECTED` | Votre WhatsApp est déconnecté | Reconnectez-vous depuis le dashboard |
-| `404 PHONE_NOT_ON_WHATSAPP` | Destinataire n'a pas WhatsApp | Vérifiez le numéro |
-| `429 RATE_LIMIT_EXCEEDED` | Trop de requêtes rapides | Ajoutez un délai entre les appels |
-
----
 
 ## Bonnes pratiques
 
-1. **Stockez votre clé API de manière sécurisée**
-   - Utilisez des variables d'environnement (`.env`)
-   - Ne commitez jamais la clé dans votre repository
-
-2. **Gérez les erreurs correctement**
-   - Implémentez des retry avec backoff exponentiel
-   - Loggez les erreurs pour debugging
-
-3. **Respectez les limites de taux**
-   - Ajoutez un délai entre les messages
-   - Utilisez une file d'attente pour les envois en masse
-
-4. **Validez les numéros de téléphone**
-   - Format international sans `+`
-   - Vérifiez que le numéro existe sur WhatsApp
-
-5. **Monitorer vos envois**
-   - Conservez les `messageId` retournés
-   - Vérifiez régulièrement le statut des messages
-
----
-
-## Support
-
-Besoin d'aide ? Contactez-nous :
-
-- **Email** : support@convessa.com
-- **Documentation** : https://docs.convessa.com
-- **Dashboard** : https://app.convessa.com
-
----
-
-*Dernière mise à jour : 2026-07-23*
+- Stockez votre clé API dans une variable d'environnement, jamais en dur dans le code.
+- Gérez le code `503 SESSION_NOT_CONNECTED` avec une nouvelle tentative après quelques secondes (la reconnexion WhatsApp peut prendre un court instant).
+- Pour un envoi en masse, espacez vos appels pour rester sous la limite de 60 requêtes/minute.
+- N'envoyez qu'à des destinataires ayant consenti à recevoir vos messages — voir [Avertissements légaux](/docs?section=legal-warnings).
