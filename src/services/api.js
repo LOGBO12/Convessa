@@ -190,6 +190,19 @@ export const tenantsAPI = {
       requiresAuth: true,
     });
   },
+
+  /**
+   * Activer MA session après un scan de QR réussi : génère la clé API en
+   * appliquant les privilèges d'un code de parrainage (s'il est valide) ou,
+   * à défaut, ceux du plan gratuit. `referralCode` peut être vide/undefined.
+   */
+  activate: async (referralCode) => {
+    return fetchAPI('/tenants/me/activate', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify({ referralCode: referralCode || undefined }),
+    });
+  },
 };
 
 // ============================================================================
