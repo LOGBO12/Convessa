@@ -1,14 +1,8 @@
 /**
- * Hook pour gérer la session WhatsApp de l'utilisateur connecté.
- * Un utilisateur = une session WhatsApp.
- *
- * La session est retrouvée par Firebase UID (userUid) stocké sur le tenant,
- * ce qui fonctionne quel que soit le mode de connexion (Google, GitHub, téléphone).
+ * useUserSession — wrapper qui utilise le SessionContext partagé.
+ * Un seul appel API pour toute l'application, état cohérent entre toutes les pages.
  */
-
-import { useState, useEffect, useCallback } from 'react';
-import { tenantsAPI } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
+import { useSession } from '../contexts/SessionContext';
 
 export function useUserSession() {
   const { user } = useAuth();
@@ -25,20 +19,30 @@ export function useUserSession() {
 
     try {
       const response = await tenantsAPI.list();
+<<<<<<<<< Temporary merge branch 1
       
-      // Trouver la session de l'utilisateur connecté (par son numéro de téléphone)
-      // Le numéro de téléphone de l'utilisateur est stocké dans user.phone (auth phone)
-      const userPhone = user.phone?.replace(/[^0-9]/g, '');
-      
-      if (userPhone) {
+      // Trouver la session de l'utilisateur connecté via son userUid Firebase
+      if (user.uid) {
         const userSession = response.tenants?.find(
-          t => t.phone.replace(/[^0-9]/g, '') === userPhone
+          t => t.userUid === user.uid
         );
         setSession(userSession || null);
       } else {
         setSession(null);
+=========
+      const tenants  = response.tenants ?? [];
+
+      // Chercher la session par uid Firebase (fiable quel que soit le provider)
+      let userSession = tenants.find(t => t.userUid === user.uid);
+
+      // Fallback : chercher par numéro de téléphone si présent
+      if (!userSession && user.phone) {
+        const userPhone = user.phone.replace(/[^0-9]/g, '');
+        userSession = tenants.find(t => t.phone?.replace(/[^0-9]/g, '') === userPhone);
+>>>>>>>>> Temporary merge branch 2
       }
-      
+
+      setSession(userSession ?? null);
       setError(null);
     } catch (err) {
       console.error('Error fetching user session:', err);

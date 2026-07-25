@@ -17,7 +17,7 @@ import {
   Key,
   X,
 } from 'lucide-react';
-import { tenantsAPI, saveTenantApiKey } from '../services/api';
+import { tenantsAPI, saveTenantApiKey, getTenantApiKey } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
 import {
@@ -30,7 +30,7 @@ import {
 const Sessions = () => {
   const { user } = useAuth();
   const { session: userSession, loading: sessionLoading, refresh: refreshSession } = useUserSession();
-  
+
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrCode, setQrCode] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
@@ -82,7 +82,22 @@ const Sessions = () => {
     }
   }, [sessionLoading, userSession, user?.uid]);
 
-  // Socket.io — un seul effet, listeners stables
+  // Au chargement : si session connectée et pas de clé en localStorage → la récupérer depuis le backend
+  useEffect(() => {
+    if (!userSession || userSession.status !== 'connected' || !user?.uid) return;
+    const existing = getTenantApiKey(user.uid);
+    if (!existing) {
+      // La clé n'est pas en localStorage → la récupérer via l'API (self-service, "moi")
+      tenantsAPI.getApiKey()
+        .then(res => {
+          if (res.apiKey) {
+            saveTenantApiKey(user.uid, res.apiKey);
+          }
+        })
+        .catch(err => console.warn('Impossible de récupérer la clé API:', err));
+    }
+  }, [userSession, user?.uid]);
+
   useEffect(() => {
     connectSocket();
 
@@ -146,30 +161,6 @@ const Sessions = () => {
     if (user?.uid) localStorage.setItem(`wa_phone_${user.uid}`, phone);
   };
 
-  // Cherche un tenant existant pour ce numéro — uniquement parmi ceux
-  // appartenant à l'utilisateur courant (un numéro = un seul utilisateur,
-  // on ne doit jamais reprendre la session d'un autre compte).
-  const findExistingTenantForPhone = async (cleanPhone) => {
-    try {
-      const response = await tenantsAPI.list();
-      const tenants = response.tenants ?? [];
-      const matches = tenants.filter(t =>
-        t.phone?.replace(/[^0-9]/g, '') === cleanPhone &&
-        (t.status === 'pending_qr' || t.status === 'disconnected' || t.status === 'connected')
-      );
-
-      const ownedByOther = matches.find(t => t.userUid && t.userUid !== user?.uid);
-      if (ownedByOther) {
-        throw new Error('PHONE_ALREADY_USED');
-      }
-
-      return matches.find(t => t.userUid === user?.uid) ?? null;
-    } catch (err) {
-      if (err?.message === 'PHONE_ALREADY_USED') throw err;
-      return null;
-    }
-  };
-
   const handleCreateSession = async () => {
     setCreating(true);
     setError('');
@@ -182,7 +173,6 @@ const Sessions = () => {
 
       if (!cleanPhone) {
         // Pas de phone sur le compte — afficher le formulaire
-        // Pré-remplir avec le numéro sauvegardé si disponible
         const saved = localStorage.getItem(`wa_phone_${user?.uid}`) ?? '';
         setPhoneInputValue(saved);
         setError(saved ? '' : 'Pour créer une session, entrez le numéro WhatsApp que vous souhaitez utiliser.');
@@ -191,7 +181,7 @@ const Sessions = () => {
         return;
       }
 
-      await _createOrReuseSession(cleanPhone);
+      await handleCreateWithPhone(cleanPhone);
     } catch (err) {
       console.error('Erreur création session:', err);
       setError(err.message || 'Erreur lors de la création de la session');
@@ -200,6 +190,11 @@ const Sessions = () => {
     }
   };
 
+  // Crée SA session WhatsApp. Le backend (self-service, résolu depuis le
+  // token Firebase) refuse avec 409 si l'utilisateur a déjà une session
+  // (USER_ALREADY_HAS_SESSION → on récupère alors le QR de cette session
+  // existante) ou si le numéro est déjà pris par un autre compte
+  // (PHONE_ALREADY_USED).
   const handleCreateWithPhone = async (phoneNumber) => {
     const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
 
@@ -213,97 +208,49 @@ const Sessions = () => {
     setSuccessMsg('');
 
     try {
-      // 1. Vérifier si ce numéro a déjà un tenant (le nôtre, ou celui d'un autre compte)
-      const existing = await findExistingTenantForPhone(cleanPhone).catch((err) => {
-        if (err?.message === 'PHONE_ALREADY_USED') {
-          throw new Error('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
-        }
-        throw err;
-      });
-
-      if (existing) {
-        // Le numéro existe déjà — réutiliser ce tenant
-        savePhone(cleanPhone);
-        setShowPhoneInput(false);
-        activeTenantIdRef.current = existing.tenantId;
-
-        if (existing.status === 'connected') {
-          // Déjà connecté — juste rafraîchir
-          await refreshSession();
-          setSuccessMsg(' Session déjà active récupérée.');
-        } else {
-          // Relancer le QR pour ce tenant existant
-          setTimeout(() => handleShowQR(existing.tenantId), 500);
-        }
-        return;
-      }
-
-      // 2. Numéro nouveau — créer le tenant
       savePhone(cleanPhone);
       setShowPhoneInput(false);
 
       const response = await tenantsAPI.create({
-        phone:      cleanPhone,
-        name:       `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
-        userUid:    user.uid,
-        webhookUrl: undefined,
+        phone: cleanPhone,
+        name:  `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
       });
 
       activeTenantIdRef.current = response.tenantId;
-
-      setTimeout(() => handleShowQR(response.tenantId), 2000);
+      setTimeout(() => handleShowQR(), 2000);
 
     } catch (err) {
-      console.error('Erreur création session:', err);
-      setError(err.message || 'Erreur lors de la création de la session');
+      if (err.code === 'USER_ALREADY_HAS_SESSION') {
+        // On a déjà une session — la récupérer plutôt que d'échouer
+        activeTenantIdRef.current = err.data?.tenantId ?? activeTenantIdRef.current;
+        if (err.data?.status === 'connected') {
+          await refreshSession();
+          setSuccessMsg('Session déjà active récupérée.');
+        } else {
+          setTimeout(() => handleShowQR(), 300);
+        }
+      } else if (err.code === 'PHONE_ALREADY_USED') {
+        setError('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
+      } else {
+        console.error('Erreur création session:', err);
+        setError(err.message || 'Erreur lors de la création de la session');
+      }
     } finally {
       setCreating(false);
     }
   };
 
-  // Logique partagée : créer ou réutiliser un tenant pour un numéro donné
-  const _createOrReuseSession = async (cleanPhone) => {
-    const existing = await findExistingTenantForPhone(cleanPhone).catch((err) => {
-      if (err?.message === 'PHONE_ALREADY_USED') {
-        throw new Error('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
-      }
-      throw err;
-    });
-
-    if (existing) {
-      savePhone(cleanPhone);
-      activeTenantIdRef.current = existing.tenantId;
-
-      if (existing.status === 'connected') {
-        await refreshSession();
-        setSuccessMsg(' Session déjà active récupérée.');
-      } else {
-        setTimeout(() => handleShowQR(existing.tenantId), 500);
-      }
-      return;
-    }
-
-    savePhone(cleanPhone);
-    const response = await tenantsAPI.create({
-      phone:      cleanPhone,
-      name:       `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
-      userUid:    user.uid,
-      webhookUrl: undefined,
-    });
-
-    activeTenantIdRef.current = response.tenantId;
-    setTimeout(() => handleShowQR(response.tenantId), 2000);
-  };
-
-  const handleShowQR = async (tenantId) => {
+  // Récupère MON QR code (self-service — jamais de tenantId dans l'appel :
+  // le backend résout "moi" depuis le token Firebase).
+  const handleShowQR = async () => {
     setShowQRModal(true);
     setQrLoading(true);
     setQrCode(null);
     setPollingStatus(true);
 
     try {
-      const response = await tenantsAPI.getQRCode(tenantId);
-      
+      const response = await tenantsAPI.getQRCode();
+
       if (response.status === 'connected') {
         setError('Cette session est déjà connectée');
         setQrLoading(false);
@@ -325,13 +272,11 @@ const Sessions = () => {
   };
 
   const handleRefreshQR = async () => {
-    const tenantId = activeTenantIdRef.current ?? userSession?.tenantId;
-    if (!tenantId) return;
     setQrLoading(true);
     setQrCode(null);
 
     try {
-      const response = await tenantsAPI.getQRCode(tenantId);
+      const response = await tenantsAPI.getQRCode();
       if (response.qrCode) {
         setQrCode(response.qrCode);
       }
@@ -343,8 +288,11 @@ const Sessions = () => {
   };
 
   const copyApiKey = () => {
-    if (userSession?.apiKeyHint) {
-      navigator.clipboard.writeText(userSession.apiKeyHint);
+    // Copier la vraie clé complète depuis localStorage, ou le hint en fallback
+    const fullKey = getTenantApiKey(user?.uid);
+    const keyToCopy = fullKey || userSession?.apiKeyHint;
+    if (keyToCopy) {
+      navigator.clipboard.writeText(keyToCopy);
       setCopiedApiKey(true);
       setTimeout(() => setCopiedApiKey(false), 2000);
     }
@@ -548,7 +496,7 @@ const Sessions = () => {
           {/* Status Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className={`h-2 ${getStatusConfig(userSession.status).bg}`}></div>
-            
+
             <div className="p-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center space-x-4">
@@ -565,7 +513,7 @@ const Sessions = () => {
                     <p className="text-gray-600">{userSession.phone}</p>
                   </div>
                 </div>
-                
+
                 <div className={`flex items-center space-x-2 ${getStatusConfig(userSession.status).bg} ${getStatusConfig(userSession.status).text} px-4 py-2 rounded-full font-medium`}>
                   {React.createElement(getStatusConfig(userSession.status).icon, { size: 18 })}
                   <span>{getStatusConfig(userSession.status).label}</span>
@@ -573,7 +521,10 @@ const Sessions = () => {
               </div>
 
               {/* API Key Section */}
-              {userSession.status === 'connected' && userSession.apiKeyHint && (
+              {userSession.status === 'connected' && userSession.apiKeyHint && (() => {
+                const fullKey = getTenantApiKey(user?.uid);
+                const displayKey = fullKey || userSession.apiKeyHint;
+                return (
                 <div className="bg-gradient-to-r from-primary-50 to-purple-50 border-2 border-primary-200 rounded-xl p-6 mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-gray-900 flex items-center space-x-2">
@@ -583,13 +534,13 @@ const Sessions = () => {
                       <span>Votre Clé API</span>
                     </h4>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg p-4 border border-primary-300">
-                    <div className="flex items-center justify-between">
-                      <code className="text-sm font-mono text-gray-900">
-                        {showApiKey ? userSession.apiKeyHint : `${userSession.apiKeyHint.substring(0, 8)}${'•'.repeat(20)}`}
+                    <div className="flex items-center justify-between gap-2">
+                      <code className="text-xs font-mono text-gray-900 flex-1 break-all">
+                        {showApiKey ? displayKey : `${displayKey.substring(0, 20)}${'•'.repeat(16)}`}
                       </code>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0">
                         <button
                           onClick={() => setShowApiKey(!showApiKey)}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -604,7 +555,7 @@ const Sessions = () => {
                         <button
                           onClick={copyApiKey}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                          title="Copier"
+                          title="Copier la clé complète"
                         >
                           {copiedApiKey ? (
                             <CheckCircle size={18} className="text-green-600" />
@@ -615,24 +566,25 @@ const Sessions = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 mt-3">
-                    ⚠️ Gardez votre clé API secrète. Elle a également été envoyée sur votre WhatsApp.
+                     Gardez votre clé API secrète.
                   </p>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Actions */}
               {(userSession.status === 'pending_qr' || userSession.status === 'disconnected') && (
                 <button
-                  onClick={() => handleShowQR(userSession.tenantId)}
+                  onClick={() => handleShowQR()}
                   className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg font-medium"
                 >
                   <QrCode size={20} />
                   <span>Scanner le QR Code</span>
                 </button>
               )}
-              
+
               {/* Session Info */}
               <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -704,7 +656,7 @@ const Sessions = () => {
                     {/* QR Code Image */}
                     <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200 flex justify-center relative">
                       <img src={qrCode} alt="QR Code" className="w-64 h-64" />
-                      
+
                       {/* Polling indicator */}
                       {pollingStatus && (
                         <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs flex items-center space-x-2 animate-pulse">
@@ -766,6 +718,122 @@ const Sessions = () => {
                     </button>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      {/* Modal clé API — affiché après connexion WhatsApp réussie */}
+      <AnimatePresence>
+        {apiKeyModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 50 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden"
+            >
+              {/* Success Header */}
+              <div className="bg-gradient-to-r from-green-500 to-green-600 px-8 py-6 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                  className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center"
+                >
+                  <CheckCircle className="text-green-600" size={48} />
+                </motion.div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Connexion Réussie !
+                </h2>
+                <p className="text-green-100">
+                  Votre WhatsApp est maintenant connecté à Convessa
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-4">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle size={24} className="text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 leading-snug">
+                      WhatsApp connecté avec succès !
+                    </h3>
+                    <p className="text-sm text-gray-600">Votre clé API a été générée.</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <Key size={16} className="text-green-700" />
+                    <span>Votre clé API</span>
+                  </p>
+                  <div className="bg-gray-50 rounded-lg p-3.5 border border-gray-200">
+                    <div className="flex items-center justify-between gap-3">
+                      <code className="text-sm font-mono text-gray-900 flex-1 break-all">
+                        {apiKeyModal.key || apiKeyModal.hint}
+                      </code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(apiKeyModal.key || apiKeyModal.hint || '');
+                          setApiKeyModalCopied(true);
+                          setTimeout(() => setApiKeyModalCopied(false), 2000);
+                        }}
+                        className="p-2 rounded-lg hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex-shrink-0"
+                        aria-label="Copier la clé API"
+                        title="Copier"
+                      >
+                        {apiKeyModalCopied ? (
+                          <CheckCircle size={18} className="text-green-600" />
+                        ) : (
+                          <Copy size={18} className="text-gray-600" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {apiKeyModalCopied && (
+                    <p className="text-xs text-green-700 mt-1.5">Clé copiée dans le presse-papiers</p>
+                  )}
+                </div>
+
+                <p className="text-sm text-gray-700">
+                  Votre WhatsApp est connecté et votre clé API est prête à être utilisée dans vos requêtes HTTP.
+                </p>
+
+                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertCircle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-800 font-medium">
+                    Important : Copiez cette clé maintenant. Elle ne sera plus affichée en clair par la suite.
+                  </p>
+                </div>
+
+                {apiKeyModal.expiresAt && (
+                  <p className="text-xs text-gray-500">
+                    Valide jusqu'au{' '}
+                    <span className="font-medium text-gray-700">
+                      {new Date(apiKeyModal.expiresAt).toLocaleDateString('fr-FR', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                      })}
+                    </span>
+                  </p>
+                )}
+
+                <button
+                  onClick={() => setApiKeyModal(null)}
+                  className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium"
+                >
+                  Fermer
+                </button>
               </div>
             </motion.div>
           </motion.div>

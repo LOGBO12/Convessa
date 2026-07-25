@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
+import { getTenantApiKey } from '../services/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -50,12 +51,19 @@ const Dashboard = () => {
   };
 
   const copyApiKey = () => {
-    if (userSession?.apiKeyHint) {
-      navigator.clipboard.writeText(userSession.apiKeyHint);
+    // Essayer d'abord la vraie clé complète depuis localStorage
+    const fullKey = getTenantApiKey(user?.uid);
+    const keyToCopy = fullKey || userSession?.apiKeyHint;
+    if (keyToCopy) {
+      navigator.clipboard.writeText(keyToCopy);
       setCopiedApiKey(true);
       setTimeout(() => setCopiedApiKey(false), 2000);
     }
   };
+
+  // Affichage de la clé : vraie clé si disponible, sinon hint
+  const fullApiKey = getTenantApiKey(user?.uid);
+  const displayKey = fullApiKey || userSession?.apiKeyHint || '';
 
   const getUsagePercentage = () => {
     return Math.min((usage.messagesSent / usage.messagesLimit) * 100, 100);
@@ -188,8 +196,8 @@ const Dashboard = () => {
                           <div className="flex items-center justify-between gap-3">
                             <code className="text-sm font-mono text-gray-900 flex-1 truncate">
                               {showApiKey
-                                ? userSession.apiKeyHint
-                                : `${userSession.apiKeyHint.substring(0, 12)}${'•'.repeat(24)}`}
+                                ? displayKey
+                                : `${displayKey.substring(0, 20)}${'•'.repeat(16)}`}
                             </code>
                             <div className="flex items-center gap-1 shrink-0">
                               <button
@@ -220,7 +228,7 @@ const Dashboard = () => {
 
                         <p className="text-xs text-gray-600 mt-3 flex items-start gap-1.5">
                           <ShieldCheck size={14} className="text-green-700 shrink-0 mt-0.5" />
-                          <span>Gardez votre clé secrète. Elle a aussi été envoyée sur votre WhatsApp.</span>
+                          <span>Gardez votre clé secrète.</span>
                         </p>
                       </div>
                     )}

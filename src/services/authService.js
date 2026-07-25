@@ -12,6 +12,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { getCachedMachineHash } from './deviceFingerprint';
 
 // ---------------------------------------------------------------------------
 // Providers OAuth
@@ -53,8 +54,16 @@ function mapErrorCode(code, fallbackMessage) {
 async function apiFetch(path, options = {}) {
   const { headers: extraHeaders, ...rest } = options;
 
+  // Envoyer le machine hash dans chaque requête auth
+  // Le backend l'utilise pour enforcer la règle "un appareil = un compte"
+  let machineHash = '';
+  try {
+    machineHash = await getCachedMachineHash();
+  } catch { /* silently ignore */ }
+
   const headers = {
     'Content-Type': 'application/json',
+    ...(machineHash ? { 'X-Machine-Hash': machineHash } : {}),
     ...extraHeaders,
   };
 

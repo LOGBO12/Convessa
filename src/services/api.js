@@ -1,13 +1,21 @@
 /**
  * Service API pour communiquer avec le backend WhatsApp Service
- * Base URL: http://localhost:3005/api/v1
+ * Utilise des chemins relatifs pour passer par le proxy Vite en dev.
+ *
+ * IMPORTANT — Aucune clé admin (Bridge API Key) ne doit jamais exister dans ce
+ * fichier ni dans le bundle frontend. Le frontend tenant s'authentifie
+ * uniquement avec le token Firebase (Authorization: Bearer <idToken>) pour
+ * tout ce qui concerne sa propre session, et avec sa clé API tenant
+ * (X-Api-Key: pk_convessa_...) pour l'envoi de messages.
  */
 
-const API_BASE_URL = 'http://localhost:3005/api/v1';
-const API_KEY = 'a2054a71236e85e152d3e1903d6dc81e94bbff54c3dd01b1591aec940c5b6024';
+const API_BASE_URL = '/api/v1';
 
 /**
- * Fonction utilitaire pour effectuer des requêtes HTTP
+ * Fonction utilitaire pour effectuer des requêtes HTTP.
+ * En cas d'erreur HTTP, l'erreur levée porte aussi `.code`, `.status` et
+ * `.data` (corps JSON complet) afin que les appelants puissent réagir à des
+ * codes métier précis (ex: 409 USER_ALREADY_HAS_SESSION avec un tenantId).
  */
 async function fetchAPI(endpoint, options = {}) {
   const headers = {
@@ -15,12 +23,7 @@ async function fetchAPI(endpoint, options = {}) {
     ...options.headers,
   };
 
-  // Ajouter la clé API si nécessaire
-  if (options.requiresApiKey) {
-    headers['X-Api-Key'] = API_KEY;
-  }
-
-  // Ajouter le token Firebase si disponible
+  // Ajouter le token Firebase si nécessaire
   if (options.requiresAuth) {
     const token = localStorage.getItem('firebaseToken');
     if (token) {
@@ -33,19 +36,18 @@ async function fetchAPI(endpoint, options = {}) {
     headers,
   };
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    const data = await response.json();
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const data = await response.json().catch(() => ({}));
 
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Erreur API');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
+  if (!response.ok) {
+    const err = new Error(data.error?.message || 'Erreur API');
+    err.code = data.error?.code;
+    err.status = response.status;
+    err.data = data;
+    throw err;
   }
+
+  return data;
 }
 
 // ============================================================================
@@ -53,19 +55,13 @@ async function fetchAPI(endpoint, options = {}) {
 // ============================================================================
 
 export const authAPI = {
-  /**
-   * Vérifier un token Firebase et créer/mettre à jour le profil
-   */
-  verifyToken: async (idToken) => {
+  verifyToken: async () => {
     return fetchAPI('/auth/verify', {
       method: 'POST',
       requiresAuth: true,
     });
   },
 
-  /**
-   * Obtenir le profil de l'utilisateur connecté
-   */
   getProfile: async () => {
     return fetchAPI('/auth/me', {
       method: 'GET',
@@ -73,9 +69,6 @@ export const authAPI = {
     });
   },
 
-  /**
-   * Déconnexion - révocation des tokens Firebase
-   */
   logout: async () => {
     return fetchAPI('/auth/logout', {
       method: 'POST',
@@ -83,9 +76,6 @@ export const authAPI = {
     });
   },
 
-  /**
-   * Inscription par téléphone - envoi OTP via WhatsApp
-   */
   registerPhone: async (phone, displayName = null) => {
     return fetchAPI('/auth/phone/register', {
       method: 'POST',
@@ -93,9 +83,6 @@ export const authAPI = {
     });
   },
 
-  /**
-   * Vérification OTP après inscription
-   */
   verifyOTP: async (phone, code) => {
     return fetchAPI('/auth/phone/verify-otp', {
       method: 'POST',
@@ -103,9 +90,6 @@ export const authAPI = {
     });
   },
 
-  /**
-   * Connexion par téléphone - renvoi OTP
-   */
   loginPhone: async (phone) => {
     return fetchAPI('/auth/phone/login', {
       method: 'POST',
@@ -115,157 +99,73 @@ export const authAPI = {
 };
 
 // ============================================================================
-// STATUS ENDPOINT
-// ============================================================================
-
-export const statusAPI = {
-  /**
-   * Obtenir l'état de la connexion WhatsApp
-   */
-  getStatus: async () => {
-    return fetchAPI('/status', {
-      method: 'GET',
-      requiresApiKey: true,
-    });
-  },
-};
-
-// ============================================================================
-// MESSAGES ENDPOINTS
-// ============================================================================
-
-export const messagesAPI = {
-  /**
-   * Envoyer un message WhatsApp
-   */
-  send: async ({ to, message, media }) => {
-    return fetchAPI('/messages/send', {
-      method: 'POST',
-      requiresApiKey: true,
-      body: JSON.stringify({ to, message, media }),
-    });
-  },
-
-  /**
-   * Obtenir le statut d'un message
-   */
-  getStatus: async (messageId) => {
-    return fetchAPI(`/messages/${messageId}`, {
-      method: 'GET',
-      requiresApiKey: true,
-    });
-  },
-
-  /**
-   * Obtenir les limites des médias
-   */
-  getMediaLimits: async () => {
-    return fetchAPI('/messages/media-limits', {
-      method: 'GET',
-      requiresApiKey: true,
-    });
-  },
-};
-
-// ============================================================================
-// SESSION ENDPOINTS
-// ============================================================================
-
-export const sessionAPI = {
-  /**
-   * Déconnecter et supprimer la session WhatsApp principale
-   */
-  disconnect: async () => {
-    return fetchAPI('/session', {
-      method: 'DELETE',
-      requiresApiKey: true,
-    });
-  },
-};
-
-// ============================================================================
-// TENANTS ENDPOINTS (Multi-sessions)
+// TENANTS — SELF-SERVICE (chaque tenant gère UNIQUEMENT sa propre session)
+// Authentification : token Firebase (Authorization: Bearer <idToken>)
+// Aucune de ces routes n'accepte ni ne nécessite d'ID de tenant : le backend
+// résout systématiquement "moi" à partir du token vérifié.
 // ============================================================================
 
 export const tenantsAPI = {
   /**
-   * Créer un nouveau tenant (session WhatsApp)
+   * Créer SA session WhatsApp (démarre le QR).
    */
   create: async ({ phone, name, webhookUrl }) => {
     return fetchAPI('/tenants', {
       method: 'POST',
-      requiresApiKey: true,
+      requiresAuth: true,
       body: JSON.stringify({ phone, name, webhookUrl }),
     });
   },
 
   /**
-   * Obtenir le QR code d'un tenant
+   * Récupérer MA session (404 si pas encore de session).
    */
-  getQRCode: async (tenantId) => {
-    return fetchAPI(`/tenants/${tenantId}/qr`, {
+  getMe: async () => {
+    return fetchAPI('/tenants/me', {
       method: 'GET',
-      requiresApiKey: true,
+      requiresAuth: true,
     });
   },
 
   /**
-   * Obtenir le statut d'un tenant
+   * Récupérer MON QR code courant.
    */
-  getStatus: async (tenantId) => {
-    return fetchAPI(`/tenants/${tenantId}`, {
+  getQRCode: async () => {
+    return fetchAPI('/tenants/me/qr', {
       method: 'GET',
-      requiresApiKey: true,
+      requiresAuth: true,
     });
   },
 
   /**
-   * Obtenir la clé API complète d'un tenant (pour affichage dashboard)
+   * Récupérer MA clé API complète déchiffrée.
    */
-  getApiKey: async (tenantId) => {
-    return fetchAPI(`/tenants/${tenantId}/api-key`, {
+  getApiKey: async () => {
+    return fetchAPI('/tenants/me/api-key', {
       method: 'GET',
-      requiresApiKey: true,
+      requiresAuth: true,
     });
   },
 
   /**
-   * Supprimer un tenant
+   * Déconnecter / supprimer MA session.
    */
-  delete: async (tenantId) => {
-    return fetchAPI(`/tenants/${tenantId}`, {
+  disconnect: async () => {
+    return fetchAPI('/tenants/me', {
       method: 'DELETE',
-      requiresApiKey: true,
+      requiresAuth: true,
     });
   },
-
-  /**
-   * Lister tous les tenants
-   */
-  list: async () => {
-    return fetchAPI('/tenants', {
-      method: 'GET',
-      requiresApiKey: true,
-    });
-  },
-};
-
-// Export par défaut
-export default {
-  auth: authAPI,
-  status: statusAPI,
-  messages: messagesAPI,
-  session: sessionAPI,
-  tenants: tenantsAPI,
 };
 
 // ============================================================================
 // TENANT SEND API — envoi via la clé API du tenant (pk_convessa_...)
+// C'est TOUJOURS le tenant (jamais l'admin) qui est l'émetteur ici.
 // ============================================================================
 
 export const tenantSendAPI = {
   /**
-   * Envoyer un message en utilisant la clé API WhatsApp de l'utilisateur.
+   * Envoyer un message en utilisant la clé API WhatsApp du tenant connecté.
    * tenantApiKey = la clé pk_convessa_... stockée dans localStorage.
    */
   sendAsUser: async ({ to, message, media, tenantApiKey }) => {
@@ -280,26 +180,47 @@ export const tenantSendAPI = {
       },
       body: JSON.stringify({ to, message, media }),
     });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Erreur lors de l\'envoi');
+      const err = new Error(data.error?.message || "Erreur lors de l'envoi");
+      err.code = data.error?.code;
+      err.status = response.status;
+      throw err;
     }
     return data;
   },
 
   /**
-   * Récupère la clé API complète (déchiffrée) depuis le backend.
-   * Nécessite la BRIDGE_API_KEY (clé admin) pour s'authentifier.
+   * Infos sur la session liée à une clé API tenant (statut, limites média...).
    */
-  getFullApiKey: async (tenantId, bridgeApiKey) => {
-    const response = await fetch(`${API_BASE_URL}/tenants/${tenantId}/api-key`, {
-      headers: { 'X-Api-Key': bridgeApiKey || API_KEY },
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Erreur récupération clé API');
+  getInfo: async (tenantApiKey) => {
+    if (!tenantApiKey) {
+      throw new Error('Clé API introuvable. Reconnectez votre WhatsApp.');
     }
-    return data.apiKey; // clé complète déchiffrée
+    const response = await fetch(`${API_BASE_URL}/send/info`, {
+      headers: { 'X-Api-Key': tenantApiKey },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Erreur récupération info session');
+    }
+    return data;
+  },
+};
+
+// ============================================================================
+// PLANS — page publique (Tarifs / Pricing)
+// Aucune authentification requise.
+// ============================================================================
+
+export const plansAPI = {
+  /**
+   * Récupérer la liste des plans d'abonnement (triés par prix croissant).
+   */
+  list: async () => {
+    return fetchAPI('/plans', {
+      method: 'GET',
+    });
   },
 };
 
@@ -307,19 +228,25 @@ export const tenantSendAPI = {
 // localStorage helpers — clé API tenant par utilisateur Firebase
 // ============================================================================
 
-/**
- * Sauvegarde la clé API tenant dans localStorage (liée à l'uid Firebase).
- */
 export function saveTenantApiKey(userUid, apiKey) {
   if (!userUid || !apiKey) return;
   localStorage.setItem(`tenant_api_key_${userUid}`, apiKey);
 }
 
-/**
- * Récupère la clé API tenant depuis localStorage.
- * Retourne null si absente.
- */
 export function getTenantApiKey(userUid) {
   if (!userUid) return null;
   return localStorage.getItem(`tenant_api_key_${userUid}`);
 }
+
+export function clearTenantApiKey(userUid) {
+  if (!userUid) return;
+  localStorage.removeItem(`tenant_api_key_${userUid}`);
+}
+
+// Export par défaut
+export default {
+  auth: authAPI,
+  tenants: tenantsAPI,
+  tenantSend: tenantSendAPI,
+  plans: plansAPI,
+};
