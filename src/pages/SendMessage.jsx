@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -14,66 +14,119 @@ import {
   Copy,
   Smartphone,
   WifiOff,
+  Users,
+  User,
+  UsersRound,
+  Plus,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { tenantSendAPI, getTenantApiKey } from '../services/api';
+import { tenantSendAPI, groupsAPI, getTenantApiKey } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
+import { connectSocket, onMessageStatus } from '../services/socket';
+
+// Types de médias acceptés
+const MEDIA_TYPES = {
+  image:    { icon: Image,    label: 'Image',    accept: 'image/*',                              maxMb: 16  },
+  video:    { icon: Video,    label: 'Vidéo',     accept: 'video/*',                              maxMb: 64  },
+  audio:    { icon: Music,    label: 'Audio',     accept: 'audio/*',                              maxMb: 16  },
+  document: { icon: FileText, label: 'Document',  accept: '.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx', maxMb: 100 },
+};
+
+// Mode de destinataire
+const RECIPIENT_MODES = [
+  { id: 'contact',  label: 'Un contact',           icon: User },
+  { id: 'multiple', label: 'Plusieurs contacts',   icon: Users },
+  { id: 'group',    label: 'Un groupe',            icon: UsersRound },
+];
 
 const SendMessage = () => {
   const { user } = useAuth();
   const { session: userSession, loading: sessionLoading } = useUserSession();
+  const tenantApiKey = getTenantApiKey(user?.uid);
 
+  const [recipientMode, setRecipientMode] = useState('contact');
+
+  // Mode "contact"
   const [phoneValue, setPhoneValue] = useState('');
+
+  // Mode "multiple"
+  const [multiplePhones, setMultiplePhones] = useState('');
+
+  // Mode "group"
+  const [groups, setGroups] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [showNewGroupForm, setShowNewGroupForm] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupParticipants, setNewGroupParticipants] = useState('');
+  const [creatingGroup, setCreatingGroup] = useState(false);
+
   const [message, setMessage] = useState('');
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState('');
 
-  // Types de médias acceptés
-  const mediaTypes = {
-    image: {
-      icon: Image,
-      label: 'Image',
-      accept: 'image/*',
-      maxMb: 16,
-    },
-    video: {
-      icon: Video,
-      label: 'Vidéo',
-      accept: 'video/*',
-      maxMb: 64,
-    },
-    audio: {
-      icon: Music,
-      label: 'Audio',
-      accept: 'audio/*',
-      maxMb: 16,
-    },
-    document: {
-      icon: FileText,
-      label: 'Document',
-      accept: '.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx',
-      maxMb: 100,
-    },
-  };
+  // Suivi en temps réel des messages envoyés (messageId → statut)
+  // { [messageId]: { to, status: 'queued'|'sent'|'failed', error? } }
+  const [tracked, setTracked] = useState({});
+
+  // ── Charger la liste des groupes (mode "group") ─────────────────────────────
+  const loadGroups = useCallback(async () => {
+    if (!tenantApiKey) return;
+    setGroupsLoading(true);
+    try {
+      const res = await groupsAPI.list(tenantApiKey);
+      setGroups(res.groups || []);
+    } catch (err) {
+      console.error('Erreur chargement groupes:', err);
+    } finally {
+      setGroupsLoading(false);
+    }
+  }, [tenantApiKey]);
+
+  useEffect(() => {
+    if (recipientMode === 'group') loadGroups();
+  }, [recipientMode, loadGroups]);
+
+  // ── Écoute Socket.io — statut final réel de chaque message envoyé ──────────
+  // C'est la SEULE source de vérité pour savoir si un message est parti :
+  // la réponse HTTP de /send n'est qu'un accusé "reçu et en cours".
+  useEffect(() => {
+    connectSocket();
+    const unsub = onMessageStatus((data) => {
+      setTracked((prev) => {
+        if (!(data.messageId in prev)) return prev; // pas un message de cette page/session
+        return {
+          ...prev,
+          [data.messageId]: {
+            ...prev[data.messageId],
+            status: data.status,
+            error: data.error,
+          },
+        };
+      });
+    });
+    return unsub;
+  }, []);
 
   const handleMediaSelect = (type) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = mediaTypes[type].accept;
+    input.accept = MEDIA_TYPES[type].accept;
 
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      const maxSize = mediaTypes[type].maxMb * 1024 * 1024;
+      const maxSize = MEDIA_TYPES[type].maxMb * 1024 * 1024;
       if (file.size > maxSize) {
-        setError(`Fichier trop volumineux. Taille max: ${mediaTypes[type].maxMb} MB`);
+        setError(`Fichier trop volumineux. Taille max: ${MEDIA_TYPES[type].maxMb} MB`);
         return;
       }
 
@@ -99,11 +152,68 @@ const SendMessage = () => {
     setMediaType(null);
   };
 
+  // ── Créer un nouveau groupe (idempotent par nom côté backend) ──────────────
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim()) {
+      setError('Le nom du groupe est requis');
+      return;
+    }
+    const participants = newGroupParticipants
+      .split(/[\n,]/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    if (participants.length === 0) {
+      setError('Ajoutez au moins un participant (un numéro par ligne ou séparés par des virgules)');
+      return;
+    }
+
+    setCreatingGroup(true);
+    setError('');
+    try {
+      const res = await groupsAPI.create({ name: newGroupName.trim(), participants }, tenantApiKey);
+      await loadGroups();
+      setSelectedGroupId(res.groupId);
+      setShowNewGroupForm(false);
+      setNewGroupName('');
+      setNewGroupParticipants('');
+      if (res.invitedByLink > 0) {
+        setError(''); // pas une erreur — informatif seulement
+      }
+    } catch (err) {
+      setError(err.message || 'Erreur lors de la création du groupe');
+    } finally {
+      setCreatingGroup(false);
+    }
+  };
+
+  const buildRecipient = () => {
+    if (recipientMode === 'contact') {
+      return phoneValue ? phoneValue.replace(/\s/g, '') : null;
+    }
+    if (recipientMode === 'multiple') {
+      const list = multiplePhones
+        .split(/[\n,]/)
+        .map((p) => p.trim().replace(/\s/g, ''))
+        .filter(Boolean);
+      return list.length > 0 ? list : null;
+    }
+    if (recipientMode === 'group') {
+      return selectedGroupId || null;
+    }
+    return null;
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
 
-    if (!phoneValue) {
-      setError('Veuillez entrer un numéro de téléphone');
+    const to = buildRecipient();
+    if (!to || (Array.isArray(to) && to.length === 0)) {
+      setError(
+        recipientMode === 'group'
+          ? 'Sélectionnez ou créez un groupe'
+          : 'Veuillez entrer un numéro de téléphone'
+      );
       return;
     }
 
@@ -112,8 +222,6 @@ const SendMessage = () => {
       return;
     }
 
-    // Récupérer la clé API tenant depuis localStorage
-    const tenantApiKey = getTenantApiKey(user?.uid);
     if (!tenantApiKey) {
       setError('Clé API introuvable. Reconnectez votre WhatsApp depuis la page Sessions.');
       return;
@@ -121,26 +229,18 @@ const SendMessage = () => {
 
     setSending(true);
     setError('');
-    setResult(null);
 
     try {
-      // Nettoyer le numéro (garder le + pour l'international)
-      const cleanPhone = phoneValue.replace(/\s/g, '');
-
       let payload = {
-        to: cleanPhone,
+        to,
         message: message.trim() || undefined,
         tenantApiKey,
       };
 
-      // Encoder le média en base64 si présent
       if (mediaFile) {
         const base64 = await new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = () => {
-            const b64 = reader.result.split(',')[1];
-            resolve(b64);
-          };
+          reader.onload = () => resolve(reader.result.split(',')[1]);
           reader.onerror = reject;
           reader.readAsDataURL(mediaFile);
         });
@@ -155,32 +255,28 @@ const SendMessage = () => {
 
       const response = await tenantSendAPI.sendAsUser(payload);
 
-      setResult({
-        success: true,
-        messageId: response.messageId,
-        position: response.position,
-      });
+      // Le backend répond immédiatement avec 1..N messages en statut "queued".
+      // On les ajoute au suivi — leur statut réel arrivera par Socket.io.
+      const newlyTracked = {};
+      for (const m of response.messages || []) {
+        newlyTracked[m.messageId] = { to: m.to, status: 'queued' };
+      }
+      setTracked((prev) => ({ ...prev, ...newlyTracked }));
 
-      // Réinitialiser le formulaire après succès
-      setTimeout(() => {
-        setPhoneValue('');
-        setMessage('');
-        removeMedia();
-        setResult(null);
-      }, 5000);
+      // Réinitialiser le formulaire (le suivi de statut reste affiché)
+      setMessage('');
+      removeMedia();
+      if (recipientMode === 'contact') setPhoneValue('');
+      if (recipientMode === 'multiple') setMultiplePhones('');
     } catch (err) {
       console.error('Erreur envoi message:', err);
-      setError(err.message || 'Erreur lors de l\'envoi du message');
+      setError(err.message || "Erreur lors de l'envoi du message");
     } finally {
       setSending(false);
     }
   };
 
-  const copyMessageId = () => {
-    if (result?.messageId) {
-      navigator.clipboard.writeText(result.messageId);
-    }
-  };
+  const copyText = (text) => navigator.clipboard.writeText(text);
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (sessionLoading) {
@@ -207,15 +303,13 @@ const SendMessage = () => {
           )}
 
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {userSession
-              ? 'Session WhatsApp non connectée'
-              : 'Aucune session WhatsApp'}
+            {userSession ? 'Session WhatsApp non connectée' : 'Aucune session WhatsApp'}
           </h3>
 
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             {userSession
               ? `Votre session WhatsApp est en statut "${userSession.status}". Vous devez d'abord la connecter pour envoyer des messages.`
-              : 'Vous devez d\'abord connecter votre WhatsApp depuis la page Sessions pour pouvoir envoyer des messages.'}
+              : "Vous devez d'abord connecter votre WhatsApp depuis la page Sessions pour pouvoir envoyer des messages."}
           </p>
 
           <Link
@@ -231,7 +325,6 @@ const SendMessage = () => {
   }
 
   // ── Clé API absente malgré session connectée ───────────────────────────────
-  const tenantApiKey = getTenantApiKey(user?.uid);
   if (!tenantApiKey) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -241,9 +334,7 @@ const SendMessage = () => {
           className="bg-white rounded-xl shadow-sm border border-red-200 p-12 text-center"
         >
           <AlertCircle className="mx-auto text-red-400 mb-4" size={64} />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Clé API introuvable
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Clé API introuvable</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             Votre clé API n'est pas disponible localement. Reconnectez votre WhatsApp pour la régénérer.
           </p>
@@ -258,6 +349,8 @@ const SendMessage = () => {
       </div>
     );
   }
+
+  const trackedList = Object.entries(tracked).reverse();
 
   // ── Formulaire d'envoi ─────────────────────────────────────────────────────
   return (
@@ -274,32 +367,148 @@ const SendMessage = () => {
             <span>Envoyer un Message WhatsApp</span>
           </h2>
           <p className="text-primary-100 text-sm mt-1">
-            Envoi depuis :{' '}
-            <span className="font-semibold text-white">
-              +{userSession.phone}
-            </span>
+            Envoi depuis : <span className="font-semibold text-white">+{userSession.phone}</span>
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSend} className="p-6 space-y-6">
-          {/* Phone Number */}
+          {/* Sélecteur de mode destinataire */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Numéro du destinataire
-            </label>
-            <PhoneInput
-              international
-              defaultCountry="BJ"
-              value={phoneValue}
-              onChange={setPhoneValue}
-              className="phone-input-dashboard"
-              placeholder="+229 94 11 94 76"
-            />
-            <p className="text-xs text-gray-500 mt-2">
-              Format international requis (ex: +33612345678)
-            </p>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Destinataire</label>
+            <div className="grid grid-cols-3 gap-2">
+              {RECIPIENT_MODES.map((m) => {
+                const Icon = m.icon;
+                const active = recipientMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => { setRecipientMode(m.id); setError(''); }}
+                    className={`flex flex-col items-center gap-1.5 py-3 rounded-lg border-2 text-sm font-medium transition-colors ${
+                      active
+                        ? 'border-primary-600 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon size={18} />
+                    <span>{m.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Mode : un contact */}
+          {recipientMode === 'contact' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro du destinataire</label>
+              <PhoneInput
+                international
+                defaultCountry="BJ"
+                value={phoneValue}
+                onChange={setPhoneValue}
+                className="phone-input-dashboard"
+                placeholder="+229 94 11 94 76"
+              />
+              <p className="text-xs text-gray-500 mt-2">Format international requis (ex: +33612345678)</p>
+            </div>
+          )}
+
+          {/* Mode : plusieurs contacts (broadcast) */}
+          {recipientMode === 'multiple' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Numéros des destinataires
+              </label>
+              <textarea
+                value={multiplePhones}
+                onChange={(e) => setMultiplePhones(e.target.value)}
+                rows={4}
+                placeholder={'+22960000000\n+22961111111\n+22962222222'}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:outline-none resize-none font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Un numéro par ligne (ou séparés par des virgules) — 50 destinataires maximum par envoi.
+                Le même message est envoyé individuellement à chacun.
+              </p>
+            </div>
+          )}
+
+          {/* Mode : groupe */}
+          {recipientMode === 'group' && (
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">Groupe</label>
+
+              {!showNewGroupForm ? (
+                <>
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedGroupId}
+                      onChange={(e) => setSelectedGroupId(e.target.value)}
+                      className="flex-1 border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                    >
+                      <option value="">
+                        {groupsLoading ? 'Chargement...' : groups.length === 0 ? 'Aucun groupe — créez-en un' : 'Sélectionner un groupe'}
+                      </option>
+                      {groups.map((g) => (
+                        <option key={g.groupId} value={g.groupId}>
+                          {g.name} ({g.participantsCount} membres)
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewGroupForm(true)}
+                      className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 text-sm font-medium whitespace-nowrap"
+                    >
+                      <Plus size={16} />
+                      Nouveau
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Le groupe créé une fois reste disponible pour tous vos envois futurs.
+                  </p>
+                </>
+              ) : (
+                <div className="border-2 border-primary-200 bg-primary-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-900">Créer un nouveau groupe</p>
+                    <button type="button" onClick={() => setShowNewGroupForm(false)} className="text-gray-400 hover:text-gray-600">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder="Nom du groupe"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                  />
+                  <textarea
+                    value={newGroupParticipants}
+                    onChange={(e) => setNewGroupParticipants(e.target.value)}
+                    rows={3}
+                    placeholder={'Participants — un numéro par ligne\n+22960000000\n+22961111111'}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:border-primary-500 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCreateGroup}
+                    disabled={creatingGroup}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-2.5 rounded-lg hover:bg-primary-700 disabled:opacity-50 text-sm font-medium"
+                  >
+                    {creatingGroup ? <Loader className="animate-spin" size={16} /> : <UsersRound size={16} />}
+                    <span>{creatingGroup ? 'Création...' : 'Créer le groupe'}</span>
+                  </button>
+                  <p className="text-xs text-gray-600">
+                    Les contacts dont les réglages de confidentialité empêchent l'ajout direct
+                    recevront automatiquement un lien d'invitation en message privé.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Message Text */}
           <div>
@@ -316,9 +525,7 @@ const SendMessage = () => {
             />
             <div className="flex justify-between items-center mt-2">
               <p className="text-xs text-gray-500">Maximum 4096 caractères</p>
-              <p className="text-xs text-gray-600 font-medium">
-                {message.length} / 4096
-              </p>
+              <p className="text-xs text-gray-600 font-medium">{message.length} / 4096</p>
             </div>
           </div>
 
@@ -330,8 +537,8 @@ const SendMessage = () => {
 
             {!mediaFile ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {Object.entries(mediaTypes).map(([type, config]) => {
-                  const Icon = config.icon;
+                {Object.entries(MEDIA_TYPES).map(([type, cfg]) => {
+                  const Icon = cfg.icon;
                   return (
                     <button
                       key={type}
@@ -339,13 +546,8 @@ const SendMessage = () => {
                       onClick={() => handleMediaSelect(type)}
                       className="flex flex-col items-center justify-center p-4 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all group"
                     >
-                      <Icon
-                        className="text-gray-400 group-hover:text-primary-600 mb-2"
-                        size={32}
-                      />
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-primary-700">
-                        {config.label}
-                      </span>
+                      <Icon className="text-gray-400 group-hover:text-primary-600 mb-2" size={32} />
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-primary-700">{cfg.label}</span>
                     </button>
                   );
                 })}
@@ -357,33 +559,21 @@ const SendMessage = () => {
                     {mediaPreview ? (
                       <div className="relative">
                         {mediaType === 'image' && (
-                          <img
-                            src={mediaPreview}
-                            alt="Aperçu"
-                            className="w-24 h-24 object-cover rounded-lg"
-                          />
+                          <img src={mediaPreview} alt="Aperçu" className="w-24 h-24 object-cover rounded-lg" />
                         )}
                         {mediaType === 'video' && (
-                          <video
-                            src={mediaPreview}
-                            className="w-24 h-24 object-cover rounded-lg"
-                            controls={false}
-                          />
+                          <video src={mediaPreview} className="w-24 h-24 object-cover rounded-lg" controls={false} />
                         )}
                       </div>
                     ) : (
                       <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center">
-                        {React.createElement(mediaTypes[mediaType].icon, {
-                          className: 'text-primary-600',
-                          size: 32,
-                        })}
+                        {React.createElement(MEDIA_TYPES[mediaType].icon, { className: 'text-primary-600', size: 32 })}
                       </div>
                     )}
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{mediaFile.name}</p>
                       <p className="text-sm text-gray-600">
-                        {(mediaFile.size / 1024).toFixed(2)} KB •{' '}
-                        {mediaTypes[mediaType].label}
+                        {(mediaFile.size / 1024).toFixed(2)} KB • {MEDIA_TYPES[mediaType].label}
                       </p>
                     </div>
                   </div>
@@ -412,58 +602,12 @@ const SendMessage = () => {
             </motion.div>
           )}
 
-          {/* Success Message */}
-          {result?.success && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 bg-green-50 border border-green-200 rounded-lg"
-            >
-              <div className="flex items-start space-x-3">
-                <CheckCircle
-                  className="text-green-600 flex-shrink-0 mt-0.5"
-                  size={20}
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-green-900">
-                    Message mis en file d'attente avec succès !
-                  </p>
-                  <div className="mt-2 space-y-1">
-                    {result.messageId && (
-                      <div className="flex items-center space-x-2">
-                        <p className="text-xs text-green-700">
-                          ID :{' '}
-                          <code className="bg-green-100 px-2 py-0.5 rounded">
-                            {result.messageId}
-                          </code>
-                        </p>
-                        <button
-                          type="button"
-                          onClick={copyMessageId}
-                          className="p-1 hover:bg-green-100 rounded transition-colors"
-                          aria-label="Copier l'ID du message"
-                        >
-                          <Copy size={14} className="text-green-600" />
-                        </button>
-                      </div>
-                    )}
-                    {result.position != null && (
-                      <p className="text-xs text-green-700">
-                        Position dans la file : {result.position}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={sending || (!message && !mediaFile) || !phoneValue}
+            disabled={sending || (!message && !mediaFile)}
             className={`w-full flex items-center justify-center space-x-2 py-4 rounded-lg transition-all shadow-md hover:shadow-lg font-semibold ${
-              sending || (!message && !mediaFile) || !phoneValue
+              sending || (!message && !mediaFile)
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800'
             }`}
@@ -482,6 +626,51 @@ const SendMessage = () => {
           </button>
         </form>
       </motion.div>
+
+      {/* Suivi des envois en temps réel */}
+      {trackedList.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-5"
+        >
+          <h3 className="font-semibold text-gray-900 mb-3">Suivi des envois</h3>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {trackedList.map(([messageId, info]) => (
+              <div key={messageId} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg text-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  {info.status === 'queued' && <Clock size={16} className="text-yellow-500 flex-shrink-0 animate-pulse" />}
+                  {info.status === 'sent'   && <CheckCircle size={16} className="text-green-600 flex-shrink-0" />}
+                  {info.status === 'failed' && <XCircle size={16} className="text-red-600 flex-shrink-0" />}
+                  <span className="truncate text-gray-700">{info.to}</span>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-xs font-medium ${
+                    info.status === 'sent' ? 'text-green-700' : info.status === 'failed' ? 'text-red-700' : 'text-yellow-700'
+                  }`}>
+                    {info.status === 'queued' && 'Envoi en cours...'}
+                    {info.status === 'sent'   && 'Envoyé'}
+                    {info.status === 'failed' && (info.error || 'Échec')}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyText(messageId)}
+                    className="p-1 hover:bg-gray-200 rounded"
+                    title="Copier l'ID du message"
+                  >
+                    <Copy size={12} className="text-gray-400" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Un envoi peut légitimement prendre plus de temps pour les médias volumineux (vidéo,
+            document) — "Envoi en cours" ne signifie pas un échec, seulement que Baileys n'a pas
+            encore confirmé la remise.
+          </p>
+        </motion.div>
+      )}
 
       {/* Info Box */}
       <motion.div
