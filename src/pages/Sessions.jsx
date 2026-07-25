@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Smartphone,
@@ -14,11 +14,18 @@ import {
   Eye,
   EyeOff,
   XCircle,
+  Key,
+  X,
 } from 'lucide-react';
-import { tenantsAPI } from '../services/api';
+import { tenantsAPI, saveTenantApiKey } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
-import { connectSocket, onTenantConnected, onTenantQR, disconnectSocket } from '../services/socket';
+import {
+  connectSocket,
+  onTenantConnected,
+  onTenantQR,
+  onTenantError,
+} from '../services/socket';
 
 const Sessions = () => {
   const { user } = useAuth();
@@ -29,67 +36,222 @@ const Sessions = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [pollingStatus, setPollingStatus] = useState(false);
-  const [apiKey, setApiKey] = useState(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [copiedApiKey, setCopiedApiKey] = useState(false);
+  const [showPhoneInput, setShowPhoneInput] = useState(false);
+  // Modal clé API après connexion réussie
+  const [apiKeyModal, setApiKeyModal] = useState(null); // { key, hint, expiresAt } | null
+  const [apiKeyModalCopied, setApiKeyModalCopied] = useState(false);
+  const [errorFromSocket, setErrorFromSocket] = useState('');
+  const [phoneInputValue, setPhoneInputValue] = useState(() => {
+    if (!user?.uid) return '';
+    return localStorage.getItem(`wa_phone_${user.uid}`) ?? '';
+  });
 
-  // Connexion Socket.io et écoute des événements
+  // Ref pour avoir accès au tenantId courant dans les callbacks socket
+  // sans recréer les listeners à chaque render
+  const activeTenantIdRef = useRef(null);
+  // Ref pour avoir accès au user.uid dans les callbacks socket (stable)
+  const userUidRef = useRef(user?.uid ?? null);
+
+  useEffect(() => {
+    activeTenantIdRef.current = userSession?.tenantId ?? null;
+  }, [userSession?.tenantId]);
+
+  useEffect(() => {
+    userUidRef.current = user?.uid ?? null;
+  }, [user?.uid]);
+
+  // Si pas de session et qu'un numéro est sauvegardé pour cet utilisateur,
+  // afficher directement le formulaire pré-rempli.
+  // Si une session existe, s'assurer que le formulaire est caché.
+  useEffect(() => {
+    if (sessionLoading) return; // attendre la fin du chargement
+    if (userSession) {
+      // Session active → masquer le formulaire de saisie
+      setShowPhoneInput(false);
+    } else if (user?.uid) {
+      // Pas de session → pré-remplir avec le numéro sauvegardé
+      const saved = localStorage.getItem(`wa_phone_${user.uid}`);
+      if (saved) {
+        setPhoneInputValue(saved);
+        setShowPhoneInput(true);
+      }
+    }
+  }, [sessionLoading, userSession, user?.uid]);
+
+  // Socket.io — un seul effet, listeners stables
   useEffect(() => {
     connectSocket();
 
-    // Écouter quand un tenant est connecté
-    const unsubscribeConnected = onTenantConnected((data) => {
-      console.log('Tenant connecté:', data);
-      if (data.tenantId === userSession?.tenantId) {
-        setApiKey(data.apiKey);
+    const unsubConnected = onTenantConnected((data) => {
+      console.log('[Socket] tenant_connected', data);
+      const currentId = activeTenantIdRef.current;
+      if (!currentId || data.tenantId === currentId) {
         setShowQRModal(false);
         setPollingStatus(false);
+        // Sauvegarder la clé API en localStorage
+        if (data.apiKey && userUidRef.current) {
+          saveTenantApiKey(userUidRef.current, data.apiKey);
+        }
+        // Ouvrir le modal clé API si la clé est dans l'event
+        if (data.apiKey || data.apiKeyHint) {
+          setApiKeyModal({
+            key:       data.apiKey ?? null,
+            hint:      data.apiKeyHint ?? null,
+            expiresAt: data.apiKeyExpiresAt ?? null,
+          });
+        } else {
+          setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
+        }
         refreshSession();
       }
     });
 
-    // Écouter les QR codes des tenants
-    const unsubscribeQR = onTenantQR((data) => {
-      console.log('Tenant QR reçu:', data);
-      if (data.tenantId === userSession?.tenantId && data.qrCode) {
-        setQrCode(data.qrCode);
+    const unsubQR = onTenantQR((data) => {
+      console.log('[Socket] tenant_qr', data);
+      const currentId = activeTenantIdRef.current;
+      if (!currentId || data.tenantId === currentId) {
+        if (data.qrCode) {
+          setQrCode(data.qrCode);
+          setQrLoading(false);
+        }
+      }
+    });
+
+    const unsubError = onTenantError((data) => {
+      console.log('[Socket] tenant_error', data);
+      const currentId = activeTenantIdRef.current;
+      if (!currentId || data.tenantId === currentId) {
+        const msg = data.message || data.error || 'Une erreur est survenue.';
+        setErrorFromSocket(msg);
+        setShowQRModal(false);
+        setPollingStatus(false);
         setQrLoading(false);
       }
     });
 
     return () => {
-      unsubscribeConnected();
-      unsubscribeQR();
-      disconnectSocket();
+      unsubConnected();
+      unsubQR();
+      unsubError();
+      // Ne pas déconnecter le socket ici — il est partagé
     };
-  }, [userSession?.tenantId, refreshSession]);
+  }, []); // ← dépendances vides : listeners créés une seule fois, la ref se met à jour en dehors
 
-  // Créer la session automatiquement si l'utilisateur n'en a pas
+  // Sauvegarde le numéro WhatsApp choisi par l'utilisateur
+  const savePhone = (phone) => {
+    if (user?.uid) localStorage.setItem(`wa_phone_${user.uid}`, phone);
+  };
+
+  // Cherche un tenant existant pour ce numéro — uniquement parmi ceux
+  // appartenant à l'utilisateur courant (un numéro = un seul utilisateur,
+  // on ne doit jamais reprendre la session d'un autre compte).
+  const findExistingTenantForPhone = async (cleanPhone) => {
+    try {
+      const response = await tenantsAPI.list();
+      const tenants = response.tenants ?? [];
+      const matches = tenants.filter(t =>
+        t.phone?.replace(/[^0-9]/g, '') === cleanPhone &&
+        (t.status === 'pending_qr' || t.status === 'disconnected' || t.status === 'connected')
+      );
+
+      const ownedByOther = matches.find(t => t.userUid && t.userUid !== user?.uid);
+      if (ownedByOther) {
+        throw new Error('PHONE_ALREADY_USED');
+      }
+
+      return matches.find(t => t.userUid === user?.uid) ?? null;
+    } catch (err) {
+      if (err?.message === 'PHONE_ALREADY_USED') throw err;
+      return null;
+    }
+  };
+
   const handleCreateSession = async () => {
-    if (!user?.phone) {
-      setError('Numéro de téléphone non trouvé. Reconnectez-vous.');
+    setCreating(true);
+    setError('');
+    setSuccessMsg('');
+
+    try {
+      const cleanPhone = user.phone
+        ? user.phone.replace(/[^0-9]/g, '')
+        : null;
+
+      if (!cleanPhone) {
+        // Pas de phone sur le compte — afficher le formulaire
+        // Pré-remplir avec le numéro sauvegardé si disponible
+        const saved = localStorage.getItem(`wa_phone_${user?.uid}`) ?? '';
+        setPhoneInputValue(saved);
+        setError(saved ? '' : 'Pour créer une session, entrez le numéro WhatsApp que vous souhaitez utiliser.');
+        setShowPhoneInput(true);
+        setCreating(false);
+        return;
+      }
+
+      await _createOrReuseSession(cleanPhone);
+    } catch (err) {
+      console.error('Erreur création session:', err);
+      setError(err.message || 'Erreur lors de la création de la session');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleCreateWithPhone = async (phoneNumber) => {
+    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 7) {
+      setError('Numéro de téléphone invalide (minimum 7 chiffres, indicatif international).');
       return;
     }
 
     setCreating(true);
     setError('');
+    setSuccessMsg('');
 
     try {
-      const cleanPhone = user.phone.replace(/[^0-9]/g, '');
-      
+      // 1. Vérifier si ce numéro a déjà un tenant (le nôtre, ou celui d'un autre compte)
+      const existing = await findExistingTenantForPhone(cleanPhone).catch((err) => {
+        if (err?.message === 'PHONE_ALREADY_USED') {
+          throw new Error('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
+        }
+        throw err;
+      });
+
+      if (existing) {
+        // Le numéro existe déjà — réutiliser ce tenant
+        savePhone(cleanPhone);
+        setShowPhoneInput(false);
+        activeTenantIdRef.current = existing.tenantId;
+
+        if (existing.status === 'connected') {
+          // Déjà connecté — juste rafraîchir
+          await refreshSession();
+          setSuccessMsg(' Session déjà active récupérée.');
+        } else {
+          // Relancer le QR pour ce tenant existant
+          setTimeout(() => handleShowQR(existing.tenantId), 500);
+        }
+        return;
+      }
+
+      // 2. Numéro nouveau — créer le tenant
+      savePhone(cleanPhone);
+      setShowPhoneInput(false);
+
       const response = await tenantsAPI.create({
-        phone: cleanPhone,
-        name: `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
-        userUid: user.uid, // Ajout du userUid Firebase
+        phone:      cleanPhone,
+        name:       `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
+        userUid:    user.uid,
         webhookUrl: undefined,
       });
 
-      // Attendre 3 secondes puis afficher le QR code
-      setTimeout(async () => {
-        await refreshSession();
-        handleShowQR(response.tenantId);
-      }, 3000);
+      activeTenantIdRef.current = response.tenantId;
+
+      setTimeout(() => handleShowQR(response.tenantId), 2000);
 
     } catch (err) {
       console.error('Erreur création session:', err);
@@ -97,6 +259,40 @@ const Sessions = () => {
     } finally {
       setCreating(false);
     }
+  };
+
+  // Logique partagée : créer ou réutiliser un tenant pour un numéro donné
+  const _createOrReuseSession = async (cleanPhone) => {
+    const existing = await findExistingTenantForPhone(cleanPhone).catch((err) => {
+      if (err?.message === 'PHONE_ALREADY_USED') {
+        throw new Error('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
+      }
+      throw err;
+    });
+
+    if (existing) {
+      savePhone(cleanPhone);
+      activeTenantIdRef.current = existing.tenantId;
+
+      if (existing.status === 'connected') {
+        await refreshSession();
+        setSuccessMsg(' Session déjà active récupérée.');
+      } else {
+        setTimeout(() => handleShowQR(existing.tenantId), 500);
+      }
+      return;
+    }
+
+    savePhone(cleanPhone);
+    const response = await tenantsAPI.create({
+      phone:      cleanPhone,
+      name:       `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
+      userUid:    user.uid,
+      webhookUrl: undefined,
+    });
+
+    activeTenantIdRef.current = response.tenantId;
+    setTimeout(() => handleShowQR(response.tenantId), 2000);
   };
 
   const handleShowQR = async (tenantId) => {
@@ -129,12 +325,13 @@ const Sessions = () => {
   };
 
   const handleRefreshQR = async () => {
-    if (!userSession?.tenantId) return;
+    const tenantId = activeTenantIdRef.current ?? userSession?.tenantId;
+    if (!tenantId) return;
     setQrLoading(true);
     setQrCode(null);
 
     try {
-      const response = await tenantsAPI.getQRCode(userSession.tenantId);
+      const response = await tenantsAPI.getQRCode(tenantId);
       if (response.qrCode) {
         setQrCode(response.qrCode);
       }
@@ -221,9 +418,42 @@ const Sessions = () => {
         </p>
       </div>
 
+      {/* Banner succès connexion WhatsApp */}
+      {successMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-800"
+        >
+          <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
+          <span className="font-medium">{successMsg}</span>
+          <button
+            onClick={() => setSuccessMsg('')}
+            className="ml-auto text-green-600 hover:text-green-800"
+          >✕</button>
+        </motion.div>
+      )}
+
+      {/* Erreur Socket.io (ex: PHONE_MISMATCH, session error) */}
+      {errorFromSocket && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-800"
+        >
+          <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <span className="flex-1 font-medium">{errorFromSocket}</span>
+          <button
+            onClick={() => setErrorFromSocket('')}
+            className="ml-auto text-red-500 hover:text-red-700"
+          >
+            <X size={18} />
+          </button>
+        </motion.div>
+      )}
+
       {/* Session Display */}
       {!userSession ? (
-        // Pas de session - Afficher le CTA pour créer
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -234,33 +464,79 @@ const Sessions = () => {
             Connectez votre WhatsApp
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Pour utiliser l'API Convessa, vous devez d'abord connecter votre numéro WhatsApp.
+            Pour utiliser l'API Convessa, connectez votre numéro WhatsApp.
             Vous recevrez votre clé API unique après la connexion.
           </p>
-          
+
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm max-w-md mx-auto">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm max-w-md mx-auto text-left">
               {error}
             </div>
           )}
-          
-          <button
-            onClick={handleCreateSession}
-            disabled={creating}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {creating ? (
-              <>
-                <Loader className="animate-spin" size={20} />
-                <span>Création en cours...</span>
-              </>
-            ) : (
-              <>
-                <QrCode size={20} />
-                <span className="font-medium">Connecter WhatsApp</span>
-              </>
-            )}
-          </button>
+
+          {/* CAS 1 — Formulaire de saisie du numéro WhatsApp */}
+          {showPhoneInput ? (
+            <form
+              className="max-w-md mx-auto"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (phoneInputValue.trim()) handleCreateWithPhone(phoneInputValue.trim());
+              }}
+            >
+              <label className="block text-sm font-semibold text-gray-700 mb-2 text-left">
+                Numéro WhatsApp à connecter
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="tel"
+                  value={phoneInputValue}
+                  onChange={e => setPhoneInputValue(e.target.value)}
+                  placeholder="22960000000 (indicatif + numéro)"
+                  autoFocus
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  disabled={creating}
+                />
+                <button
+                  type="submit"
+                  disabled={creating || !phoneInputValue.trim()}
+                  className="inline-flex items-center gap-2 bg-green-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {creating ? (
+                    <><Loader className="animate-spin" size={16} /><span>Vérification...</span></>
+                  ) : (
+                    <><QrCode size={16} /><span>Confirmer</span></>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-left">
+                Entrez le numéro sans le signe + (ex: 22960000000 pour le Bénin)
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPhoneInput(false);
+                  setError('');
+                  // Ne pas effacer phoneInputValue — conserver pour la prochaine fois
+                }}
+                className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                Annuler
+              </button>
+            </form>
+          ) : (
+            /* CAS 2 — Bouton principal */
+            <button
+              onClick={handleCreateSession}
+              disabled={creating}
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {creating ? (
+                <><Loader className="animate-spin" size={20} /><span>Création en cours...</span></>
+              ) : (
+                <><QrCode size={20} /><span className="font-medium">Connecter WhatsApp</span></>
+              )}
+            </button>
+          )}
         </motion.div>
       ) : (
         // Session existe - Afficher les détails
@@ -468,6 +744,14 @@ const Sessions = () => {
                       <RefreshCw size={18} className={qrLoading ? 'animate-spin' : ''} />
                       <span>Actualiser le QR code</span>
                     </button>
+
+                    {/* Erreur socket dans le modal QR */}
+                    {errorFromSocket && (
+                      <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-700">{errorFromSocket}</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12">
@@ -482,124 +766,6 @@ const Sessions = () => {
                     </button>
                   </div>
                 )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Success Modal - API Key */}
-      <AnimatePresence>
-        {apiKey && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.8, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 50 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden"
-            >
-              {/* Success Header */}
-              <div className="bg-gradient-to-r from-green-500 to-green-600 px-8 py-6 text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring" }}
-                  className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center"
-                >
-                  <CheckCircle className="text-green-600" size={48} />
-                </motion.div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  🎉 Connexion Réussie !
-                </h2>
-                <p className="text-green-100">
-                  Votre WhatsApp est maintenant connecté à Convessa
-                </p>
-              </div>
-
-              {/* API Key Content */}
-              <div className="p-8">
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl p-6 mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                      </svg>
-                      <span>Votre Clé API Unique</span>
-                    </h3>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg p-4 border-2 border-purple-400 mb-4">
-                    <code className="text-sm font-mono text-gray-900 break-all block">
-                      {apiKey}
-                    </code>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(apiKey);
-                      setCopiedApiKey(true);
-                      setTimeout(() => setCopiedApiKey(false), 2000);
-                    }}
-                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg font-medium"
-                  >
-                    {copiedApiKey ? (
-                      <>
-                        <CheckCircle size={20} />
-                        <span>Copié !</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={20} />
-                        <span>Copier la Clé API</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Important Notice */}
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-                  <div className="flex items-start space-x-3">
-                    <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-                    <div>
-                      <h4 className="font-bold text-red-900 mb-1">⚠️ Important - À lire attentivement</h4>
-                      <ul className="text-sm text-red-800 space-y-1">
-                        <li>• <strong>Cette clé ne sera affichée qu'une seule fois</strong></li>
-                        <li>• Copiez-la et stockez-la dans un endroit sûr (gestionnaire de mots de passe, .env, etc.)</li>
-                        <li>• Ne la partagez JAMAIS publiquement (GitHub, forums, etc.)</li>
-                        <li>• Utilisez-la dans vos requêtes HTTP avec le header: <code className="bg-red-100 px-1 rounded">X-Api-Key</code></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Next Steps */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-                  <h4 className="font-bold text-blue-900 mb-3 flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-                    </svg>
-                    <span>Prochaines étapes</span>
-                  </h4>
-                  <ol className="text-sm text-blue-900 space-y-2 list-decimal list-inside">
-                    <li>Allez dans <strong>Envoyer Message</strong> pour tester l'envoi</li>
-                    <li>Consultez la <strong>Documentation</strong> pour intégrer l'API dans votre application</li>
-                    <li>Utilisez votre clé API dans toutes vos requêtes HTTP</li>
-                  </ol>
-                </div>
-
-                {/* Close Button */}
-                <button
-                  onClick={() => setApiKey(null)}
-                  className="w-full bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors font-medium"
-                >
-                  J'ai copié ma clé, continuer
-                </button>
               </div>
             </motion.div>
           </motion.div>

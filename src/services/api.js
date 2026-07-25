@@ -258,3 +258,68 @@ export default {
   session: sessionAPI,
   tenants: tenantsAPI,
 };
+
+// ============================================================================
+// TENANT SEND API — envoi via la clé API du tenant (pk_convessa_...)
+// ============================================================================
+
+export const tenantSendAPI = {
+  /**
+   * Envoyer un message en utilisant la clé API WhatsApp de l'utilisateur.
+   * tenantApiKey = la clé pk_convessa_... stockée dans localStorage.
+   */
+  sendAsUser: async ({ to, message, media, tenantApiKey }) => {
+    if (!tenantApiKey) {
+      throw new Error('Clé API introuvable. Reconnectez votre WhatsApp.');
+    }
+    const response = await fetch(`${API_BASE_URL}/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': tenantApiKey,
+      },
+      body: JSON.stringify({ to, message, media }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Erreur lors de l\'envoi');
+    }
+    return data;
+  },
+
+  /**
+   * Récupère la clé API complète (déchiffrée) depuis le backend.
+   * Nécessite la BRIDGE_API_KEY (clé admin) pour s'authentifier.
+   */
+  getFullApiKey: async (tenantId, bridgeApiKey) => {
+    const response = await fetch(`${API_BASE_URL}/tenants/${tenantId}/api-key`, {
+      headers: { 'X-Api-Key': bridgeApiKey || API_KEY },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Erreur récupération clé API');
+    }
+    return data.apiKey; // clé complète déchiffrée
+  },
+};
+
+// ============================================================================
+// localStorage helpers — clé API tenant par utilisateur Firebase
+// ============================================================================
+
+/**
+ * Sauvegarde la clé API tenant dans localStorage (liée à l'uid Firebase).
+ */
+export function saveTenantApiKey(userUid, apiKey) {
+  if (!userUid || !apiKey) return;
+  localStorage.setItem(`tenant_api_key_${userUid}`, apiKey);
+}
+
+/**
+ * Récupère la clé API tenant depuis localStorage.
+ * Retourne null si absente.
+ */
+export function getTenantApiKey(userUid) {
+  if (!userUid) return null;
+  return localStorage.getItem(`tenant_api_key_${userUid}`);
+}
