@@ -209,6 +209,22 @@ export const tenantSendAPI = {
 };
 
 // ============================================================================
+// PLANS — page publique (Tarifs / Pricing)
+// Aucune authentification requise.
+// ============================================================================
+
+export const plansAPI = {
+  /**
+   * Récupérer la liste des plans d'abonnement (triés par prix croissant).
+   */
+  list: async () => {
+    return fetchAPI('/plans', {
+      method: 'GET',
+    });
+  },
+};
+
+// ============================================================================
 // localStorage helpers — clé API tenant par utilisateur Firebase
 // ============================================================================
 
@@ -232,4 +248,5 @@ export default {
   auth: authAPI,
   tenants: tenantsAPI,
   tenantSend: tenantSendAPI,
+  plans: plansAPI,
 };

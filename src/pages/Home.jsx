@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -14,9 +15,50 @@ import {
   Boxes,
 } from 'lucide-react';
 import Footer from '../components/Footer';
+import { plansAPI } from '../services/api';
 
 const Home = () => {
   const { t } = useTranslation();
+
+  const [plans, setPlans] = useState([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [plansError, setPlansError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPlans() {
+      setPlansLoading(true);
+      setPlansError(null);
+      try {
+        const data = await plansAPI.list();
+        if (!cancelled) {
+          setPlans(Array.isArray(data.plans) ? data.plans : []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setPlansError(err.message || 'Erreur lors du chargement des plans.');
+        }
+      } finally {
+        if (!cancelled) setPlansLoading(false);
+      }
+    }
+
+    loadPlans();
+    return () => { cancelled = true; };
+  }, []);
+
+  function formatPlanPrice(price) {
+    if (!price || price === 0) return 'Gratuit';
+    return `${Number(price).toLocaleString('fr-FR')} Frs CFA`;
+  }
+
+  function formatPlanUsage(plan) {
+    if (plan.unlimited) return 'Usage illimité';
+    if (plan.usageType === 'duration') return `Valable ${plan.usageValue} jour(s)`;
+    if (plan.usageType === 'requests') return `${plan.usageValue} requête(s) incluses`;
+    return null;
+  }
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -226,64 +268,93 @@ const response = await fetch('https://api.convessa.dev/send', {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {['free', 'pro', 'enterprise'].map((plan, index) => (
-              <motion.div
-                key={plan}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className={`rounded-3xl p-8 ${
-                  plan === 'pro'
-                    ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-2xl transform scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
-                    : 'bg-white border-2 border-gray-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300'
-                }`}
-              >
-                {plan === 'pro' && (
-                  <div className="inline-flex items-center space-x-1 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold mb-6">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span>POPULAIRE</span>
-                  </div>
-                )}
-                <h3
-                  className={`text-2xl font-bold mb-4 ${plan === 'pro' ? 'text-white' : 'text-gray-900'}`}
+            {plansLoading && (
+              [0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-3xl p-8 bg-white border-2 border-gray-200 animate-pulse"
                 >
-                  {t(`home.pricing.${plan}.name`)}
-                </h3>
-                <div className="mb-8">
-                  <span className="text-5xl font-bold">{t(`home.pricing.${plan}.price`)}</span>
-                  <span className={`text-lg ml-1 ${plan === 'pro' ? 'text-primary-100' : 'text-gray-600'}`}>
-                    {t(`home.pricing.${plan}.period`)}
-                  </span>
+                  <div className="h-6 w-24 bg-gray-200 rounded mb-6"></div>
+                  <div className="h-10 w-32 bg-gray-200 rounded mb-8"></div>
+                  <div className="h-4 w-full bg-gray-100 rounded mb-3"></div>
+                  <div className="h-4 w-3/4 bg-gray-100 rounded mb-8"></div>
+                  <div className="h-12 w-full bg-gray-200 rounded-xl"></div>
                 </div>
-                <ul className="space-y-4 mb-8">
-                  {t(`home.pricing.${plan}.features`, { returnObjects: true }).map((feature, i) => (
-                    <li key={i} className="flex items-start space-x-3">
-                      <Check
-                        className={`flex-shrink-0 mt-1 ${plan === 'pro' ? 'text-primary-200' : 'text-primary-600'}`}
-                        size={20}
-                        strokeWidth={3}
-                      />
-                      <span className={`${plan === 'pro' ? 'text-primary-50' : 'text-gray-700'}`}>
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to={plan === 'enterprise' ? '/contact' : '/signup'}
-                  className={`block w-full text-center py-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
-                    plan === 'pro'
-                      ? 'bg-white text-primary-600 hover:bg-gray-50 shadow-lg'
-                      : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg'
+              ))
+            )}
+
+            {!plansLoading && plansError && (
+              <div className="md:col-span-3 text-center text-gray-500 py-8">
+                Impossible de charger les plans pour le moment. Veuillez réessayer plus tard.
+              </div>
+            )}
+
+            {!plansLoading && !plansError && plans.length === 0 && (
+              <div className="md:col-span-3 text-center text-gray-500 py-8">
+                Aucun plan disponible pour le moment.
+              </div>
+            )}
+
+            {!plansLoading && !plansError && plans.length > 0 && plans.map((plan, index) => {
+              const isPopular = plans.length >= 3 && index === Math.floor((plans.length - 1) / 2);
+              const usageLabel = formatPlanUsage(plan);
+
+              return (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`rounded-3xl p-8 ${
+                    isPopular
+                      ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-2xl transform scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
+                      : 'bg-white border-2 border-gray-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300'
                   }`}
                 >
-                  {t(`home.pricing.${plan}.cta`)}
-                </Link>
-              </motion.div>
-            ))}
+                  {isPopular && (
+                    <div className="inline-flex items-center space-x-1 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold mb-6">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      <span>POPULAIRE</span>
+                    </div>
+                  )}
+                  <h3
+                    className={`text-2xl font-bold mb-4 ${isPopular ? 'text-white' : 'text-gray-900'}`}
+                  >
+                    {plan.name}
+                  </h3>
+                  <div className="mb-8">
+                    <span className="text-5xl font-bold">{formatPlanPrice(plan.price)}</span>
+                  </div>
+                  {usageLabel && (
+                    <ul className="space-y-4 mb-8">
+                      <li className="flex items-start space-x-3">
+                        <Check
+                          className={`flex-shrink-0 mt-1 ${isPopular ? 'text-primary-200' : 'text-primary-600'}`}
+                          size={20}
+                          strokeWidth={3}
+                        />
+                        <span className={`${isPopular ? 'text-primary-50' : 'text-gray-700'}`}>
+                          {usageLabel}
+                        </span>
+                      </li>
+                    </ul>
+                  )}
+                  <Link
+                    to="/signup"
+                    className={`block w-full text-center py-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                      isPopular
+                        ? 'bg-white text-primary-600 hover:bg-gray-50 shadow-lg'
+                        : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg'
+                    }`}
+                  >
+                    Choisir ce plan
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
