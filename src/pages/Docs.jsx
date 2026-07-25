@@ -41,6 +41,7 @@ const Docs = () => {
       icon: Code,
       items: [
         { id: 'send-message', label: 'Envoyer un Message', file: 'send-message.md' },
+        { id: 'groups', label: 'Groupes WhatsApp', file: 'groups.md' },
         { id: 'send-media', label: 'Envoyer des Médias', file: 'api-documentation.md' },
         { id: 'error-handling', label: 'Gestion des Erreurs', file: 'api-documentation.md' },
       ]

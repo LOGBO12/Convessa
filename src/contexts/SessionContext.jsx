@@ -29,24 +29,23 @@ export function SessionProvider({ children }) {
     }
     try {
       setLoading(true);
-      const response = await tenantsAPI.list();
-      const tenants = response.tenants ?? [];
-
-      // Chercher par UID Firebase en priorité
-      let found = tenants.find(t => t.userUid === user.uid);
-
-      // Fallback numéro de téléphone
-      if (!found && user.phone) {
-        const userPhone = user.phone.replace(/[^0-9]/g, '');
-        found = tenants.find(t => t.phone?.replace(/[^0-9]/g, '') === userPhone);
-      }
-
-      setSession(found ?? null);
+      // IMPORTANT — on ne doit JAMAIS récupérer la liste globale des tenants
+      // depuis le frontend (fuite entre comptes). Le backend résout "moi"
+      // lui-même à partir du token Firebase vérifié (GET /tenants/me).
+      const response = await tenantsAPI.getMe();
+      // GET /tenants/me renvoie directement { success, tenantId, phone, status, ... }
+      setSession(response ?? null);
       setError(null);
     } catch (err) {
-      console.error('[SessionContext] Erreur:', err.message);
-      setError(err.message);
-      setSession(null);
+      // 404 = pas encore de session WhatsApp pour cet utilisateur, ce n'est pas une erreur
+      if (err.status === 404) {
+        setSession(null);
+        setError(null);
+      } else {
+        console.error('[SessionContext] Erreur:', err.message);
+        setError(err.message);
+        setSession(null);
+      }
     } finally {
       setLoading(false);
     }

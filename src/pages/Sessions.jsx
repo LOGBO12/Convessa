@@ -40,15 +40,10 @@ const Sessions = () => {
   const [pollingStatus, setPollingStatus] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [copiedApiKey, setCopiedApiKey] = useState(false);
-  const [showPhoneInput, setShowPhoneInput] = useState(false);
   // Modal clé API après connexion réussie
   const [apiKeyModal, setApiKeyModal] = useState(null); // { key, hint, expiresAt } | null
   const [apiKeyModalCopied, setApiKeyModalCopied] = useState(false);
   const [errorFromSocket, setErrorFromSocket] = useState('');
-  const [phoneInputValue, setPhoneInputValue] = useState(() => {
-    if (!user?.uid) return '';
-    return localStorage.getItem(`wa_phone_${user.uid}`) ?? '';
-  });
 
   // Ref pour avoir accès au tenantId courant dans les callbacks socket
   // sans recréer les listeners à chaque render
@@ -63,24 +58,6 @@ const Sessions = () => {
   useEffect(() => {
     userUidRef.current = user?.uid ?? null;
   }, [user?.uid]);
-
-  // Si pas de session et qu'un numéro est sauvegardé pour cet utilisateur,
-  // afficher directement le formulaire pré-rempli.
-  // Si une session existe, s'assurer que le formulaire est caché.
-  useEffect(() => {
-    if (sessionLoading) return; // attendre la fin du chargement
-    if (userSession) {
-      // Session active → masquer le formulaire de saisie
-      setShowPhoneInput(false);
-    } else if (user?.uid) {
-      // Pas de session → pré-remplir avec le numéro sauvegardé
-      const saved = localStorage.getItem(`wa_phone_${user.uid}`);
-      if (saved) {
-        setPhoneInputValue(saved);
-        setShowPhoneInput(true);
-      }
-    }
-  }, [sessionLoading, userSession, user?.uid]);
 
   // Au chargement : si session connectée et pas de clé en localStorage → la récupérer depuis le backend
   useEffect(() => {
@@ -156,72 +133,29 @@ const Sessions = () => {
     };
   }, []); // ← dépendances vides : listeners créés une seule fois, la ref se met à jour en dehors
 
-  // Sauvegarde le numéro WhatsApp choisi par l'utilisateur
-  const savePhone = (phone) => {
-    if (user?.uid) localStorage.setItem(`wa_phone_${user.uid}`, phone);
-  };
-
+  /**
+   * Crée SA session et lance directement le scan — plus aucune saisie de
+   * numéro : le vrai numéro WhatsApp est déduit automatiquement du compte
+   * scanné (le backend le déduit du JID Baileys après connexion).
+   *
+   * Si l'utilisateur a déjà une session (409 USER_ALREADY_HAS_SESSION), on
+   * récupère directement son QR/état existant plutôt que d'échouer.
+   */
   const handleCreateSession = async () => {
     setCreating(true);
     setError('');
     setSuccessMsg('');
 
     try {
-      const cleanPhone = user.phone
-        ? user.phone.replace(/[^0-9]/g, '')
-        : null;
-
-      if (!cleanPhone) {
-        // Pas de phone sur le compte — afficher le formulaire
-        const saved = localStorage.getItem(`wa_phone_${user?.uid}`) ?? '';
-        setPhoneInputValue(saved);
-        setError(saved ? '' : 'Pour créer une session, entrez le numéro WhatsApp que vous souhaitez utiliser.');
-        setShowPhoneInput(true);
-        setCreating(false);
-        return;
-      }
-
-      await handleCreateWithPhone(cleanPhone);
-    } catch (err) {
-      console.error('Erreur création session:', err);
-      setError(err.message || 'Erreur lors de la création de la session');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  // Crée SA session WhatsApp. Le backend (self-service, résolu depuis le
-  // token Firebase) refuse avec 409 si l'utilisateur a déjà une session
-  // (USER_ALREADY_HAS_SESSION → on récupère alors le QR de cette session
-  // existante) ou si le numéro est déjà pris par un autre compte
-  // (PHONE_ALREADY_USED).
-  const handleCreateWithPhone = async (phoneNumber) => {
-    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
-
-    if (!cleanPhone || cleanPhone.length < 7) {
-      setError('Numéro de téléphone invalide (minimum 7 chiffres, indicatif international).');
-      return;
-    }
-
-    setCreating(true);
-    setError('');
-    setSuccessMsg('');
-
-    try {
-      savePhone(cleanPhone);
-      setShowPhoneInput(false);
-
       const response = await tenantsAPI.create({
-        phone: cleanPhone,
-        name:  `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
+        name: `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
       });
 
       activeTenantIdRef.current = response.tenantId;
-      setTimeout(() => handleShowQR(), 2000);
+      setTimeout(() => handleShowQR(), 1500);
 
     } catch (err) {
       if (err.code === 'USER_ALREADY_HAS_SESSION') {
-        // On a déjà une session — la récupérer plutôt que d'échouer
         activeTenantIdRef.current = err.data?.tenantId ?? activeTenantIdRef.current;
         if (err.data?.status === 'connected') {
           await refreshSession();
@@ -229,8 +163,6 @@ const Sessions = () => {
         } else {
           setTimeout(() => handleShowQR(), 300);
         }
-      } else if (err.code === 'PHONE_ALREADY_USED') {
-        setError('Ce numéro WhatsApp est déjà utilisé par un autre compte.');
       } else {
         console.error('Erreur création session:', err);
         setError(err.message || 'Erreur lors de la création de la session');
@@ -301,50 +233,15 @@ const Sessions = () => {
   const getStatusConfig = (status) => {
     switch (status) {
       case 'connected':
-        return {
-          icon: Wifi,
-          color: 'green',
-          bg: 'bg-green-50',
-          text: 'text-green-600',
-          border: 'border-green-200',
-          label: 'Connecté',
-        };
+        return { icon: Wifi, bg: 'bg-green-50', text: 'text-green-600', label: 'Connecté' };
       case 'pending_qr':
-        return {
-          icon: Clock,
-          color: 'yellow',
-          bg: 'bg-yellow-50',
-          text: 'text-yellow-600',
-          border: 'border-yellow-200',
-          label: 'En attente',
-        };
+        return { icon: Clock, bg: 'bg-yellow-50', text: 'text-yellow-600', label: 'En attente' };
       case 'disconnected':
-        return {
-          icon: WifiOff,
-          color: 'red',
-          bg: 'bg-red-50',
-          text: 'text-red-600',
-          border: 'border-red-200',
-          label: 'Déconnecté',
-        };
+        return { icon: WifiOff, bg: 'bg-red-50', text: 'text-red-600', label: 'Déconnecté' };
       case 'revoked':
-        return {
-          icon: XCircle,
-          color: 'red',
-          bg: 'bg-red-50',
-          text: 'text-red-600',
-          border: 'border-red-200',
-          label: 'Révoqué',
-        };
+        return { icon: XCircle, bg: 'bg-red-50', text: 'text-red-600', label: 'Révoqué' };
       default:
-        return {
-          icon: AlertCircle,
-          color: 'gray',
-          bg: 'bg-gray-50',
-          text: 'text-gray-600',
-          border: 'border-gray-200',
-          label: status,
-        };
+        return { icon: AlertCircle, bg: 'bg-gray-50', text: 'text-gray-600', label: status };
     }
   };
 
@@ -362,7 +259,7 @@ const Sessions = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Ma Session WhatsApp</h1>
         <p className="text-gray-600 mt-2">
-          Connectez votre numéro WhatsApp pour obtenir votre clé API
+          Connectez votre WhatsApp en un clic pour obtenir votre clé API
         </p>
       </div>
 
@@ -375,14 +272,11 @@ const Sessions = () => {
         >
           <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
           <span className="font-medium">{successMsg}</span>
-          <button
-            onClick={() => setSuccessMsg('')}
-            className="ml-auto text-green-600 hover:text-green-800"
-          >✕</button>
+          <button onClick={() => setSuccessMsg('')} className="ml-auto text-green-600 hover:text-green-800">✕</button>
         </motion.div>
       )}
 
-      {/* Erreur Socket.io (ex: PHONE_MISMATCH, session error) */}
+      {/* Erreur Socket.io (ex: session error) */}
       {errorFromSocket && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -391,10 +285,7 @@ const Sessions = () => {
         >
           <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
           <span className="flex-1 font-medium">{errorFromSocket}</span>
-          <button
-            onClick={() => setErrorFromSocket('')}
-            className="ml-auto text-red-500 hover:text-red-700"
-          >
+          <button onClick={() => setErrorFromSocket('')} className="ml-auto text-red-500 hover:text-red-700">
             <X size={18} />
           </button>
         </motion.div>
@@ -412,8 +303,9 @@ const Sessions = () => {
             Connectez votre WhatsApp
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Pour utiliser l'API Convessa, connectez votre numéro WhatsApp.
-            Vous recevrez votre clé API unique après la connexion.
+            Cliquez sur le bouton ci-dessous, puis scannez le QR code avec le WhatsApp
+            que vous souhaitez connecter — n'importe quel numéro fonctionne, vous n'avez
+            rien à saisir à l'avance.
           </p>
 
           {error && (
@@ -422,69 +314,17 @@ const Sessions = () => {
             </div>
           )}
 
-          {/* CAS 1 — Formulaire de saisie du numéro WhatsApp */}
-          {showPhoneInput ? (
-            <form
-              className="max-w-md mx-auto"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (phoneInputValue.trim()) handleCreateWithPhone(phoneInputValue.trim());
-              }}
-            >
-              <label className="block text-sm font-semibold text-gray-700 mb-2 text-left">
-                Numéro WhatsApp à connecter
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  value={phoneInputValue}
-                  onChange={e => setPhoneInputValue(e.target.value)}
-                  placeholder="22960000000 (indicatif + numéro)"
-                  autoFocus
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  disabled={creating}
-                />
-                <button
-                  type="submit"
-                  disabled={creating || !phoneInputValue.trim()}
-                  className="inline-flex items-center gap-2 bg-green-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {creating ? (
-                    <><Loader className="animate-spin" size={16} /><span>Vérification...</span></>
-                  ) : (
-                    <><QrCode size={16} /><span>Confirmer</span></>
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2 text-left">
-                Entrez le numéro sans le signe + (ex: 22960000000 pour le Bénin)
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowPhoneInput(false);
-                  setError('');
-                  // Ne pas effacer phoneInputValue — conserver pour la prochaine fois
-                }}
-                className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
-              >
-                Annuler
-              </button>
-            </form>
-          ) : (
-            /* CAS 2 — Bouton principal */
-            <button
-              onClick={handleCreateSession}
-              disabled={creating}
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {creating ? (
-                <><Loader className="animate-spin" size={20} /><span>Création en cours...</span></>
-              ) : (
-                <><QrCode size={20} /><span className="font-medium">Connecter WhatsApp</span></>
-              )}
-            </button>
-          )}
+          <button
+            onClick={handleCreateSession}
+            disabled={creating}
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {creating ? (
+              <><Loader className="animate-spin" size={20} /><span>Préparation...</span></>
+            ) : (
+              <><QrCode size={20} /><span className="font-medium">Connecter WhatsApp</span></>
+            )}
+          </button>
         </motion.div>
       ) : (
         // Session existe - Afficher les détails
@@ -510,7 +350,9 @@ const Sessions = () => {
                     <h3 className="text-xl font-semibold text-gray-900">
                       {userSession.name || 'Ma Session WhatsApp'}
                     </h3>
-                    <p className="text-gray-600">{userSession.phone}</p>
+                    <p className="text-gray-600">
+                      {userSession.phone && userSession.phone !== '—' ? userSession.phone : 'Numéro en attente de scan'}
+                    </p>
                   </div>
                 </div>
 
@@ -546,30 +388,20 @@ const Sessions = () => {
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                           title={showApiKey ? "Masquer" : "Afficher"}
                         >
-                          {showApiKey ? (
-                            <EyeOff size={18} className="text-gray-600" />
-                          ) : (
-                            <Eye size={18} className="text-gray-600" />
-                          )}
+                          {showApiKey ? <EyeOff size={18} className="text-gray-600" /> : <Eye size={18} className="text-gray-600" />}
                         </button>
                         <button
                           onClick={copyApiKey}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                           title="Copier la clé complète"
                         >
-                          {copiedApiKey ? (
-                            <CheckCircle size={18} className="text-green-600" />
-                          ) : (
-                            <Copy size={18} className="text-gray-600" />
-                          )}
+                          {copiedApiKey ? <CheckCircle size={18} className="text-green-600" /> : <Copy size={18} className="text-gray-600" />}
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-600 mt-3">
-                     Gardez votre clé API secrète.
-                  </p>
+                  <p className="text-sm text-gray-600 mt-3">Gardez votre clé API secrète.</p>
                 </div>
                 );
               })()}
@@ -724,7 +556,6 @@ const Sessions = () => {
         )}
       </AnimatePresence>
 
-
       {/* Modal clé API — affiché après connexion WhatsApp réussie */}
       <AnimatePresence>
         {apiKeyModal && (
@@ -740,39 +571,28 @@ const Sessions = () => {
               exit={{ scale: 0.8, y: 50 }}
               className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden"
             >
-              {/* Success Header */}
-              <div className="bg-gradient-to-r from-green-500 to-green-600 px-8 py-6 text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring" }}
-                  className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center"
+              {/* Header */}
+              <div className="relative bg-gradient-to-r from-green-500 to-green-600 px-8 py-6">
+                <button
+                  onClick={() => setApiKeyModal(null)}
+                  className="absolute top-4 right-4 text-white/80 hover:text-white"
+                  aria-label="Fermer"
                 >
-                  <CheckCircle className="text-green-600" size={48} />
-                </motion.div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  Connexion Réussie !
-                </h2>
-                <p className="text-green-100">
-                  Votre WhatsApp est maintenant connecté à Convessa
-                </p>
+                  <X size={20} />
+                </button>
+                <div className="flex items-center gap-3 text-white pr-8">
+                  <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle size={24} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold leading-snug">WhatsApp connecté avec succès !</h2>
+                    <p className="text-green-100 text-sm">Votre clé API a été générée.</p>
+                  </div>
+                </div>
               </div>
 
               {/* Content */}
               <div className="p-6 space-y-4">
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle size={24} className="text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 leading-snug">
-                      WhatsApp connecté avec succès !
-                    </h3>
-                    <p className="text-sm text-gray-600">Votre clé API a été générée.</p>
-                  </div>
-                </div>
-
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <Key size={16} className="text-green-700" />
@@ -793,11 +613,7 @@ const Sessions = () => {
                         aria-label="Copier la clé API"
                         title="Copier"
                       >
-                        {apiKeyModalCopied ? (
-                          <CheckCircle size={18} className="text-green-600" />
-                        ) : (
-                          <Copy size={18} className="text-gray-600" />
-                        )}
+                        {apiKeyModalCopied ? <CheckCircle size={18} className="text-green-600" /> : <Copy size={18} className="text-gray-600" />}
                       </button>
                     </div>
                   </div>
@@ -806,15 +622,19 @@ const Sessions = () => {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-700">
-                  Votre WhatsApp est connecté et votre clé API est prête à être utilisée dans vos requêtes HTTP.
-                </p>
-
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <AlertCircle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800 font-medium">
-                    Important : Copiez cette clé maintenant. Elle ne sera plus affichée en clair par la suite.
-                  </p>
+                <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <h4 className="font-bold text-red-900 mb-1 text-sm">⚠️ Important — À lire attentivement</h4>
+                      <ul className="text-xs text-red-800 space-y-1">
+                        <li>• Cette clé ne sera plus affichée en clair par la suite</li>
+                        <li>• Copiez-la et stockez-la dans un endroit sûr (gestionnaire de mots de passe, .env, etc.)</li>
+                        <li>• Ne la partagez JAMAIS publiquement (GitHub, forums, etc.)</li>
+                        <li>• Utilisez-la dans vos requêtes HTTP avec le header : <code className="bg-red-100 px-1 rounded">X-Api-Key</code></li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 {apiKeyModal.expiresAt && (
@@ -827,6 +647,21 @@ const Sessions = () => {
                     </span>
                   </p>
                 )}
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h4 className="font-bold text-blue-900 mb-2 text-sm flex items-center space-x-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                    <span>Prochaines étapes</span>
+                  </h4>
+                  <ol className="text-xs text-blue-900 space-y-1 list-decimal list-inside">
+                    <li>Allez dans <strong>Envoyer Message</strong> pour tester l'envoi</li>
+                    <li>Consultez la <strong>Documentation</strong> pour intégrer l'API</li>
+                    <li>Utilisez votre clé API dans toutes vos requêtes HTTP</li>
+                  </ol>
+                </div>
 
                 <button
                   onClick={() => setApiKeyModal(null)}

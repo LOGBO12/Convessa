@@ -16,7 +16,7 @@ POST /api/v1/send
 
 | Champ | Type | Obligatoire | Description |
 |---|---|---|---|
-| `to` | string | ✅ | Numéro destinataire, indicatif international, sans `+` (ex: `22960000000`) |
+| `to` | string \| string[] | ✅ | Un numéro, un tableau de numéros (voir [Diffusion à plusieurs destinataires](#diffusion-à-plusieurs-destinataires)), ou un `groupId` (voir [Envoyer dans un groupe](/docs?section=groups)) |
 | `message` | string | selon cas | Texte du message (max 4096 caractères) |
 | `media` | object | selon cas | Voir [Envoyer un média](#envoyer-un-média) |
 
@@ -30,6 +30,24 @@ curl -X POST https://votre-domaine.com/api/v1/send \
   -H "Content-Type: application/json" \
   -d '{ "to": "22960000000", "message": "Votre commande est prête !" }'
 ```
+
+## Diffusion à plusieurs destinataires
+
+Passez un tableau de numéros dans `to` : le même message est envoyé
+individuellement à chacun (50 destinataires maximum par appel).
+
+```bash
+curl -X POST https://votre-domaine.com/api/v1/send \
+  -H "X-Api-Key: pk_convessa_VOTRE_CLE" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "to": ["22960000000", "22961111111", "22962222222"],
+        "message": "Notre boutique ouvre ce samedi !"
+      }'
+```
+
+La réponse contient alors un `messageId` distinct par destinataire (voir
+[Réponse](#réponse)) — chacun a son propre statut de livraison.
 
 ## Envoyer un média
 
@@ -72,18 +90,84 @@ curl -X POST https://votre-domaine.com/api/v1/send \
 
 ## Réponse
 
-**202 Accepted**
+**202 Accepted** — accusé de réception, PAS la confirmation de livraison.
+
+> ⚠️ **Important.** Cette réponse signifie seulement que le message a été
+> accepté et qu'un envoi est en cours. Pour un média volumineux (vidéo,
+> document), l'upload vers WhatsApp peut prendre plus de temps qu'un aller-
+> retour HTTP habituel. Le statut réel (`sent` ou `failed`) arrive séparément
+> — voir [Suivre le statut réel d'un envoi](#suivre-le-statut-réel-dun-envoi).
+> Ne traitez jamais l'absence de confirmation immédiate comme un échec.
 
 ```json
 {
   "success": true,
-  "sent": true,
+  "status": "queued",
   "from": "229****919",
-  "to": "229****000",
-  "message": "Votre commande est prête !",
-  "hasMedia": false
+  "messages": [
+    { "to": "229...@s.whatsapp.net", "messageId": "b7e1...", "toType": "contact" }
+  ],
+  "messageId": "b7e1...",
+  "to": "229...@s.whatsapp.net"
 }
 ```
+
+(`messageId`/`to` à la racine sont un raccourci pratique quand `to` était un
+seul destinataire — `messages[]` est le format complet, toujours présent.)
+
+## Suivre le statut réel d'un envoi
+
+Trois façons complémentaires, à choisir selon votre intégration :
+
+**1. Socket.io (recommandé pour une UI temps réel)**
+
+Écoutez l'événement `message_status` :
+
+```json
+{ "tenantId": "...", "messageId": "b7e1...", "status": "sent", "to": "229...@s.whatsapp.net", "waMessageId": "3EB0..." }
+```
+
+`status` vaut `sent` ou `failed` (avec un champ `error` si échec).
+
+**2. Webhook**
+
+Si vous avez configuré `webhookUrl` sur votre session, Convessa POST automatiquement :
+
+```json
+{ "event": "message.sent", "messageId": "b7e1...", "tenantId": "...", "to": "...", "waMessageId": "3EB0..." }
+```
+
+(ou `"event": "message.failed"` avec un champ `error`.)
+
+**3. Polling**
+
+```
+GET /api/v1/send/status/:messageId
+```
+
+```bash
+curl https://votre-domaine.com/api/v1/send/status/b7e1... \
+  -H "X-Api-Key: pk_convessa_VOTRE_CLE"
+```
+
+```json
+{
+  "success": true,
+  "messageId": "b7e1...",
+  "status": "sent",
+  "to": "229...@s.whatsapp.net",
+  "waMessageId": "3EB0...",
+  "sentAt": "2026-07-25T10:00:03.000Z"
+}
+```
+
+## Historique des envois
+
+```
+GET /api/v1/send/history?limit=50
+```
+
+Renvoie vos derniers messages (tous statuts confondus) — utile pour un tableau de bord ou un audit.
 
 ## Vérifier l'état de votre session
 
