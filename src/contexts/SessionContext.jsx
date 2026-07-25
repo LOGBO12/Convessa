@@ -1,15 +1,6 @@
 /**
  * SessionContext — Partage la session WhatsApp de l'utilisateur
- * dans toute l'application sans refaire d'appel API à chaque page.
- *
- * Un seul appel API est fait au niveau du Provider, toutes les pages
- * consomment le même état via useSession().
- *
- * IMPORTANT — On n'appelle JAMAIS tenantsAPI.list() ici : cette route est
- * réservée au backoffice admin et renvoie les données de TOUS les tenants.
- * On utilise exclusivement /tenants/me (self-service, résolu depuis le
- * token Firebase côté backend) afin qu'un tenant ne voie jamais les données
- * d'un autre tenant.
+ * dans toute l'application via un seul appel API.
  */
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
@@ -19,39 +10,48 @@ import { useAuth } from './AuthContext';
 const SessionContext = createContext(null);
 
 export function SessionProvider({ children }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(null);
+  const [error, setError] = useState(null);
 
   const fetchSession = useCallback(async () => {
+    // Ne pas appeler tant que Firebase Auth charge encore
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     if (!user) {
       setSession(null);
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
-      const data = await tenantsAPI.getMe();
-      setSession(data);
+      const response = await tenantsAPI.list();
+      const tenants = response.tenants ?? [];
+
+      // Chercher par UID Firebase en priorité
+      let found = tenants.find(t => t.userUid === user.uid);
+
+      // Fallback numéro de téléphone
+      if (!found && user.phone) {
+        const userPhone = user.phone.replace(/[^0-9]/g, '');
+        found = tenants.find(t => t.phone?.replace(/[^0-9]/g, '') === userPhone);
+      }
+
+      setSession(found ?? null);
       setError(null);
     } catch (err) {
-      if (err.status === 404) {
-        // Cas normal : l'utilisateur n'a pas encore de session WhatsApp
-        setSession(null);
-        setError(null);
-      } else {
-        console.error('[SessionContext] Erreur:', err.message);
-        setError(err.message);
-        setSession(null);
-      }
+      console.error('[SessionContext] Erreur:', err.message);
+      setError(err.message);
+      setSession(null);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-  // Charger au montage et quand l'utilisateur change
   useEffect(() => {
     fetchSession();
   }, [fetchSession]);
