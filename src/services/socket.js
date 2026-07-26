@@ -14,7 +14,10 @@ import { io } from 'socket.io-client';
 
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL ||
-  `${window.location.protocol}//${window.location.hostname}:${import.meta.env.VITE_BACKEND_PORT || 3005}`;
+  (import.meta.env.VITE_API_BASE_URL) ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? `${window.location.protocol}//${window.location.hostname}`
+    : `http://localhost:${import.meta.env.VITE_BACKEND_PORT || 3005}`);
 
 let socket = null;
 
