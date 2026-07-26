@@ -305,6 +305,47 @@ export const plansAPI = {
 };
 
 // ============================================================================
+// PAYMENTS — initiation et suivi des paiements d'abonnement
+// ============================================================================
+
+export const paymentsAPI = {
+  /**
+   * Initier un paiement pour un plan.
+   * Retourne checkoutUrl (FedaPay) ou publicKey+amount (KKiaPay).
+   */
+  initiate: async ({ planId, gateway }) => {
+    return fetchAPI('/payments/initiate', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify({ planId, gateway }),
+    });
+  },
+
+  /**
+   * Vérifier le statut d'un paiement après callback.
+   */
+  getStatus: async (paymentId) => {
+    return fetchAPI(`/payments/${paymentId}/status`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  /**
+   * Confirmer un paiement KKiaPay (appel après succès du widget).
+   */
+  confirmKkiapay: async ({ paymentId, transactionId }) => {
+    return fetchAPI('/payments/webhook/kkiapay', {
+      method: 'POST',
+      body: JSON.stringify({
+        transactionId,
+        data: { paymentId },
+      }),
+    });
+  },
+};
+
+// ============================================================================
 // localStorage helpers — clé API tenant par utilisateur Firebase
 // ============================================================================
 
@@ -330,4 +371,5 @@ export default {
   tenantSend: tenantSendAPI,
   groups: groupsAPI,
   plans: plansAPI,
+  payments: paymentsAPI,
 };

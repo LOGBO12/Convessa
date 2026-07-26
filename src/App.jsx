@@ -14,6 +14,8 @@ import SendMessage from './pages/SendMessage';
 import Sessions from './pages/Sessions';
 import Docs from './pages/Docs';
 import FAQ from './pages/FAQ';
+import Pricing from './pages/Pricing';
+import PaymentCallback from './pages/PaymentCallback';
 
 function App() {
   return (
@@ -107,20 +109,22 @@ function App() {
             }
           />
 
-          {/* Placeholder routes with Navbar + Footer */}
+          {/* Pricing — plans d'abonnement */}
           <Route
             path="/pricing"
             element={
               <>
                 <Navbar />
-                <div className="pt-24 px-4 text-center flex-grow">
-                  <h1 className="text-4xl font-bold">Tarifs</h1>
-                  <p className="text-gray-600 mt-4">Page en construction...</p>
+                <div className="pt-16 min-h-screen bg-gray-50 flex-grow">
+                  <Pricing />
                 </div>
                 <Footer />
               </>
             }
           />
+
+          {/* Callback paiement FedaPay */}
+          <Route path="/payment/callback" element={<PaymentCallback />} />
           <Route
             path="/faq"
             element={

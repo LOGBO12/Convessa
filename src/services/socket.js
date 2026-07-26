@@ -88,6 +88,12 @@ export function onMessageStatus(callback) {
   return () => socket?.off('message_status', callback);
 }
 
+export function onSubscriptionActivated(callback) {
+  if (!socket) connectSocket();
+  socket.on('subscription_activated', callback);
+  return () => socket?.off('subscription_activated', callback);
+}
+
 export function getSocket() {
   return socket;
 }
@@ -101,5 +107,6 @@ export default {
   onQueueUpdate,
   onTenantError,
   onMessageStatus,
+  onSubscriptionActivated,
   getSocket,
 };
