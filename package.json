@@ -24,7 +24,7 @@
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "4.7.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

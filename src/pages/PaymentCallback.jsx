@@ -47,9 +47,12 @@ export default function PaymentCallback() {
 
   async function _verifyPayment(paymentId) {
     try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/v1`
+        : '/api/v1';
       const token = localStorage.getItem('firebaseToken') ?? '';
 
-      const res = await fetch(`/api/v1/payments/callback/fedapay?paymentId=${encodeURIComponent(paymentId)}`, {
+      const res = await fetch(`${apiBase}/payments/callback/fedapay?paymentId=${encodeURIComponent(paymentId)}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();

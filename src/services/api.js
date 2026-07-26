@@ -9,7 +9,9 @@
  * (X-Api-Key: pk_convessa_...) pour l'envoi de messages et la gestion des groupes.
  */
 
-const API_BASE_URL = '/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL}/api/v1`
+  : '/api/v1';
 
 /**
  * Fonction utilitaire pour effectuer des requêtes HTTP.
