@@ -322,7 +322,18 @@ export default function Pricing() {
       </AnimatePresence>
 
       {/* Grille des plans */}
-      <div className={`grid gap-8 ${plans.length <= 3 ? 'md:grid-cols-' + plans.length : 'md:grid-cols-3'}`}>
+      {/* IMPORTANT — Tailwind ne détecte que des noms de classes complets et
+          statiques dans le code source. Une classe construite par
+          concaténation (`'md:grid-cols-' + n`) n'est pas fiable : elle ne
+          fonctionne que si cette chaîne exacte apparaît ailleurs, littéralement,
+          dans le projet. On utilise donc une correspondance statique. */}
+      <div className={`grid gap-8 ${
+        {
+          1: 'sm:grid-cols-1',
+          2: 'sm:grid-cols-2',
+          3: 'sm:grid-cols-2 lg:grid-cols-3',
+        }[Math.min(plans.length, 3)] || 'sm:grid-cols-2 lg:grid-cols-3'
+      }`}>
         {plans.map((plan, index) => {
           const Icon       = getPlanIcon(index, plan.isPopular);
           const UsageIcon  = getUsageIcon(plan);

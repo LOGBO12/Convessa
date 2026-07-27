@@ -88,7 +88,7 @@ export default function PaymentCallback() {
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-xl p-10 max-w-md w-full text-center"
+        className="bg-white rounded-2xl shadow-xl p-6 sm:p-10 max-w-md w-full text-center"
       >
         {status === 'loading' && (
           <>
