@@ -11,12 +11,13 @@ import {
   Code, 
   Shield, 
   Rocket, 
-  FileText, 
   Search,
   Menu,
   X,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  Copy,
+  Check
 } from 'lucide-react';
 
 const Docs = () => {
@@ -24,6 +25,7 @@ const Docs = () => {
   const [activeSection, setActiveSection] = useState('getting-started');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -104,6 +106,13 @@ const Docs = () => {
     navigate(`/docs?section=${sectionId}`);
     setMobileMenuOpen(false);
     window.scrollTo(0, 0);
+  };
+
+  const handleCopyCode = (code, index) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(index);
+      setTimeout(() => setCopiedCode(null), 2000);
+    });
   };
 
   return (
@@ -209,16 +218,38 @@ const Docs = () => {
                   components={{
                     code({ node, inline, className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '');
+                      const codeString = String(children).replace(/\n$/, '');
+                      const codeIndex = `${activeSection}-${codeString.substring(0, 20)}`;
+                      
                       return !inline && match ? (
-                        <SyntaxHighlighter
-                          style={vscDarkPlus}
-                          language={match[1]}
-                          PreTag="div"
-                          className="rounded-xl"
-                          {...props}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
+                        <div className="relative group">
+                          <button
+                            onClick={() => handleCopyCode(codeString, codeIndex)}
+                            className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-2"
+                            title="Copier le code"
+                          >
+                            {copiedCode === codeIndex ? (
+                              <>
+                                <Check size={16} />
+                                <span className="text-xs font-medium">Copié</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={16} />
+                                <span className="text-xs font-medium">Copier</span>
+                              </>
+                            )}
+                          </button>
+                          <SyntaxHighlighter
+                            style={vscDarkPlus}
+                            language={match[1]}
+                            PreTag="div"
+                            className="rounded-xl"
+                            {...props}
+                          >
+                            {codeString}
+                          </SyntaxHighlighter>
+                        </div>
                       ) : (
                         <code className="bg-gray-100 text-primary-600 px-2 py-1 rounded" {...props}>
                           {children}
