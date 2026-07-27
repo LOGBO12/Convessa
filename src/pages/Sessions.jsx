@@ -83,6 +83,51 @@ const Sessions = () => {
     }
   }, [userSession, user?.uid]);
 
+  // Ref pour annuler le polling de QR si le socket livre le QR avant
+  const qrPollTimerRef = useRef(null);
+  // Ref pour le polling de statut (fallback socket)
+  const statusPollRef  = useRef(null);
+
+  const stopQrPolling = () => {
+    if (qrPollTimerRef.current) {
+      clearTimeout(qrPollTimerRef.current);
+      qrPollTimerRef.current = null;
+    }
+  };
+
+  // Polling HTTP de fallback — utilisé quand le socket ne répond pas
+  // (alwaysdata mutualisé bloque souvent les WebSockets persistants)
+  const startStatusPolling = () => {
+    if (statusPollRef.current) return; // déjà actif
+    statusPollRef.current = setInterval(async () => {
+      try {
+        const session = await tenantsAPI.getMe();
+        if (session?.status === 'connected') {
+          stopStatusPolling();
+          setShowQRModal(false);
+          setPollingStatus(false);
+          stopQrPolling();
+          await refreshSession();
+          if (!session.apiKeyHint) {
+            setActivationError('');
+            setHasReferralCode(null);
+            setReferralCodeInput('');
+            setActivationModal(true);
+          } else {
+            setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
+          }
+        }
+      } catch { /* ignorer les erreurs réseau passagères */ }
+    }, 3000);
+  };
+
+  const stopStatusPolling = () => {
+    if (statusPollRef.current) {
+      clearInterval(statusPollRef.current);
+      statusPollRef.current = null;
+    }
+  };
+
   useEffect(() => {
     connectSocket();
 
@@ -90,6 +135,7 @@ const Sessions = () => {
       console.log('[Socket] tenant_connected', data);
       const currentId = activeTenantIdRef.current;
       if (!currentId || data.tenantId === currentId) {
+        stopStatusPolling(); // socket a répondu — plus besoin du polling HTTP
         setShowQRModal(false);
         setPollingStatus(false);
 
@@ -151,6 +197,7 @@ const Sessions = () => {
       unsubQR();
       unsubError();
       stopQrPolling();
+      stopStatusPolling();
       // Ne pas déconnecter le socket ici — il est partagé
     };
   }, []); // ← dépendances vides : listeners créés une seule fois, la ref se met à jour en dehors
@@ -194,16 +241,6 @@ const Sessions = () => {
     }
   };
 
-  // Ref pour annuler le polling de QR si le socket livre le QR avant
-  const qrPollTimerRef = useRef(null);
-
-  const stopQrPolling = () => {
-    if (qrPollTimerRef.current) {
-      clearTimeout(qrPollTimerRef.current);
-      qrPollTimerRef.current = null;
-    }
-  };
-
   // Récupère MON QR code (self-service — jamais de tenantId dans l'appel :
   // le backend résout "moi" depuis le token Firebase).
   // Si le QR n'est pas encore dispo (Baileys pas encore prêt), on réessaie
@@ -217,6 +254,9 @@ const Sessions = () => {
       setQrCode(null);
       setPollingStatus(true);
       stopQrPolling();
+      // Démarrer le polling HTTP en parallèle du socket
+      // (fallback pour les hébergements qui bloquent les WebSockets)
+      startStatusPolling();
     }
 
     try {
@@ -558,7 +598,7 @@ const Sessions = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowQRModal(false)}
+            onClick={() => { setShowQRModal(false); stopStatusPolling(); stopQrPolling(); }}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
