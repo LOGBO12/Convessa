@@ -45,6 +45,14 @@ const Sessions = () => {
   const [apiKeyModalCopied, setApiKeyModalCopied] = useState(false);
   const [errorFromSocket, setErrorFromSocket] = useState('');
 
+  // Modal "code de parrainage" — affiché juste après le scan réussi du QR,
+  // avant la génération de la clé API.
+  const [activationModal, setActivationModal] = useState(false);
+  const [hasReferralCode, setHasReferralCode] = useState(null); // true | false | null (pas encore choisi)
+  const [referralCodeInput, setReferralCodeInput] = useState('');
+  const [activating, setActivating] = useState(false);
+  const [activationError, setActivationError] = useState('');
+
   // Ref pour avoir accès au tenantId courant dans les callbacks socket
   // sans recréer les listeners à chaque render
   const activeTenantIdRef = useRef(null);
@@ -75,6 +83,51 @@ const Sessions = () => {
     }
   }, [userSession, user?.uid]);
 
+  // Ref pour annuler le polling de QR si le socket livre le QR avant
+  const qrPollTimerRef = useRef(null);
+  // Ref pour le polling de statut (fallback socket)
+  const statusPollRef  = useRef(null);
+
+  const stopQrPolling = () => {
+    if (qrPollTimerRef.current) {
+      clearTimeout(qrPollTimerRef.current);
+      qrPollTimerRef.current = null;
+    }
+  };
+
+  // Polling HTTP de fallback — utilisé quand le socket ne répond pas
+  // (alwaysdata mutualisé bloque souvent les WebSockets persistants)
+  const startStatusPolling = () => {
+    if (statusPollRef.current) return; // déjà actif
+    statusPollRef.current = setInterval(async () => {
+      try {
+        const session = await tenantsAPI.getMe();
+        if (session?.status === 'connected') {
+          stopStatusPolling();
+          setShowQRModal(false);
+          setPollingStatus(false);
+          stopQrPolling();
+          await refreshSession();
+          if (!session.apiKeyHint) {
+            setActivationError('');
+            setHasReferralCode(null);
+            setReferralCodeInput('');
+            setActivationModal(true);
+          } else {
+            setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
+          }
+        }
+      } catch { /* ignorer les erreurs réseau passagères */ }
+    }, 3000);
+  };
+
+  const stopStatusPolling = () => {
+    if (statusPollRef.current) {
+      clearInterval(statusPollRef.current);
+      statusPollRef.current = null;
+    }
+  };
+
   useEffect(() => {
     connectSocket();
 
@@ -82,8 +135,21 @@ const Sessions = () => {
       console.log('[Socket] tenant_connected', data);
       const currentId = activeTenantIdRef.current;
       if (!currentId || data.tenantId === currentId) {
+        stopStatusPolling(); // socket a répondu — plus besoin du polling HTTP
         setShowQRModal(false);
         setPollingStatus(false);
+
+        // QR scanné avec succès, mais la clé API n'est pas encore générée :
+        // on demande d'abord à l'utilisateur s'il possède un code de parrainage.
+        if (data.awaitingActivation) {
+          setActivationError('');
+          setHasReferralCode(null);
+          setReferralCodeInput('');
+          setActivationModal(true);
+          refreshSession();
+          return;
+        }
+
         // Sauvegarder la clé API en localStorage
         if (data.apiKey && userUidRef.current) {
           saveTenantApiKey(userUidRef.current, data.apiKey);
@@ -107,6 +173,7 @@ const Sessions = () => {
       const currentId = activeTenantIdRef.current;
       if (!currentId || data.tenantId === currentId) {
         if (data.qrCode) {
+          stopQrPolling(); // le socket a livré le QR, plus besoin de poller
           setQrCode(data.qrCode);
           setQrLoading(false);
         }
@@ -129,6 +196,8 @@ const Sessions = () => {
       unsubConnected();
       unsubQR();
       unsubError();
+      stopQrPolling();
+      stopStatusPolling();
       // Ne pas déconnecter le socket ici — il est partagé
     };
   }, []); // ← dépendances vides : listeners créés une seule fois, la ref se met à jour en dehors
@@ -174,32 +243,54 @@ const Sessions = () => {
 
   // Récupère MON QR code (self-service — jamais de tenantId dans l'appel :
   // le backend résout "moi" depuis le token Firebase).
-  const handleShowQR = async () => {
-    setShowQRModal(true);
-    setQrLoading(true);
-    setQrCode(null);
-    setPollingStatus(true);
+  // Si le QR n'est pas encore dispo (Baileys pas encore prêt), on réessaie
+  // toutes les 2s jusqu'à l'obtenir ou jusqu'à 30s max.
+  const handleShowQR = async (attempt = 1) => {
+    const MAX_ATTEMPTS = 15; // 15 × 2s = 30s max
+
+    if (attempt === 1) {
+      setShowQRModal(true);
+      setQrLoading(true);
+      setQrCode(null);
+      setPollingStatus(true);
+      stopQrPolling();
+      // Démarrer le polling HTTP en parallèle du socket
+      // (fallback pour les hébergements qui bloquent les WebSockets)
+      startStatusPolling();
+    }
 
     try {
       const response = await tenantsAPI.getQRCode();
 
       if (response.status === 'connected') {
-        setError('Cette session est déjà connectée');
         setQrLoading(false);
         setPollingStatus(false);
+        setShowQRModal(false);
+        await refreshSession();
         return;
       }
 
-      if (response.status === 'pending_qr' && response.qrCode) {
+      if (response.qrCode) {
+        // QR disponible immédiatement (mis en cache côté backend)
         setQrCode(response.qrCode);
         setQrLoading(false);
-        // Socket.io se chargera de détecter la connexion automatiquement
+        return;
+      }
+
+      // QR pas encore prêt (Baileys initialise) — réessayer dans 2s
+      if (attempt < MAX_ATTEMPTS) {
+        qrPollTimerRef.current = setTimeout(() => handleShowQR(attempt + 1), 2000);
+      } else {
+        // Timeout — on arrête le spinner, l'utilisateur peut cliquer "Réessayer"
+        setQrLoading(false);
+        setPollingStatus(false);
       }
     } catch (err) {
       console.error('Erreur récupération QR:', err);
       setError(err.message || 'Erreur lors de la récupération du QR code');
       setQrLoading(false);
       setPollingStatus(false);
+      stopQrPolling();
     }
   };
 
@@ -216,6 +307,54 @@ const Sessions = () => {
       console.error('Erreur rafraîchissement QR:', err);
     } finally {
       setQrLoading(false);
+    }
+  };
+
+  /**
+   * Envoie la décision de l'utilisateur (avec ou sans code de parrainage) et
+   * génère la clé API définitive avec les privilèges correspondants.
+   */
+  const handleActivate = async () => {
+    if (hasReferralCode === true && !referralCodeInput.trim()) {
+      setActivationError('Veuillez saisir votre code de parrainage, ou choisir "Non" si vous n\'en avez pas.');
+      return;
+    }
+
+    setActivating(true);
+    setActivationError('');
+
+    try {
+      const codeToSend = hasReferralCode === true ? referralCodeInput.trim() : '';
+      const response = await tenantsAPI.activate(codeToSend);
+
+      if (response.apiKey && user?.uid) {
+        saveTenantApiKey(user.uid, response.apiKey);
+      }
+
+      setActivationModal(false);
+      setHasReferralCode(null);
+      setReferralCodeInput('');
+
+      setApiKeyModal({
+        key:       response.apiKey ?? null,
+        hint:      response.apiKeyHint ?? null,
+        expiresAt: response.apiKeyExpiresAt ?? null,
+      });
+
+      refreshSession();
+    } catch (err) {
+      console.error('Erreur activation session:', err);
+      if (err.code === 'INVALID_REFERRAL_CODE') {
+        setActivationError('Ce code de parrainage est invalide ou introuvable. Vérifiez-le, ou continuez sans code.');
+      } else if (err.code === 'ALREADY_ACTIVATED') {
+        // Déjà activée entre-temps (ex: double clic) — on ferme simplement le modal.
+        setActivationModal(false);
+        await refreshSession();
+      } else {
+        setActivationError(err.message || "Erreur lors de l'activation de votre session");
+      }
+    } finally {
+      setActivating(false);
     }
   };
 
@@ -459,7 +598,7 @@ const Sessions = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowQRModal(false)}
+            onClick={() => { setShowQRModal(false); stopStatusPolling(); stopQrPolling(); }}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
@@ -482,6 +621,7 @@ const Sessions = () => {
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader className="animate-spin text-primary-600 mb-4" size={48} />
                     <p className="text-gray-600">Génération du QR code...</p>
+                    <p className="text-xs text-gray-400 mt-2">Connexion à WhatsApp en cours</p>
                   </div>
                 ) : qrCode ? (
                   <div className="space-y-4">
@@ -550,6 +690,112 @@ const Sessions = () => {
                     </button>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal code de parrainage — affiché juste après le scan QR réussi,
+          avant la génération de la clé API */}
+      <AnimatePresence>
+        {activationModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center space-x-2">
+                  <CheckCircle size={24} />
+                  <span>WhatsApp connecté !</span>
+                </h2>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 space-y-5">
+                <p className="text-sm text-gray-700">
+                  Une dernière étape avant de générer votre clé API : possédez-vous un
+                  <strong> code de parrainage</strong> ?
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setHasReferralCode(true); setActivationError(''); }}
+                    className={`py-2.5 rounded-lg border-2 font-medium transition-colors ${
+                      hasReferralCode === true
+                        ? 'border-green-600 bg-green-50 text-green-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Oui
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setHasReferralCode(false); setReferralCodeInput(''); setActivationError(''); }}
+                    className={`py-2.5 rounded-lg border-2 font-medium transition-colors ${
+                      hasReferralCode === false
+                        ? 'border-green-600 bg-green-50 text-green-700'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    Non
+                  </button>
+                </div>
+
+                {hasReferralCode === true && (
+                  <div>
+                    <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Entrez votre code de parrainage
+                    </label>
+                    <input
+                      id="referralCode"
+                      type="text"
+                      value={referralCodeInput}
+                      onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
+                      placeholder="Ex: CONVESSA2026"
+                      autoFocus
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-green-600 focus:outline-none uppercase tracking-wide"
+                    />
+                  </div>
+                )}
+
+                {hasReferralCode === false && (
+                  <p className="text-xs text-gray-500">
+                    Pas de souci — votre clé sera générée avec les privilèges de notre offre gratuite.
+                  </p>
+                )}
+
+                {activationError && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <AlertCircle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{activationError}</p>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleActivate}
+                  disabled={activating || hasReferralCode === null}
+                  className="w-full flex items-center justify-center space-x-2 bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {activating ? (
+                    <>
+                      <Loader className="animate-spin" size={18} />
+                      <span>Génération de la clé...</span>
+                    </>
+                  ) : (
+                    <span>Générer ma clé API</span>
+                  )}
+                </button>
               </div>
             </motion.div>
           </motion.div>
@@ -626,7 +872,7 @@ const Sessions = () => {
                   <div className="flex items-start space-x-3">
                     <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
                     <div>
-                      <h4 className="font-bold text-red-900 mb-1 text-sm">⚠️ Important — À lire attentivement</h4>
+                      <h4 className="font-bold text-red-900 mb-1 text-sm"> Important : À lire attentivement</h4>
                       <ul className="text-xs text-red-800 space-y-1">
                         <li>• Cette clé ne sera plus affichée en clair par la suite</li>
                         <li>• Copiez-la et stockez-la dans un endroit sûr (gestionnaire de mots de passe, .env, etc.)</li>

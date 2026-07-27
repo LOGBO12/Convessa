@@ -143,7 +143,7 @@ const VerifyRegister = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-gray-100">
+        <div className="bg-white rounded-3xl shadow-2xl p-5 sm:p-8 border-2 border-gray-100">
           {/* WhatsApp icon */}
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-lg">
@@ -197,7 +197,7 @@ const VerifyRegister = () => {
 
           {/* OTP inputs */}
           <div className="mb-6">
-            <div className="flex justify-center space-x-3 mb-4">
+            <div className="flex justify-center gap-1.5 sm:gap-3 mb-4">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -210,7 +210,7 @@ const VerifyRegister = () => {
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
                   disabled={loading}
-                  className={`w-12 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:outline-none transition-all ${
+                  className={`w-9 h-11 sm:w-12 sm:h-14 text-center text-lg sm:text-2xl font-bold border-2 rounded-xl focus:outline-none transition-all ${
                     error
                       ? 'border-red-500 text-red-600 bg-red-50'
                       : digit

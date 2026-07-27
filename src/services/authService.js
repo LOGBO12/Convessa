@@ -15,6 +15,14 @@ import { auth } from '../config/firebase';
 import { getCachedMachineHash } from './deviceFingerprint';
 
 // ---------------------------------------------------------------------------
+// Base URL — pointe vers le backend production si VITE_API_BASE_URL est défini,
+// sinon utilise le proxy Vite en dev local.
+// ---------------------------------------------------------------------------
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL}/api/v1`
+  : '/api/v1';
+
+// ---------------------------------------------------------------------------
 // Providers OAuth
 // ---------------------------------------------------------------------------
 const googleProvider = new GoogleAuthProvider();
@@ -69,7 +77,7 @@ async function apiFetch(path, options = {}) {
 
   let response;
   try {
-    response = await fetch(`/api/v1${path}`, { headers, ...rest });
+    response = await fetch(`${API_BASE}${path}`, { headers, ...rest });
   } catch (_networkErr) {
     throw { code: 'NETWORK_ERROR', message: 'Impossible de joindre le serveur.' };
   }

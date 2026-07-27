@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -22,6 +22,9 @@ import {
   Clock,
   ShieldCheck,
   ChevronRight,
+  Infinity,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
@@ -35,23 +38,7 @@ const Dashboard = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [copiedApiKey, setCopiedApiKey] = useState(false);
 
-  // Mock data pour l'usage et le plan (à remplacer par les vraies données API)
-  const userPlan = {
-    name: 'Pro',
-    price: 29,
-    messagesLimit: 5000,
-    renewalDate: '2026-03-15',
-  };
-
-  const usage = {
-    messagesSent: 847,
-    messagesLimit: userPlan.messagesLimit,
-    successRate: 98.5,
-    avgDeliveryTime: 1.2,
-  };
-
   const copyApiKey = () => {
-    // Essayer d'abord la vraie clé complète depuis localStorage
     const fullKey = getTenantApiKey(user?.uid);
     const keyToCopy = fullKey || userSession?.apiKeyHint;
     if (keyToCopy) {
@@ -61,19 +48,45 @@ const Dashboard = () => {
     }
   };
 
-  // Affichage de la clé : vraie clé si disponible, sinon hint
   const fullApiKey = getTenantApiKey(user?.uid);
   const displayKey = fullApiKey || userSession?.apiKeyHint || '';
 
+  // ── Données réelles depuis la session ──────────────────────────────────────
+  const usageType     = userSession?.usageType ?? 'unlimited';
+  const messagesSent  = userSession?.messagesSent ?? 0;
+  const messagesLimit = userSession?.messagesLimit ?? null;
+  const expiresAt     = userSession?.apiKeyExpiresAt ? new Date(userSession.apiKeyExpiresAt) : null;
+
   const getUsagePercentage = () => {
-    return Math.min((usage.messagesSent / usage.messagesLimit) * 100, 100);
+    if (!messagesLimit || usageType !== 'requests') return 0;
+    return Math.min((messagesSent / messagesLimit) * 100, 100);
   };
 
   const getUsageBarClass = () => {
     const pct = getUsagePercentage();
     if (pct >= 90) return 'bg-red-600';
-    if (pct >= 70) return 'bg-green-500';
+    if (pct >= 70) return 'bg-yellow-500';
     return 'bg-green-600';
+  };
+
+  const getPlanLabel = () => {
+    if (!userSession) return '—';
+    if (usageType === 'unlimited') return 'Illimité';
+    if (usageType === 'duration' && expiresAt) {
+      const remaining = Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      if (remaining <= 0) return 'Expiré';
+      return `${remaining} jour${remaining > 1 ? 's' : ''} restant${remaining > 1 ? 's' : ''}`;
+    }
+    if (usageType === 'requests' && messagesLimit !== null) {
+      return `${(messagesLimit - messagesSent).toLocaleString()} msg restants`;
+    }
+    return '—';
+  };
+
+  const isExpired = () => {
+    if (usageType === 'duration' && expiresAt) return expiresAt.getTime() <= Date.now();
+    if (usageType === 'requests' && messagesLimit !== null) return messagesSent >= messagesLimit;
+    return false;
   };
 
   const firstName = user?.displayName?.split(' ')[0] || 'Utilisateur';
@@ -269,34 +282,59 @@ const Dashboard = () => {
                   <div className="flex justify-between items-baseline mb-3">
                     <div>
                       <p className="text-3xl font-bold text-gray-900">
-                        {usage.messagesSent.toLocaleString()}
+                        {messagesSent.toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500">messages envoyés</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-base font-semibold text-gray-700">
-                        {usage.messagesLimit.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-500">limite mensuelle</p>
+                      {usageType === 'requests' && messagesLimit !== null ? (
+                        <>
+                          <p className="text-base font-semibold text-gray-700">
+                            {messagesLimit.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">quota total</p>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-1 text-green-700">
+                          <Infinity size={18} />
+                          <p className="text-xs text-gray-500">illimité</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div
-                    className="w-full bg-gray-100 rounded-full h-3 overflow-hidden"
-                    role="progressbar"
-                    aria-valuenow={Math.round(getUsagePercentage())}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  >
-                    <div
-                      className={`h-3 rounded-full ${getUsageBarClass()} transition-all duration-500`}
-                      style={{ width: `${getUsagePercentage()}%` }}
-                    ></div>
-                  </div>
+                  {usageType === 'requests' && messagesLimit !== null && (
+                    <>
+                      <div
+                        className="w-full bg-gray-100 rounded-full h-3 overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={Math.round(getUsagePercentage())}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <div
+                          className={`h-3 rounded-full ${getUsageBarClass()} transition-all duration-500`}
+                          style={{ width: `${getUsagePercentage()}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">
+                        {Math.max(0, messagesLimit - messagesSent).toLocaleString()} messages restants · {getUsagePercentage().toFixed(1)}% utilisé
+                      </p>
+                    </>
+                  )}
 
-                  <p className="text-sm text-gray-500 mt-2">
-                    {usage.messagesLimit - usage.messagesSent} messages restants · {getUsagePercentage().toFixed(1)}% utilisé
-                  </p>
+                  {usageType === 'duration' && expiresAt && (
+                    <div className={`mt-3 flex items-center gap-2 text-sm px-3 py-2 rounded-lg ${
+                      isExpired() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+                    }`}>
+                      <Calendar size={15} />
+                      <span>
+                        {isExpired()
+                          ? 'Abonnement expiré'
+                          : `Expire le ${expiresAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Stats Grid */}
@@ -306,15 +344,17 @@ const Dashboard = () => {
                       <TrendingUp size={17} className="text-green-700" />
                       <p className="text-sm text-gray-500">Taux de succès</p>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{usage.successRate}%</p>
+                    <p className="text-2xl font-bold text-gray-900">—</p>
                   </div>
 
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Zap size={17} className="text-green-700" />
-                      <p className="text-sm text-gray-500">Délai moyen</p>
+                      <p className="text-sm text-gray-500">Type de plan</p>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{usage.avgDeliveryTime}s</p>
+                    <p className="text-base font-bold text-gray-900 capitalize">
+                      {usageType === 'unlimited' ? 'Illimité' : usageType === 'duration' ? 'Durée' : 'Quota'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -328,47 +368,105 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.24, duration: 0.35 }}
-              className="bg-white rounded-2xl border-2 border-green-700 p-6"
+              className={`bg-white rounded-2xl border-2 p-6 ${
+                isExpired() ? 'border-red-400' : 'border-green-700'
+              }`}
               aria-labelledby="plan-heading"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 id="plan-heading" className="font-semibold text-gray-500 text-sm">
-                  Mon plan
+                  Mon abonnement
                 </h3>
-                <CreditCard size={20} className="text-green-700" />
+                <CreditCard size={20} className={isExpired() ? 'text-red-500' : 'text-green-700'} />
               </div>
 
-              <div className="mb-6">
-                <p className="text-3xl font-bold text-gray-900 mb-1">Plan {userPlan.name}</p>
-                <p className="text-gray-500 text-lg">
-                  {userPlan.price}€<span className="text-sm">/mois</span>
-                </p>
-              </div>
+              {sessionLoading ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-8 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ) : !userSession ? (
+                <div className="py-4 text-center">
+                  <p className="text-gray-500 text-sm">Connectez WhatsApp pour voir votre plan.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-5">
+                    {/* Badge type de plan */}
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold mb-3 ${
+                      isExpired()
+                        ? 'bg-red-100 text-red-700'
+                        : usageType === 'unlimited'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {usageType === 'unlimited' && <Infinity size={14} />}
+                      {usageType === 'duration' && <Calendar size={14} />}
+                      {usageType === 'requests' && <MessageCircle size={14} />}
+                      <span>
+                        {usageType === 'unlimited' ? 'Illimité' : usageType === 'duration' ? 'Durée limitée' : 'Quota de messages'}
+                      </span>
+                    </div>
 
-              <ul className="space-y-2.5 mb-6">
-                <li className="flex items-center gap-2 text-gray-700 text-sm">
-                  <CheckCircle size={16} className="text-green-700 shrink-0" />
-                  <span>{userPlan.messagesLimit.toLocaleString()} messages/mois</span>
-                </li>
-                <li className="flex items-center gap-2 text-gray-700 text-sm">
-                  <CheckCircle size={16} className="text-green-700 shrink-0" />
-                  <span>Support prioritaire</span>
-                </li>
-                <li className="flex items-center gap-2 text-gray-700 text-sm">
-                  <CheckCircle size={16} className="text-green-700 shrink-0" />
-                  <span>Webhooks illimités</span>
-                </li>
-              </ul>
+                    <p className="text-2xl font-bold text-gray-900">{getPlanLabel()}</p>
 
-              <div className="flex items-center gap-2 text-gray-500 text-xs mb-4 pt-4 border-t border-gray-100">
-                <Calendar size={14} />
-                <span>Renouvellement le {new Date(userPlan.renewalDate).toLocaleDateString('fr-FR')}</span>
-              </div>
+                    {expiresAt && usageType === 'duration' && !isExpired() && (
+                      <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                        <Calendar size={13} />
+                        Expire le {expiresAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                    )}
 
-              <button className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium flex items-center justify-center gap-2">
-                <ArrowUpRight size={18} />
-                <span>Passer au plan Enterprise</span>
-              </button>
+                    {isExpired() && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-red-700 bg-red-50 px-3 py-2 rounded-lg">
+                        <AlertCircle size={14} />
+                        <span>Abonnement expiré — renouvelez pour continuer à envoyer.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Détails */}
+                  <ul className="space-y-2.5 mb-5">
+                    {usageType === 'requests' && messagesLimit !== null && (
+                      <li className="flex items-center gap-2 text-gray-700 text-sm">
+                        <CheckCircle size={15} className="text-green-700 shrink-0" />
+                        <span>{messagesLimit.toLocaleString()} messages au total</span>
+                      </li>
+                    )}
+                    {usageType === 'unlimited' && (
+                      <li className="flex items-center gap-2 text-gray-700 text-sm">
+                        <CheckCircle size={15} className="text-green-700 shrink-0" />
+                        <span>Aucune limite d'envoi</span>
+                      </li>
+                    )}
+                    <li className="flex items-center gap-2 text-gray-700 text-sm">
+                      <CheckCircle size={15} className="text-green-700 shrink-0" />
+                      <span>API REST WhatsApp</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700 text-sm">
+                      <CheckCircle size={15} className="text-green-700 shrink-0" />
+                      <span>Support inclus</span>
+                    </li>
+                  </ul>
+
+                  <div className="border-t border-gray-100 pt-4">
+                    <button
+                      onClick={() => navigate('/pricing')}
+                      className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                        isExpired()
+                          ? 'bg-red-600 hover:bg-red-700 text-white focus-visible:ring-red-500'
+                          : 'bg-green-700 hover:bg-green-800 text-white focus-visible:ring-green-600'
+                      }`}
+                    >
+                      {isExpired() ? (
+                        <><RefreshCw size={17} /><span>Renouveler l'abonnement</span></>
+                      ) : (
+                        <><ArrowUpRight size={17} /><span>Changer de plan</span></>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.section>
 
             {/* Quick Actions */}
