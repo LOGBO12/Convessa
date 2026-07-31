@@ -477,7 +477,7 @@ const Sessions = () => {
             <div className={`h-2 ${getStatusConfig(userSession.status).bg}`}></div>
 
             <div className="p-6">
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6 gap-4">
                 <div className="flex items-center space-x-4">
                   <div className={`w-16 h-16 rounded-xl ${getStatusConfig(userSession.status).bg} flex items-center justify-center`}>
                     {React.createElement(getStatusConfig(userSession.status).icon, {
@@ -557,7 +557,7 @@ const Sessions = () => {
               )}
 
               {/* Session Info */}
-              <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-500 mb-1">ID Session</p>
                   <code className="text-xs text-gray-900">{userSession.tenantId.slice(0, 12)}...</code>
@@ -626,8 +626,8 @@ const Sessions = () => {
                 ) : qrCode ? (
                   <div className="space-y-4">
                     {/* QR Code Image */}
-                    <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200 flex justify-center relative">
-                      <img src={qrCode} alt="QR Code" className="w-64 h-64" />
+                    <div className="bg-gray-50 p-3 sm:p-6 rounded-xl border-2 border-gray-200 flex justify-center relative">
+                      <img src={qrCode} alt="QR Code" className="w-48 h-48 sm:w-64 sm:h-64" />
 
                       {/* Polling indicator */}
                       {pollingStatus && (

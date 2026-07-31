@@ -327,7 +327,7 @@ export default function Docs() {
     h1: ({ children }) => {
       const id = slugify(String(children));
       return (
-        <h1 id={id} className="text-3xl font-bold text-gray-900 mb-8 pb-5 border-b border-gray-200 tracking-tight">
+        <h1 id={id} className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 pb-5 border-b border-gray-200 tracking-tight">
           {children}
         </h1>
       );
@@ -506,7 +506,7 @@ export default function Docs() {
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-10 lg:px-12 lg:py-12">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 sm:px-8 py-8 sm:py-10 lg:px-12 lg:py-12">
 
               {/* État chargement */}
               {loading && (

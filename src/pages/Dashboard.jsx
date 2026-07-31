@@ -108,7 +108,7 @@ const Dashboard = () => {
         >
           <div>
             <p className="text-sm font-medium text-green-700 mb-1 capitalize">{today}</p>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Bonjour {firstName}
             </h1>
             <p className="text-gray-500 mt-1">Gérez votre API WhatsApp et suivez vos statistiques</p>
@@ -338,7 +338,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-gray-100">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp size={17} className="text-green-700" />
