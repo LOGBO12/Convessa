@@ -16,6 +16,7 @@ import Docs from './pages/Docs';
 import FAQ from './pages/FAQ';
 import Pricing from './pages/Pricing';
 import PaymentCallback from './pages/PaymentCallback';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -125,6 +126,28 @@ function App() {
 
           {/* Callback paiement FedaPay */}
           <Route path="/payment/callback" element={<PaymentCallback />} />
+
+          {/* Contact */}
+          <Route
+            path="/contact"
+            element={
+              <>
+                <Navbar />
+                <Contact />
+                <Footer />
+              </>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <>
+                <Navbar />
+                <Contact />
+                <Footer />
+              </>
+            }
+          />
           <Route
             path="/faq"
             element={

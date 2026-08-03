@@ -97,25 +97,25 @@ const Home = () => {
               <span className="font-medium">WhatsApp API for Developers</span>
             </motion.div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               {t('home.hero.title')}
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/90 mb-10 leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-10 leading-relaxed">
               {t('home.hero.subtitle')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center space-x-2 bg-white text-primary-600 px-8 py-4 rounded-lg hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg font-medium"
+                className="inline-flex items-center justify-center space-x-2 bg-white text-primary-600 px-5 py-3 sm:px-8 sm:py-4 rounded-lg hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-base sm:text-lg font-medium"
               >
                 <span>{t('home.hero.cta')}</span>
                 <ArrowRight size={20} />
               </Link>
               <Link
                 to="/docs"
-                className="inline-flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-lg border-2 border-white/30 hover:bg-white/20 transition-all text-lg font-medium"
+                className="inline-flex items-center justify-center space-x-2 bg-white/10 backdrop-blur-sm text-white px-5 py-3 sm:px-8 sm:py-4 rounded-lg border-2 border-white/30 hover:bg-white/20 transition-all text-base sm:text-lg font-medium"
               >
                 <Code size={20} />
                 <span>{t('home.hero.secondaryCta')}</span>
@@ -135,8 +135,8 @@ const Home = () => {
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
                 <span className="ml-4 text-gray-400 text-sm">app.js</span>
               </div>
-              <div className="p-6 text-left overflow-x-auto">
-                <pre className="text-sm text-gray-300">
+              <div className="p-4 text-left overflow-x-auto">
+                <pre className="text-xs sm:text-sm text-gray-300">
                   <code>{`// Send a WhatsApp message
 const response = await fetch('https://api.convessa.dev/send', {
   method: 'POST',
@@ -175,7 +175,7 @@ const response = await fetch('https://api.convessa.dev/send', {
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
           >
             {[
               { icon: Code, key: 'feature1', bgColor: 'bg-blue-50', iconColor: 'text-blue-600', borderColor: 'border-blue-100' },
@@ -186,7 +186,7 @@ const response = await fetch('https://api.convessa.dev/send', {
               <motion.div
                 key={key}
                 variants={fadeInUp}
-                className={`bg-white border-2 ${borderColor} rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group`}
+                className={`bg-white border-2 ${borderColor} rounded-2xl p-5 sm:p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group`}
               >
                 <div
                   className={`w-16 h-16 rounded-2xl ${bgColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
@@ -217,7 +217,7 @@ const response = await fetch('https://api.convessa.dev/send', {
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {[
               { icon: MessageCircle, key: 'step1', step: '01' },
               { icon: Key, key: 'step2', step: '02' },
@@ -267,7 +267,7 @@ const response = await fetch('https://api.convessa.dev/send', {
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
             {plansLoading && (
               [0, 1, 2].map((i) => (
                 <div
@@ -306,9 +306,9 @@ const response = await fetch('https://api.convessa.dev/send', {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className={`rounded-3xl p-8 ${
+                  className={`rounded-3xl p-6 sm:p-8 ${
                     isPopular
-                      ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-2xl transform scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
+                      ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-2xl sm:transform sm:scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
                       : 'bg-white border-2 border-gray-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300'
                   }`}
                 >
@@ -326,7 +326,7 @@ const response = await fetch('https://api.convessa.dev/send', {
                     {plan.name}
                   </h3>
                   <div className="mb-8">
-                    <span className="text-5xl font-bold">{formatPlanPrice(plan.price)}</span>
+                    <span className="text-3xl sm:text-5xl font-bold">{formatPlanPrice(plan.price)}</span>
                   </div>
                   {usageLabel && (
                     <ul className="space-y-4 mb-8">
@@ -409,11 +409,11 @@ const response = await fetch('https://api.convessa.dev/send', {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-6xl font-bold mb-6">{t('home.cta.title')}</h2>
-            <p className="text-xl md:text-2xl text-white/90 mb-10 leading-relaxed">{t('home.cta.subtitle')}</p>
+            <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-6">{t('home.cta.title')}</h2>
+            <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-10 leading-relaxed">{t('home.cta.subtitle')}</p>
             <Link
               to="/signup"
-              className="inline-flex items-center space-x-2 bg-white text-primary-600 px-10 py-5 rounded-xl hover:bg-gray-50 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 text-lg font-bold"
+              className="inline-flex items-center space-x-2 bg-white text-primary-600 px-6 py-4 sm:px-10 sm:py-5 rounded-xl hover:bg-gray-50 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 text-base sm:text-lg font-bold"
             >
               <span>{t('home.cta.button')}</span>
               <ArrowRight size={24} />

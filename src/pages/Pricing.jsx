@@ -274,8 +274,8 @@ export default function Pricing() {
 
       {/* Header */}
       <div className="text-center mb-14">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Choisissez votre plan</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4">Choisissez votre plan</h1>
+        <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
           Tous les plans incluent l'accès à l'API WhatsApp, la documentation et le support.
           Payez en FCFA via FedaPay ou KKiaPay.
         </p>
@@ -358,7 +358,7 @@ export default function Pricing() {
                 </div>
               )}
 
-              <div className="p-7 flex flex-col flex-1">
+              <div className="p-4 sm:p-7 flex flex-col flex-1">
                 {/* Icône + Nom */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
@@ -371,7 +371,7 @@ export default function Pricing() {
 
                 {/* Prix */}
                 <div className="mb-2">
-                  <span className="text-4xl font-extrabold text-gray-900">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-gray-900">
                     {isFree ? 'Gratuit' : new Intl.NumberFormat('fr-FR').format(plan.price)}
                   </span>
                   {!isFree && <span className="text-gray-500 ml-1 text-lg">FCFA</span>}
@@ -554,7 +554,7 @@ export default function Pricing() {
                 </button>
               </div>
 
-              <div className="p-8 text-center space-y-5">
+              <div className="p-5 sm:p-8 text-center space-y-5">
                 {/* Icône animée */}
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
                   <ExternalLink size={28} className="text-orange-600" />

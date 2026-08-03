@@ -307,11 +307,32 @@ export const plansAPI = {
 };
 
 // ============================================================================
+// CONTACT — formulaire de contact
+// ============================================================================
+
+export const contactAPI = {
+  send: async (data) => fetchAPI('/contact', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+};
+
+// ============================================================================
+// COMMUNITY — rejoindre la communauté Convessa
+// ============================================================================
+
+export const communityAPI = {
+  join: async (data) => fetchAPI('/community', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+};
+
+// ============================================================================
 // PAYMENTS — initiation et suivi des paiements d'abonnement
 // ============================================================================
 
-export const paymentsAPI = {
-  /**
+export const paymentsAPI = {  /**
    * Initier un paiement pour un plan.
    * Retourne checkoutUrl (FedaPay) ou publicKey+amount (KKiaPay).
    */
@@ -374,4 +395,6 @@ export default {
   groups: groupsAPI,
   plans: plansAPI,
   payments: paymentsAPI,
+  contact: contactAPI,
+  community: communityAPI,
 };

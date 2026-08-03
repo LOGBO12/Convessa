@@ -172,10 +172,10 @@ const FAQ = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Questions Fréquentes
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
             Trouvez rapidement des réponses à vos questions sur Convessa, notre API WhatsApp et nos services.
           </p>
         </motion.div>
@@ -193,12 +193,12 @@ const FAQ = () => {
                 className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden"
               >
                 {/* Category Header */}
-                <div className={`${category.bg} px-6 py-4 border-b border-gray-200`}>
+                <div className={`${category.bg} px-4 sm:px-6 py-4 border-b border-gray-200`}>
                   <div className="flex items-center space-x-3">
                     <div className={`${category.color}`}>
                       <Icon size={24} />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">{category.title}</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{category.title}</h2>
                   </div>
                 </div>
 
@@ -209,12 +209,12 @@ const FAQ = () => {
                     const isOpen = openIndex === key;
 
                     return (
-                      <div key={questionIndex} className="p-6">
+                      <div key={questionIndex} className="p-4 sm:p-6">
                         <button
                           onClick={() => toggleQuestion(categoryIndex, questionIndex)}
                           className="w-full flex items-start justify-between text-left group"
                         >
-                          <span className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors pr-4">
+                          <span className="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors pr-4">
                             {item.question}
                           </span>
                           <motion.div
@@ -255,24 +255,24 @@ const FAQ = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="mt-16 text-center bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-12 shadow-xl"
+          className="mt-16 text-center bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-6 sm:p-12 shadow-xl"
         >
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-xl sm:text-3xl font-bold text-white mb-4">
             Vous ne trouvez pas votre réponse ?
           </h2>
-          <p className="text-primary-100 text-lg mb-8">
+          <p className="text-primary-100 text-base sm:text-lg mb-8">
             Notre équipe de support est là pour vous aider
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:support@convessa.dev"
-              className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md"
+              href="mailto:supportconvessa@gmail.com"
+              className="w-full sm:w-auto bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md text-center"
             >
               Contacter le support
             </a>
             <a
               href="/docs"
-              className="bg-primary-800 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-900 transition-colors"
+              className="w-full sm:w-auto bg-primary-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-900 transition-colors text-center"
             >
               Consulter la documentation
             </a>

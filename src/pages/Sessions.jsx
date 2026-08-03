@@ -17,7 +17,7 @@ import {
   Key,
   X,
 } from 'lucide-react';
-import { tenantsAPI, saveTenantApiKey, getTenantApiKey } from '../services/api';
+import { tenantsAPI, saveTenantApiKey, getTenantApiKey, communityAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
 import {
@@ -44,6 +44,12 @@ const Sessions = () => {
   const [apiKeyModal, setApiKeyModal] = useState(null); // { key, hint, expiresAt } | null
   const [apiKeyModalCopied, setApiKeyModalCopied] = useState(false);
   const [errorFromSocket, setErrorFromSocket] = useState('');
+
+  // Modal communauté — affiché après fermeture du modal clé API
+  const [communityModal, setCommunityModal] = useState(false);
+  const [communityForm, setCommunityForm] = useState({ firstName: '', lastName: '', phone: '' });
+  const [communitySubmitting, setCommunitySubmitting] = useState(false);
+  const [communityDone, setCommunityDone] = useState(false);
 
   // Modal "code de parrainage" — affiché juste après le scan réussi du QR,
   // avant la génération de la clé API.
@@ -161,6 +167,12 @@ const Sessions = () => {
             hint:      data.apiKeyHint ?? null,
             expiresAt: data.apiKeyExpiresAt ?? null,
           });
+          // Proposer la communauté 3s après l'affichage de la clé
+          setTimeout(() => {
+            const phone = userSession?.phone ?? '';
+            setCommunityForm(prev => ({ ...prev, phone: phone && phone !== '—' ? phone : '' }));
+            setCommunityModal(true);
+          }, 3000);
         } else {
           setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
         }
@@ -358,6 +370,40 @@ const Sessions = () => {
     }
   };
 
+  const handleCloseApiKeyModal = () => {
+    setApiKeyModal(null);
+    // Proposer la communauté après fermeture si pas déjà fait
+    if (!communityDone) {
+      setTimeout(() => {
+        // Pré-remplir le téléphone depuis la session si disponible
+        const sessionPhone = userSession?.phone && userSession.phone !== '—' ? userSession.phone : '';
+        setCommunityForm({ firstName: '', lastName: '', phone: sessionPhone });
+        setCommunityModal(true);
+      }, 400);
+    }
+  };
+
+  const handleJoinCommunity = async (e) => {
+    e.preventDefault();
+    if (!communityForm.firstName.trim() || !communityForm.lastName.trim() || !communityForm.phone.trim()) return;
+
+    setCommunitySubmitting(true);
+    try {
+      await communityAPI.join({
+        firstName: communityForm.firstName.trim(),
+        lastName: communityForm.lastName.trim(),
+        phone: communityForm.phone.trim(),
+        userUid: user?.uid,
+      });
+      setCommunityDone(true);
+    } catch {
+      // Ignorer les erreurs silencieusement (déjà membre, etc.)
+      setCommunityDone(true);
+    } finally {
+      setCommunitySubmitting(false);
+    }
+  };
+
   const copyApiKey = () => {
     // Copier la vraie clé complète depuis localStorage, ou le hint en fallback
     const fullKey = getTenantApiKey(user?.uid);
@@ -477,7 +523,7 @@ const Sessions = () => {
             <div className={`h-2 ${getStatusConfig(userSession.status).bg}`}></div>
 
             <div className="p-6">
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6 gap-4">
                 <div className="flex items-center space-x-4">
                   <div className={`w-16 h-16 rounded-xl ${getStatusConfig(userSession.status).bg} flex items-center justify-center`}>
                     {React.createElement(getStatusConfig(userSession.status).icon, {
@@ -557,7 +603,7 @@ const Sessions = () => {
               )}
 
               {/* Session Info */}
-              <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-500 mb-1">ID Session</p>
                   <code className="text-xs text-gray-900">{userSession.tenantId.slice(0, 12)}...</code>
@@ -626,8 +672,8 @@ const Sessions = () => {
                 ) : qrCode ? (
                   <div className="space-y-4">
                     {/* QR Code Image */}
-                    <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200 flex justify-center relative">
-                      <img src={qrCode} alt="QR Code" className="w-64 h-64" />
+                    <div className="bg-gray-50 p-3 sm:p-6 rounded-xl border-2 border-gray-200 flex justify-center relative">
+                      <img src={qrCode} alt="QR Code" className="w-48 h-48 sm:w-64 sm:h-64" />
 
                       {/* Polling indicator */}
                       {pollingStatus && (
@@ -820,7 +866,7 @@ const Sessions = () => {
               {/* Header */}
               <div className="relative bg-gradient-to-r from-green-500 to-green-600 px-8 py-6">
                 <button
-                  onClick={() => setApiKeyModal(null)}
+                  onClick={handleCloseApiKeyModal}
                   className="absolute top-4 right-4 text-white/80 hover:text-white"
                   aria-label="Fermer"
                 >
@@ -910,11 +956,133 @@ const Sessions = () => {
                 </div>
 
                 <button
-                  onClick={() => setApiKeyModal(null)}
+                  onClick={handleCloseApiKeyModal}
                   className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium"
                 >
                   Fermer
                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal communauté — affiché après fermeture du modal clé API */}
+      <AnimatePresence>
+        {communityModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-primary-600 to-purple-700 px-6 py-5">
+                <h2 className="text-xl font-bold text-white">
+                  🚀 Rejoignez la communauté Convessa !
+                </h2>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {communityDone ? (
+                  <div className="flex flex-col items-center text-center py-4">
+                    <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                      <CheckCircle size={32} className="text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Bienvenue dans la communauté ! 🎉</h3>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Vous faites maintenant partie de la communauté Convessa. À bientôt !
+                    </p>
+                    <button
+                      onClick={() => { setCommunityModal(false); }}
+                      className="px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 mb-6">
+                      Connectez-vous avec d'autres développeurs, partagez vos projets et restez informé des nouveautés.
+                    </p>
+
+                    <form onSubmit={handleJoinCommunity} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="community-first-name" className="block text-sm font-medium text-gray-700 mb-1">
+                            Prénom <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            id="community-first-name"
+                            type="text"
+                            value={communityForm.firstName}
+                            onChange={(e) => setCommunityForm((p) => ({ ...p, firstName: e.target.value }))}
+                            placeholder="Jean"
+                            required
+                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="community-last-name" className="block text-sm font-medium text-gray-700 mb-1">
+                            Nom <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            id="community-last-name"
+                            type="text"
+                            value={communityForm.lastName}
+                            onChange={(e) => setCommunityForm((p) => ({ ...p, lastName: e.target.value }))}
+                            placeholder="Dupont"
+                            required
+                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="community-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                          Téléphone WhatsApp <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="community-phone"
+                          type="tel"
+                          value={communityForm.phone}
+                          onChange={(e) => setCommunityForm((p) => ({ ...p, phone: e.target.value }))}
+                          placeholder="+229 90 00 00 00"
+                          required
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                        />
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="submit"
+                          disabled={communitySubmitting || !communityForm.firstName.trim() || !communityForm.lastName.trim() || !communityForm.phone.trim()}
+                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {communitySubmitting ? (
+                            <><Loader className="animate-spin" size={16} /><span>Inscription...</span></>
+                          ) : (
+                            <span>Rejoindre</span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCommunityModal(false)}
+                          className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+                        >
+                          Plus tard
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>
