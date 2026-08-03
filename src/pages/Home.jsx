@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -19,6 +20,7 @@ import { plansAPI } from '../services/api';
 
 const Home = () => {
   const { t } = useTranslation();
+  usePageTitle(null); // titre par défaut = Convessa : API WhatsApp pour développeurs
 
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);

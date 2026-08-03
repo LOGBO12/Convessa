@@ -3,10 +3,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, AlertCircle, Lightbulb, CheckCircle } from 'lucide-react';
 import { verifyLoginOTP, sendLoginOTP } from '../services/authService';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const VerifyLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  usePageTitle('Vérification');
   const phone = location.state?.phone;
   const devOtp = location.state?.devOtp;
 

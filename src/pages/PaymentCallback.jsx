@@ -14,8 +14,10 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, Loader, X } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function PaymentCallback() {
+  usePageTitle('Confirmation de paiement');
   const [searchParams] = useSearchParams();
   const navigate       = useNavigate();
 

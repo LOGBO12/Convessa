@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Smartphone, AlertCircle, UserPlus } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
@@ -8,6 +9,7 @@ import { signInWithGoogle, signInWithGithub, sendLoginOTP } from '../services/au
 
 const Login = () => {
   const navigate = useNavigate();
+  usePageTitle('Connexion');
   const [phoneValue, setPhoneValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

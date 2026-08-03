@@ -3,10 +3,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, AlertCircle, Lightbulb, CheckCircle } from 'lucide-react';
 import { verifyRegisterOTP, sendRegisterOTP } from '../services/authService';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const VerifyRegister = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  usePageTitle("Confirmation d'inscription");
   const phone = location.state?.phone;
   const devOtp = location.state?.devOtp;
 

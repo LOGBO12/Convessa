@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -33,6 +34,7 @@ import { getTenantApiKey } from '../services/api';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  usePageTitle('Tableau de bord');
   const { session: userSession, loading: sessionLoading } = useUserSession();
 
   const [showApiKey, setShowApiKey] = useState(false);

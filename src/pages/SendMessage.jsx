@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -45,6 +46,7 @@ const RECIPIENT_MODES = [
 
 const SendMessage = () => {
   const { user } = useAuth();
+  usePageTitle('Envoyer un message');
   const { session: userSession, loading: sessionLoading } = useUserSession();
   const tenantApiKey = getTenantApiKey(user?.uid);
 

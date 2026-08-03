@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Smartphone, AlertCircle, LogIn } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
@@ -11,6 +12,7 @@ const LOGIN_HINT_CODES = ['DEVICE_ALREADY_REGISTERED', 'PHONE_ALREADY_REGISTERED
 
 const Register = () => {
   const navigate = useNavigate();
+  usePageTitle('Créer un compte');
   const [phoneValue, setPhoneValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

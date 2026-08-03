@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Smartphone,
@@ -29,6 +30,7 @@ import {
 
 const Sessions = () => {
   const { user } = useAuth();
+  usePageTitle('Mes sessions WhatsApp');
   const { session: userSession, loading: sessionLoading, refresh: refreshSession } = useUserSession();
 
   const [showQRModal, setShowQRModal] = useState(false);

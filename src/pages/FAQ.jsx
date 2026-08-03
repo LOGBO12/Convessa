@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, MessageCircle, Shield, Zap, DollarSign, Code, HelpCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const FAQ = () => {
   const { t } = useTranslation();
+  usePageTitle('Foire aux questions');
   const [openIndex, setOpenIndex] = useState(null);
 
   const faqCategories = [

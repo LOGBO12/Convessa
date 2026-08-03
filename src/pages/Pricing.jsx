@@ -21,6 +21,7 @@ import { plansAPI, paymentsAPI, saveTenantApiKey } from '../services/api';
 import { onSubscriptionActivated, connectSocket } from '../services/socket';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -63,6 +64,7 @@ function loadKkiapayScript() {
 // ── Composant principal ────────────────────────────────────────────────────────
 
 export default function Pricing() {
+  usePageTitle('Tarifs & Plans');
   const { user }                    = useAuth();
   const { refresh: refreshSession } = useUserSession();
   const navigate                    = useNavigate();

@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Send, CheckCircle,
@@ -21,6 +22,7 @@ const SUBJECTS = [
 ];
 
 export default function Contact() {
+  usePageTitle('Nous contacter');
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: SUBJECTS[0], message: '' });
   const [sending, setSending]   = useState(false);
   const [success, setSuccess]   = useState('');

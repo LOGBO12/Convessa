@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -154,6 +155,7 @@ function slugify(str) {
 // ── Composant principal ───────────────────────────────────────────────────────
 
 export default function Docs() {
+  usePageTitle('Documentation API');
   const location = useLocation();
   const navigate = useNavigate();
 

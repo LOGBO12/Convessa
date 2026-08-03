@@ -138,16 +138,7 @@ function App() {
               </>
             }
           />
-          <Route
-            path="/contact"
-            element={
-              <>
-                <Navbar />
-                <Contact />
-                <Footer />
-              </>
-            }
-          />
+
           <Route
             path="/faq"
             element={

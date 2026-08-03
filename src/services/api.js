@@ -332,7 +332,12 @@ export const communityAPI = {
 // PAYMENTS — initiation et suivi des paiements d'abonnement
 // ============================================================================
 
-export const paymentsAPI = {  /**
+// ============================================================================
+// PAYMENTS — initiation et suivi des paiements d'abonnement
+// ============================================================================
+
+export const paymentsAPI = {
+  /**
    * Initier un paiement pour un plan.
    * Retourne checkoutUrl (FedaPay) ou publicKey+amount (KKiaPay).
    */
