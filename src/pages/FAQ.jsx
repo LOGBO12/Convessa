@@ -265,7 +265,7 @@ const FAQ = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:support@convessa.dev"
+              href="mailto:supportconvessa@gmail.com"
               className="w-full sm:w-auto bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md text-center"
             >
               Contacter le support

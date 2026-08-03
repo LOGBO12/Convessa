@@ -106,6 +106,12 @@ const Navbar = () => {
                 <Link to="/faq" className="text-gray-700 hover:text-primary-600 transition-colors">
                   {t('nav.faq')}
                 </Link>
+                <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  Contact
+                </Link>
+                <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  Contact
+                </Link>
               </>
             )}
           </div>
@@ -363,6 +369,20 @@ const Navbar = () => {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.faq')}
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact
                   </Link>
 
                   <div className="border-t border-gray-200 pt-4 space-y-3">
