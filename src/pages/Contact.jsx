@@ -4,11 +4,13 @@
  */
 
 import React, { useState } from 'react';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Send, CheckCircle,
-  AlertCircle, Loader, MapPin, Clock, ExternalLink,
+  AlertCircle, Loader, Clock, ExternalLink,
 } from 'lucide-react';
 import { contactAPI } from '../services/api';
 
@@ -23,10 +25,11 @@ const SUBJECTS = [
 
 export default function Contact() {
   usePageTitle('Nous contacter');
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: SUBJECTS[0], message: '' });
-  const [sending, setSending]   = useState(false);
-  const [success, setSuccess]   = useState('');
-  const [error, setError]       = useState('');
+  const [form, setForm]       = useState({ name: '', email: '', subject: SUBJECTS[0], message: '' });
+  const [phoneValue, setPhoneValue] = useState('');
+  const [sending, setSending] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError]     = useState('');
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -35,18 +38,19 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      setError('Veuillez remplir tous les champs obligatoires.');
+    if (!form.name.trim() || !form.email.trim() || !phoneValue || !form.message.trim()) {
+      setError('Veuillez remplir tous les champs obligatoires (le téléphone est requis pour recevoir la confirmation WhatsApp).');
       return;
     }
     setSending(true);
     setError('');
     try {
-      const res = await contactAPI.send(form);
+      const res = await contactAPI.send({ ...form, phone: phoneValue });
       setSuccess(res.message || 'Message envoyé ! Nous vous répondrons bientôt.');
-      setForm({ name: '', email: '', phone: '', subject: SUBJECTS[0], message: '' });
+      setForm({ name: '', email: '', subject: SUBJECTS[0], message: '' });
+      setPhoneValue('');
     } catch (err) {
-      setError(err.message || 'Erreur lors de l\'envoi. Réessayez.');
+      setError(err.message || "Erreur lors de l'envoi. Réessayez.");
     } finally {
       setSending(false);
     }
@@ -187,13 +191,17 @@ export default function Contact() {
                   {/* Téléphone */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
+                      Téléphone WhatsApp <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      name="phone" value={form.phone} onChange={handleChange}
-                      placeholder="+229 90 00 00 00"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors"
+                    <PhoneInput
+                      international
+                      defaultCountry="BJ"
+                      value={phoneValue}
+                      onChange={(val) => { setPhoneValue(val || ''); setError(''); }}
+                      className="phone-input-contact"
+                      placeholder="94 00 00 00"
                     />
+                    <p className="text-xs text-gray-400 mt-1">Utilisé pour vous confirmer la réception sur WhatsApp et vous répondre.</p>
                   </div>
                   {/* Sujet */}
                   <div>
@@ -241,7 +249,7 @@ export default function Contact() {
                 </button>
 
                 <p className="text-xs text-center text-gray-400">
-                  En envoyant ce formulaire, vous acceptez que vos données soient utilisées pour vous répondre.
+                  En envoyant ce formulaire, vous acceptez de recevoir une confirmation et une réponse sur WhatsApp au numéro indiqué.
                 </p>
               </form>
             )}

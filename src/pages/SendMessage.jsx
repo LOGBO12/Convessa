@@ -55,8 +55,8 @@ const SendMessage = () => {
   // Mode "contact"
   const [phoneValue, setPhoneValue] = useState('');
 
-  // Mode "multiple"
-  const [multiplePhones, setMultiplePhones] = useState('');
+  // Mode "multiple" — liste de PhoneInput (un par destinataire)
+  const [multiplePhones, setMultiplePhones] = useState(['']);
 
   // Mode "group"
   const [groups, setGroups] = useState([]);
@@ -64,7 +64,7 @@ const SendMessage = () => {
   const [selectedGroupId, setSelectedGroupId] = useState('');
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupParticipants, setNewGroupParticipants] = useState('');
+  const [newGroupParticipants, setNewGroupParticipants] = useState(['']); // liste de PhoneInput
   const [creatingGroup, setCreatingGroup] = useState(false);
 
   const [message, setMessage] = useState('');
@@ -160,13 +160,10 @@ const SendMessage = () => {
       setError('Le nom du groupe est requis');
       return;
     }
-    const participants = newGroupParticipants
-      .split(/[\n,]/)
-      .map((p) => p.trim())
-      .filter(Boolean);
+    const participants = newGroupParticipants.filter(p => p && p.trim());
 
     if (participants.length === 0) {
-      setError('Ajoutez au moins un participant (un numéro par ligne ou séparés par des virgules)');
+      setError('Ajoutez au moins un participant');
       return;
     }
 
@@ -178,7 +175,7 @@ const SendMessage = () => {
       setSelectedGroupId(res.groupId);
       setShowNewGroupForm(false);
       setNewGroupName('');
-      setNewGroupParticipants('');
+      setNewGroupParticipants(['']);
       if (res.invitedByLink > 0) {
         setError(''); // pas une erreur — informatif seulement
       }
@@ -194,10 +191,7 @@ const SendMessage = () => {
       return phoneValue ? phoneValue.replace(/\s/g, '') : null;
     }
     if (recipientMode === 'multiple') {
-      const list = multiplePhones
-        .split(/[\n,]/)
-        .map((p) => p.trim().replace(/\s/g, ''))
-        .filter(Boolean);
+      const list = multiplePhones.filter(p => p && p.trim()).map(p => p.replace(/\s/g, ''));
       return list.length > 0 ? list : null;
     }
     if (recipientMode === 'group') {
@@ -411,7 +405,7 @@ const SendMessage = () => {
                 value={phoneValue}
                 onChange={setPhoneValue}
                 className="phone-input-dashboard"
-                placeholder="+229 94 11 94 76"
+                placeholder="94 00 00 00"
               />
               <p className="text-xs text-gray-500 mt-2">Format international requis (ex: +33612345678)</p>
             </div>
@@ -423,16 +417,43 @@ const SendMessage = () => {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Numéros des destinataires
               </label>
-              <textarea
-                value={multiplePhones}
-                onChange={(e) => setMultiplePhones(e.target.value)}
-                rows={4}
-                placeholder={'+22960000000\n+22961111111\n+22962222222'}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:outline-none resize-none font-mono text-sm"
-              />
+              <div className="space-y-2">
+                {multiplePhones.map((phone, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <PhoneInput
+                      international
+                      defaultCountry="BJ"
+                      value={phone}
+                      onChange={(val) => {
+                        const updated = [...multiplePhones];
+                        updated[idx] = val || '';
+                        setMultiplePhones(updated);
+                      }}
+                      className="phone-input-dashboard flex-1"
+                    />
+                    {multiplePhones.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setMultiplePhones(multiplePhones.filter((_, i) => i !== idx))}
+                        className="text-red-400 hover:text-red-600 p-1 flex-shrink-0"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {multiplePhones.length < 50 && (
+                <button
+                  type="button"
+                  onClick={() => setMultiplePhones([...multiplePhones, ''])}
+                  className="mt-2 flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  <Plus size={14} /> Ajouter un numéro
+                </button>
+              )}
               <p className="text-xs text-gray-500 mt-2">
-                Un numéro par ligne (ou séparés par des virgules) — 50 destinataires maximum par envoi.
-                Le même message est envoyé individuellement à chacun.
+                50 destinataires maximum par envoi. Le même message est envoyé individuellement à chacun.
               </p>
             </div>
           )}
@@ -487,13 +508,40 @@ const SendMessage = () => {
                     placeholder="Nom du groupe"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
                   />
-                  <textarea
-                    value={newGroupParticipants}
-                    onChange={(e) => setNewGroupParticipants(e.target.value)}
-                    rows={3}
-                    placeholder={'Participants — un numéro par ligne\n+22960000000\n+22961111111'}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:border-primary-500 focus:outline-none"
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-xs font-medium text-gray-600">Participants</label>
+                    {newGroupParticipants.map((phone, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <PhoneInput
+                          international
+                          defaultCountry="BJ"
+                          value={phone}
+                          onChange={(val) => {
+                            const updated = [...newGroupParticipants];
+                            updated[idx] = val || '';
+                            setNewGroupParticipants(updated);
+                          }}
+                          className="phone-input-dashboard flex-1"
+                        />
+                        {newGroupParticipants.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setNewGroupParticipants(newGroupParticipants.filter((_, i) => i !== idx))}
+                            className="text-red-400 hover:text-red-600 p-1 flex-shrink-0"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setNewGroupParticipants([...newGroupParticipants, ''])}
+                      className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    >
+                      <Plus size={14} /> Ajouter un participant
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={handleCreateGroup}

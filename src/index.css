@@ -15,6 +15,32 @@
   @apply mr-2 border-2 border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none;
 }
 
+/* Custom styles for phone input - Contact page */
+.phone-input-contact {
+  @apply w-full;
+}
+
+.phone-input-contact .PhoneInputInput {
+  @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 outline-none transition-colors text-base;
+}
+
+.phone-input-contact .PhoneInputCountrySelect {
+  @apply mr-2 border-2 border-gray-200 rounded-lg px-2 py-2 focus:border-primary-500 outline-none;
+}
+
+/* Custom styles for phone input - Sessions community modal */
+.phone-input-sessions {
+  @apply w-full;
+}
+
+.phone-input-sessions .PhoneInputInput {
+  @apply w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm;
+}
+
+.phone-input-sessions .PhoneInputCountrySelect {
+  @apply mr-2 border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary-500 outline-none text-sm;
+}
+
 /* Custom styles for phone input - Original */
 .phone-input-custom {
   @apply w-full;

@@ -90,6 +90,9 @@ const Navbar = () => {
                 <Link to="/docs" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
                   Documentation
                 </Link>
+                <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                  Contact
+                </Link>
               </>
             ) : (
               // Menu avant connexion
@@ -105,9 +108,6 @@ const Navbar = () => {
                 </Link>
                 <Link to="/faq" className="text-gray-700 hover:text-primary-600 transition-colors">
                   {t('nav.faq')}
-                </Link>
-                <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors">
-                  Contact
                 </Link>
                 <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors">
                   Contact
@@ -308,6 +308,13 @@ const Navbar = () => {
                   >
                     Documentation
                   </Link>
+                  <Link
+                    to="/contact"
+                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex items-center space-x-3 px-2 py-2 mb-3">
@@ -369,13 +376,6 @@ const Navbar = () => {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.faq')}
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Contact
                   </Link>
                   <Link
                     to="/contact"

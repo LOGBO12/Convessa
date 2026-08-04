@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -1048,17 +1050,16 @@ const Sessions = () => {
                       </div>
 
                       <div>
-                        <label htmlFor="community-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Téléphone WhatsApp <span className="text-red-500">*</span>
                         </label>
-                        <input
-                          id="community-phone"
-                          type="tel"
+                        <PhoneInput
+                          international
+                          defaultCountry="BJ"
                           value={communityForm.phone}
-                          onChange={(e) => setCommunityForm((p) => ({ ...p, phone: e.target.value }))}
-                          placeholder="+229 90 00 00 00"
-                          required
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                          onChange={(val) => setCommunityForm((p) => ({ ...p, phone: val || '' }))}
+                          className="phone-input-sessions"
+                          placeholder="94 00 00 00"
                         />
                       </div>
 
