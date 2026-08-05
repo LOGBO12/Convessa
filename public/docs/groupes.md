@@ -18,7 +18,7 @@ POST /api/v1/groups
 | Champ | Type | Requis | Description |
 |---|---|---|---|
 | `name` | string | Oui | Nom du groupe (unique par session) |
-| `participants` | string[] | Oui | Numéros à ajouter — 256 maximum |
+| `participants` | string[] | Oui | Numéros à ajouter : 256 maximum |
 
 Cet endpoint est **idempotent par nom** : si un groupe portant ce nom existe déjà sur votre session, il est retourné sans créer de doublon.
 

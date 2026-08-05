@@ -20,7 +20,7 @@ Envoie un message texte et/ou un média à un ou plusieurs destinataires.
 | Champ | Type | Requis | Description |
 |---|---|---|---|
 | `to` | string ou string[] | Oui | Numéro(s) au format international, ou `groupId` |
-| `message` | string | Selon cas | Texte — max 4096 caractères |
+| `message` | string | Selon cas | Texte : max 4096 caractères |
 | `media` | object | Selon cas | Voir structure ci-dessous |
 
 Au moins `message` ou `media` est requis. Maximum 50 destinataires dans un tableau `to`.

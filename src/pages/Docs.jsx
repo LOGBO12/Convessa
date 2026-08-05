@@ -353,7 +353,7 @@ export default function Docs() {
 
     // Paragraphe
     p: ({ children }) => (
-      <p className="text-gray-700 leading-[1.8] mb-5 text-base sm:text-lg">{children}</p>
+      <p className="text-gray-700 leading-[1.8] mb-5 text-base sm:text-lg text-justify">{children}</p>
     ),
 
     // Liens
@@ -395,18 +395,18 @@ export default function Docs() {
 
     // Blockquote
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-amber-400 bg-amber-50 text-amber-900 pl-5 pr-5 py-4 my-6 rounded-r-lg text-base leading-[1.8]">
+      <blockquote className="border-l-4 border-amber-400 bg-amber-50 text-amber-900 pl-5 pr-5 py-4 my-6 rounded-r-lg text-base leading-[1.8] text-justify">
         {children}
       </blockquote>
     ),
 
     // Listes
-    ul: ({ children }) => <ul className="my-5 space-y-3 list-none pl-0">{children}</ul>,
-    ol: ({ children }) => <ol className="my-5 space-y-3 list-decimal list-inside text-gray-700 text-base sm:text-lg">{children}</ol>,
+    ul: ({ children }) => <ul className="my-5 space-y-3 list-none pl-6">{children}</ul>,
+    ol: ({ children }) => <ol className="my-5 space-y-3 list-decimal list-outside pl-6 text-gray-700 text-base sm:text-lg">{children}</ol>,
     li: ({ children }) => (
       <li className="flex items-start gap-3 text-base sm:text-lg text-gray-700">
         <span className="mt-2.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary-500" />
-        <span className="leading-[1.8]">{children}</span>
+        <span className="leading-[1.8] text-justify">{children}</span>
       </li>
     ),
 

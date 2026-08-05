@@ -25,7 +25,7 @@ Votre clé API est disponible dans la section **Sessions** de votre tableau de b
 pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Copiez-la immédiatement — pour des raisons de sécurité, elle ne sera plus affichée en clair après cette première consultation.
+Copiez-la immédiatement : pour des raisons de sécurité, elle ne sera plus affichée en clair après cette première consultation.
 
 ## Conservation de la clé
 
@@ -44,7 +44,7 @@ La clé API est liée à votre abonnement actif. Selon le plan choisi, elle est 
 
 ## Renouveler ou révoquer
 
-- **Renouveler** : souscrivez à un nouveau plan depuis la section **Tarifs** — une nouvelle clé vous est attribuée immédiatement.
+- **Renouveler** : souscrivez à un nouveau plan depuis la section **Tarifs** : une nouvelle clé vous est attribuée immédiatement.
 - **Révoquer** : depuis la section **Sessions**, déconnectez votre session. Cela invalide immédiatement la clé associée.
 
 En cas de compromission, déconnectez votre session sans délai.
