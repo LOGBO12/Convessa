@@ -67,23 +67,8 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background moderne avec gradients et formes */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-primary-50" />
-      
-      {/* Cercles décoratifs animés */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary-200/40 to-primary-300/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-tl from-green-200/40 to-whatsapp/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
-      <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-gradient-to-r from-primary-100/30 to-green-100/30 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-      
-      {/* Motif de points */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
-        backgroundSize: '32px 32px'
-      }} />
-      
-      {/* Lignes décoratives */}
-      <div className="absolute top-20 left-10 w-32 h-0.5 bg-gradient-to-r from-transparent via-primary-300 to-transparent opacity-40 rotate-45" />
-      <div className="absolute bottom-32 right-16 w-40 h-0.5 bg-gradient-to-r from-transparent via-green-300 to-transparent opacity-40 -rotate-45" />
+      {/* Background simple */}
+      <div className="absolute inset-0 bg-gray-50" />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -94,17 +79,15 @@ const Register = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-14 h-14 bg-whatsapp rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 bg-whatsapp-dark rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-2xl">C</span>
             </div>
             <span className="text-3xl font-bold text-gray-900">Convessa</span>
           </Link>
         </div>
 
-        {/* Card avec effet glassmorphism */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 relative overflow-hidden">
-          {/* Effet de brillance en haut */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-200 relative overflow-hidden">
           
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h2>
@@ -237,7 +220,7 @@ const Register = () => {
           {/* Switch to login */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Déjà un compte ?{' '}
-            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
+            <Link to="/login" className="text-whatsapp-dark hover:text-whatsapp-dark font-semibold">
               Se connecter
             </Link>
           </p>
@@ -245,11 +228,11 @@ const Register = () => {
           {/* Terms */}
           <div className="mt-4 text-center text-xs text-gray-500">
             En continuant, vous acceptez nos{' '}
-            <Link to="/terms" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/terms" className="text-whatsapp-dark hover:text-whatsapp-dark font-medium">
               Conditions d'utilisation
             </Link>{' '}
             et notre{' '}
-            <Link to="/privacy" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/privacy" className="text-whatsapp-dark hover:text-whatsapp-dark font-medium">
               Politique de confidentialité
             </Link>
           </div>

@@ -383,7 +383,7 @@ const SendMessage = () => {
                     onClick={() => { setRecipientMode(m.id); setError(''); }}
                     className={`flex flex-col items-center gap-1.5 py-2.5 sm:py-3 rounded-lg border-2 text-xs sm:text-sm font-medium transition-colors ${
                       active
-                        ? 'border-primary-600 bg-primary-50 text-primary-700'
+                        ? 'border-whatsapp-dark bg-whatsapp-light text-whatsapp-dark'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -447,7 +447,7 @@ const SendMessage = () => {
                 <button
                   type="button"
                   onClick={() => setMultiplePhones([...multiplePhones, ''])}
-                  className="mt-2 flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  className="mt-2 flex items-center gap-1.5 text-sm text-whatsapp-dark hover:text-whatsapp font-medium"
                 >
                   <Plus size={14} /> Ajouter un numéro
                 </button>
@@ -469,7 +469,7 @@ const SendMessage = () => {
                     <select
                       value={selectedGroupId}
                       onChange={(e) => setSelectedGroupId(e.target.value)}
-                      className="flex-1 border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none"
+                      className="flex-1 border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:border-whatsapp-dark focus:outline-none"
                     >
                       <option value="">
                         {groupsLoading ? 'Chargement...' : groups.length === 0 ? 'Aucun groupe — créez-en un' : 'Sélectionner un groupe'}
@@ -483,7 +483,7 @@ const SendMessage = () => {
                     <button
                       type="button"
                       onClick={() => setShowNewGroupForm(true)}
-                      className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 text-sm font-medium whitespace-nowrap"
+                      className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-whatsapp-dark text-whatsapp-dark rounded-lg hover:bg-whatsapp-light text-sm font-medium whitespace-nowrap"
                     >
                       <Plus size={16} />
                       Nouveau
@@ -494,7 +494,7 @@ const SendMessage = () => {
                   </p>
                 </>
               ) : (
-                <div className="border-2 border-primary-200 bg-primary-50 rounded-lg p-4 space-y-3">
+                <div className="border-2 border-whatsapp-light bg-whatsapp-light rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-gray-900">Créer un nouveau groupe</p>
                     <button type="button" onClick={() => setShowNewGroupForm(false)} className="text-gray-400 hover:text-gray-600">
@@ -506,7 +506,7 @@ const SendMessage = () => {
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
                     placeholder="Nom du groupe"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-whatsapp-dark focus:outline-none"
                   />
                   <div className="space-y-2">
                     <label className="block text-xs font-medium text-gray-600">Participants</label>
@@ -537,7 +537,7 @@ const SendMessage = () => {
                     <button
                       type="button"
                       onClick={() => setNewGroupParticipants([...newGroupParticipants, ''])}
-                      className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                      className="flex items-center gap-1.5 text-sm text-whatsapp-dark hover:text-whatsapp font-medium"
                     >
                       <Plus size={14} /> Ajouter un participant
                     </button>
@@ -546,7 +546,7 @@ const SendMessage = () => {
                     type="button"
                     onClick={handleCreateGroup}
                     disabled={creatingGroup}
-                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-2.5 rounded-lg hover:bg-primary-700 disabled:opacity-50 text-sm font-medium"
+                    className="w-full flex items-center justify-center gap-2 bg-whatsapp-dark text-white py-2.5 rounded-lg hover:bg-whatsapp disabled:opacity-50 text-sm font-medium"
                   >
                     {creatingGroup ? <Loader className="animate-spin" size={16} /> : <UsersRound size={16} />}
                     <span>{creatingGroup ? 'Création...' : 'Créer le groupe'}</span>
@@ -571,7 +571,7 @@ const SendMessage = () => {
               rows={6}
               maxLength={4096}
               placeholder="Entrez votre message ici..."
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:outline-none resize-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-whatsapp-dark focus:outline-none resize-none"
             />
             <div className="flex justify-between items-center mt-2">
               <p className="text-xs text-gray-500">Maximum 4096 caractères</p>
@@ -594,16 +594,16 @@ const SendMessage = () => {
                       key={type}
                       type="button"
                       onClick={() => handleMediaSelect(type)}
-                      className="flex flex-col items-center justify-center p-4 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all group"
+                      className="flex flex-col items-center justify-center p-4 border-2 border-gray-300 border-dashed rounded-lg hover:border-whatsapp-dark hover:bg-whatsapp-light transition-all group"
                     >
-                      <Icon className="text-gray-400 group-hover:text-primary-600 mb-2" size={32} />
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-primary-700">{cfg.label}</span>
+                      <Icon className="text-gray-400 group-hover:text-whatsapp-dark mb-2" size={32} />
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-whatsapp-dark">{cfg.label}</span>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <div className="border-2 border-primary-200 bg-primary-50 rounded-lg p-4">
+              <div className="border-2 border-whatsapp-light bg-whatsapp-light rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     {mediaPreview ? (
@@ -616,8 +616,8 @@ const SendMessage = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center">
-                        {React.createElement(MEDIA_TYPES[mediaType].icon, { className: 'text-primary-600', size: 32 })}
+                      <div className="w-16 h-16 bg-whatsapp-light rounded-lg flex items-center justify-center">
+                        {React.createElement(MEDIA_TYPES[mediaType].icon, { className: 'text-whatsapp-dark', size: 32 })}
                       </div>
                     )}
                     <div className="flex-1">

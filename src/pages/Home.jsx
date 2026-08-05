@@ -110,7 +110,7 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center space-x-2 bg-white text-primary-600 px-5 py-3 sm:px-8 sm:py-4 rounded-lg hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-base sm:text-lg font-medium"
+                className="inline-flex items-center justify-center space-x-2 bg-white text-whatsapp-dark px-5 py-3 sm:px-8 sm:py-4 rounded-lg hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-base sm:text-lg font-medium"
               >
                 <span>{t('home.hero.cta')}</span>
                 <ArrowRight size={20} />
@@ -124,36 +124,7 @@ const Home = () => {
               </Link>
             </div>
 
-            {/* Code Preview */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-              className="mt-16 bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-white/10"
-            >
-              <div className="flex items-center space-x-2 px-6 py-4 bg-gray-800/50 backdrop-blur-sm border-b border-gray-700">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="ml-4 text-gray-400 text-sm">app.js</span>
-              </div>
-              <div className="p-4 text-left overflow-x-auto">
-                <pre className="text-xs sm:text-sm text-gray-300">
-                  <code>{`// Send a WhatsApp message
-const response = await fetch('https://api.convessa.dev/send', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    to: '+33612345678',
-    message: 'Hello from Convessa! 👋'
-  })
-});`}</code>
-                </pre>
-              </div>
-            </motion.div>
+            {/* Code Preview - SUPPRIMÉ */}
           </motion.div>
         </div>
       </section>
@@ -182,13 +153,13 @@ const response = await fetch('https://api.convessa.dev/send', {
             {[
               { icon: Code, key: 'feature1', bgColor: 'bg-blue-50', iconColor: 'text-blue-600', borderColor: 'border-blue-100' },
               { icon: Zap, key: 'feature2', bgColor: 'bg-amber-50', iconColor: 'text-amber-600', borderColor: 'border-amber-100' },
-              { icon: Clock, key: 'feature3', bgColor: 'bg-emerald-50', iconColor: 'text-emerald-600', borderColor: 'border-emerald-100' },
+              { icon: Clock, key: 'feature3', bgColor: 'bg-gray-100', iconColor: 'text-whatsapp-dark', borderColor: 'border-gray-200' },
               { icon: Shield, key: 'feature4', bgColor: 'bg-rose-50', iconColor: 'text-rose-600', borderColor: 'border-rose-100' },
             ].map(({ icon: Icon, key, bgColor, iconColor, borderColor }, index) => (
               <motion.div
                 key={key}
                 variants={fadeInUp}
-                className={`bg-white border-2 ${borderColor} rounded-2xl p-5 sm:p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group`}
+                className="bg-white border-2 border-gray-200 rounded-2xl p-5 sm:p-8 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
               >
                 <div
                   className={`w-16 h-16 rounded-2xl ${bgColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
@@ -234,19 +205,24 @@ const response = await fetch('https://api.convessa.dev/send', {
                 transition={{ delay: index * 0.1 }}
                 className="relative"
               >
-                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full border-2 border-primary-100">
-                  <div className="text-7xl font-bold text-primary-100 mb-4">{step}</div>
-                  <div className="w-14 h-14 rounded-xl bg-whatsapp flex items-center justify-center mb-6 shadow-lg">
-                    <Icon className="text-white" size={28} />
+                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full border-2 border-gray-200 relative overflow-hidden">
+                  {/* Badge numéro en haut à gauche */}
+                  <div className="absolute -top-4 -left-4 w-20 h-20 bg-whatsapp-dark rounded-full flex items-center justify-center shadow-xl border-4 border-white z-10">
+                    <span className="text-3xl font-black text-white">{step}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
-                    {t(`home.howItWorks.${key}.title`)}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">{t(`home.howItWorks.${key}.description`)}</p>
+                  <div className="mt-8">
+                    <div className="w-14 h-14 rounded-xl bg-whatsapp-dark flex items-center justify-center mb-6 shadow-lg">
+                      <Icon className="text-white" size={28} />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      {t(`home.howItWorks.${key}.title`)}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">{t(`home.howItWorks.${key}.description`)}</p>
+                  </div>
                 </div>
                 {index < 3 && (
                   <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                    <ArrowRight className="text-primary-400" size={32} strokeWidth={3} />
+                    <ArrowRight className="text-whatsapp-dark" size={32} strokeWidth={3} />
                   </div>
                 )}
               </motion.div>
@@ -310,8 +286,8 @@ const response = await fetch('https://api.convessa.dev/send', {
                   transition={{ delay: index * 0.1 }}
                   className={`rounded-3xl p-6 sm:p-8 ${
                     isPopular
-                      ? 'bg-whatsapp text-white shadow-2xl sm:transform sm:scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
-                      : 'bg-white border-2 border-gray-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300'
+                      ? 'bg-whatsapp-dark text-white shadow-2xl sm:transform sm:scale-105 border-4 border-whatsapp-dark'
+                      : 'bg-white border-2 border-gray-200 hover:border-whatsapp-dark hover:shadow-xl transition-all duration-300'
                   }`}
                 >
                   {isPopular && (
@@ -334,11 +310,11 @@ const response = await fetch('https://api.convessa.dev/send', {
                     <ul className="space-y-4 mb-8">
                       <li className="flex items-start space-x-3">
                         <Check
-                          className={`flex-shrink-0 mt-1 ${isPopular ? 'text-primary-200' : 'text-primary-600'}`}
+                          className={`flex-shrink-0 mt-1 ${isPopular ? 'text-white' : 'text-whatsapp-dark'}`}
                           size={20}
                           strokeWidth={3}
                         />
-                        <span className={`${isPopular ? 'text-primary-50' : 'text-gray-700'}`}>
+                        <span className={`${isPopular ? 'text-white' : 'text-gray-700'}`}>
                           {usageLabel}
                         </span>
                       </li>
@@ -348,8 +324,8 @@ const response = await fetch('https://api.convessa.dev/send', {
                     to="/signup"
                     className={`block w-full text-center py-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
                       isPopular
-                        ? 'bg-white text-primary-600 hover:bg-gray-50 shadow-lg'
-                        : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg'
+                        ? 'bg-white text-whatsapp-dark hover:bg-gray-50 shadow-lg'
+                        : 'bg-whatsapp-dark text-white hover:bg-whatsapp-dark shadow-md hover:shadow-lg'
                     }`}
                   >
                     Choisir ce plan
@@ -383,10 +359,10 @@ const response = await fetch('https://api.convessa.dev/send', {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-primary-200"
+                className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-whatsapp-dark"
               >
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-start">
-                  <span className="text-primary-600 mr-3 text-2xl">Q.</span>
+                  <span className="text-whatsapp-dark mr-3 text-2xl">Q.</span>
                   {t(`home.faq.${q}.question`)}
                 </h3>
                 <p className="text-gray-600 leading-relaxed ml-9">{t(`home.faq.${q}.answer`)}</p>
@@ -415,7 +391,7 @@ const response = await fetch('https://api.convessa.dev/send', {
             <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-10 leading-relaxed">{t('home.cta.subtitle')}</p>
             <Link
               to="/signup"
-              className="inline-flex items-center space-x-2 bg-white text-primary-600 px-6 py-4 sm:px-10 sm:py-5 rounded-xl hover:bg-gray-50 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 text-base sm:text-lg font-bold"
+              className="inline-flex items-center space-x-2 bg-white text-whatsapp-dark px-6 py-4 sm:px-10 sm:py-5 rounded-xl hover:bg-gray-50 transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 text-base sm:text-lg font-bold"
             >
               <span>{t('home.cta.button')}</span>
               <ArrowRight size={24} />

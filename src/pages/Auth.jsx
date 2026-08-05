@@ -86,7 +86,7 @@ const Auth = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               Bienvenue
@@ -210,11 +210,11 @@ const Auth = () => {
 
           <div className="mt-6 text-center text-xs text-gray-500">
             En continuant, vous acceptez nos{' '}
-            <Link to="/terms" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/terms" className="text-whatsapp-dark hover:text-whatsapp font-medium">
               Conditions d'utilisation
             </Link>{' '}
             et notre{' '}
-            <Link to="/privacy" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/privacy" className="text-whatsapp-dark hover:text-whatsapp font-medium">
               Politique de confidentialité
             </Link>
           </div>

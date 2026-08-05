@@ -100,7 +100,7 @@ export default function Contact() {
                 <p className="text-gray-600 max-w-sm">{success}</p>
                 <button
                   onClick={() => setSuccess('')}
-                  className="mt-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition-colors"
+                  className="mt-2 px-6 py-2.5 bg-whatsapp-dark text-white rounded-xl hover:bg-whatsapp-dark font-medium transition-colors"
                 >
                   Envoyer un autre message
                 </button>
@@ -116,7 +116,7 @@ export default function Contact() {
                     <input
                       name="name" value={form.name} onChange={handleChange} required
                       placeholder="Don Diègue MIKPONHOUE"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-dark focus:outline-none transition-colors"
                     />
                   </div>
                   {/* Email */}
@@ -127,7 +127,7 @@ export default function Contact() {
                     <input
                       name="email" type="email" value={form.email} onChange={handleChange} required
                       placeholder="vous@exemple.com"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-dark focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -155,7 +155,7 @@ export default function Contact() {
                     </label>
                     <select
                       name="subject" value={form.subject} onChange={handleChange}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors bg-white"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-dark focus:outline-none transition-colors bg-white"
                     >
                       {SUBJECTS.map(s => <option key={s}>{s}</option>)}
                     </select>
@@ -170,7 +170,7 @@ export default function Contact() {
                   <textarea
                     name="message" value={form.message} onChange={handleChange} required
                     rows={6} placeholder="Décrivez votre demande en détail..."
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition-colors resize-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-dark focus:outline-none transition-colors resize-none"
                   />
                   <p className="text-xs text-gray-400 mt-1">{form.message.length} / 2000 caractères</p>
                 </div>
@@ -184,7 +184,7 @@ export default function Contact() {
 
                 <button
                   type="submit" disabled={sending}
-                  className="w-full flex items-center justify-center gap-2.5 bg-whatsapp text-white py-3.5 rounded-xl hover:bg-whatsapp-dark font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2.5 bg-whatsapp-dark text-white py-3.5 rounded-xl hover:bg-whatsapp-dark font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {sending ? (
                     <><Loader size={18} className="animate-spin" /> Envoi en cours...</>
@@ -207,7 +207,7 @@ export default function Contact() {
             transition={{ delay: 0.15 }}
             className="space-y-6"
           >
-            <div className="bg-primary-50 border border-primary-200 rounded-xl p-6">
+            <div className="bg-gray-100 border border-gray-200 rounded-xl p-6">
               <h3 className="font-bold text-gray-900 mb-4 text-lg">Ressources utiles</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Consultez nos ressources avant de nous contacter, vous trouverez peut-être rapidement votre réponse.
@@ -221,12 +221,12 @@ export default function Contact() {
                   <li key={label}>
                     <a 
                       href={href} 
-                      className="block p-3 bg-white rounded-lg border border-primary-100 hover:border-primary-300 hover:shadow-sm transition-all group"
+                      className="block p-3 bg-white rounded-lg border border-whatsapp-light hover:border-whatsapp-dark hover:shadow-sm transition-all group"
                     >
                       <div className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 bg-whatsapp-dark rounded-full mt-2 flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-semibold text-primary-600 group-hover:text-primary-700 flex items-center gap-1">
+                          <p className="inline-flex items-center gap-2 text-sm font-semibold text-whatsapp-dark">
                             {label}
                             <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                           </p>
@@ -242,7 +242,7 @@ export default function Contact() {
             {/* Info supplémentaire */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h4 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                <Clock size={16} className="text-primary-600" />
+                <Clock size={16} className="text-whatsapp-dark" />
                 Délai de réponse
               </h4>
               <p className="text-sm text-gray-600">

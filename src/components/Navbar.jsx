@@ -16,9 +16,9 @@ const Navbar = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const languages = [
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'fr', name: 'Français' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
   ];
 
   const changeLanguage = (lng) => {
@@ -74,7 +74,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-md" style={{ backgroundColor: '#128C7E' }}>
               <span className="text-white font-bold text-xl">C</span>
             </div>
             <span className="text-2xl font-bold text-gray-900">Convessa</span>
@@ -87,57 +87,72 @@ const Navbar = () => {
               <>
                 <Link 
                   to="/dashboard" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
-                    isActive('/dashboard') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors font-medium ${
+                    isActive('/dashboard') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/dashboard') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/dashboard') && (e.target.style.color = '')}
                 >
                   Dashboard
                   {isActive('/dashboard') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/send-message" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
-                    isActive('/send-message') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors font-medium ${
+                    isActive('/send-message') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/send-message') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/send-message') && (e.target.style.color = '')}
                 >
                   Messages
                   {isActive('/send-message') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/sessions" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
-                    isActive('/sessions') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors font-medium ${
+                    isActive('/sessions') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/sessions') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/sessions') && (e.target.style.color = '')}
                 >
                   Sessions
                   {isActive('/sessions') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/docs" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
-                    isActive('/docs') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors font-medium ${
+                    isActive('/docs') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/docs') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/docs') && (e.target.style.color = '')}
                 >
                   Documentation
                   {isActive('/docs') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/contact" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
-                    isActive('/contact') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors font-medium ${
+                    isActive('/contact') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/contact') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/contact') && (e.target.style.color = '')}
                 >
                   Contact
                   {isActive('/contact') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
               </>
@@ -146,57 +161,72 @@ const Navbar = () => {
               <>
                 <Link 
                   to="/" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
-                    isActive('/') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors ${
+                    isActive('/') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/') && (e.target.style.color = '')}
                 >
                   {t('nav.home')}
                   {isActive('/') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/docs" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
-                    isActive('/docs') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors ${
+                    isActive('/docs') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/docs') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/docs') && (e.target.style.color = '')}
                 >
                   {t('nav.docs')}
                   {isActive('/docs') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/pricing" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
-                    isActive('/pricing') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors ${
+                    isActive('/pricing') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/pricing') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/pricing') && (e.target.style.color = '')}
                 >
                   {t('nav.pricing')}
                   {isActive('/pricing') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/faq" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
-                    isActive('/faq') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors ${
+                    isActive('/faq') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/faq') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/faq') && (e.target.style.color = '')}
                 >
                   {t('nav.faq')}
                   {isActive('/faq') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
                 <Link 
                   to="/contact" 
-                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
-                    isActive('/contact') ? 'text-primary-600 font-semibold' : ''
+                  className={`relative text-gray-700 transition-colors ${
+                    isActive('/contact') ? 'font-semibold' : ''
                   }`}
+                  style={isActive('/contact') ? { color: '#128C7E' } : {}}
+                  onMouseEnter={(e) => e.target.style.color = '#128C7E'}
+                  onMouseLeave={(e) => !isActive('/contact') && (e.target.style.color = '')}
                 >
                   Contact
                   {isActive('/contact') && (
-                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
                 </Link>
               </>
@@ -212,7 +242,7 @@ const Navbar = () => {
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <Globe size={20} className="text-gray-600" />
-                <span className="text-xl">{currentLang.flag}</span>
+                <span className="text-sm text-gray-700">{currentLang.name}</span>
                 <ChevronDown size={16} className="text-gray-600" />
               </button>
 
@@ -230,10 +260,11 @@ const Navbar = () => {
                         key={lang.code}
                         onClick={() => changeLanguage(lang.code)}
                         className={`w-full flex items-center space-x-3 px-4 py-2 hover:bg-gray-50 transition-colors ${
-                          i18n.language === lang.code ? 'bg-primary-50 text-primary-700' : 'text-gray-700'
+                          i18n.language === lang.code ? 'text-gray-700' : 'text-gray-700'
                         }`}
+                        style={i18n.language === lang.code ? { backgroundColor: '#e6f4f3', color: '#128C7E' } : {}}
                       >
-                        <span className="text-xl">{lang.flag}</span>
+                        <Globe size={16} />
                         <span>{lang.name}</span>
                       </button>
                     ))}
@@ -259,10 +290,10 @@ const Navbar = () => {
                       <img 
                         src={user.photoUrl} 
                         alt={getDisplayName()} 
-                        className="w-9 h-9 rounded-full object-cover border-2 border-primary-200"
+                        className="w-9 h-9 rounded-full object-cover border-2 border-whatsapp-light"
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-md">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor: '#128C7E' }}>
                         <span className="text-white font-medium text-sm">{getUserInitials()}</span>
                       </div>
                     )}
@@ -288,27 +319,13 @@ const Navbar = () => {
                           <p className="text-xs text-gray-500 mt-0.5">
                             {user?.email || user?.phone || 'Aucun email'}
                           </p>
-                          <p className="text-xs text-primary-600 mt-1 font-medium">
+                          <p className="text-xs mt-1 font-medium" style={{ color: '#128C7E' }}>
                             Connecté via {getProviderText()}
                           </p>
                         </div>
 
                         <div className="py-2">
-                          <Link
-                            to="/sessions"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <User size={16} />
-                            <span>Mon profil</span>
-                          </Link>
-                          <button
-                            onClick={() => setUserMenuOpen(false)}
-                            className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <Settings size={16} />
-                            <span>Paramètres</span>
-                          </button>
+                          {/* Boutons Mon profil et Paramètres supprimés */}
                         </div>
 
                         <div className="border-t border-gray-100 pt-2">
@@ -330,13 +347,18 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-primary-600 transition-colors px-4 py-2"
+                  className={`relative text-gray-700 hover:text-whatsapp-dark transition-colors px-4 py-2 ${
+                    isActive('/login') ? 'text-whatsapp-dark font-semibold' : ''
+                  }`}
                 >
                   {t('nav.login')}
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md hover:shadow-lg"
+                  className="text-white px-6 py-2 rounded-lg transition-colors shadow-md hover:shadow-lg"
+                  style={{ backgroundColor: '#128C7E' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#0d6459'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#128C7E'}
                 >
                   {t('nav.signup')}
                 </Link>
@@ -371,9 +393,10 @@ const Navbar = () => {
                     to="/dashboard"
                     className={`block py-2 font-medium transition-colors ${
                       isActive('/dashboard') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/dashboard') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Dashboard
@@ -382,9 +405,10 @@ const Navbar = () => {
                     to="/send-message"
                     className={`block py-2 font-medium transition-colors ${
                       isActive('/send-message') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/send-message') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Messages
@@ -393,9 +417,10 @@ const Navbar = () => {
                     to="/sessions"
                     className={`block py-2 font-medium transition-colors ${
                       isActive('/sessions') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/sessions') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sessions
@@ -404,9 +429,10 @@ const Navbar = () => {
                     to="/docs"
                     className={`block py-2 font-medium transition-colors ${
                       isActive('/docs') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/docs') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Documentation
@@ -415,9 +441,10 @@ const Navbar = () => {
                     to="/contact"
                     className={`block py-2 font-medium transition-colors ${
                       isActive('/contact') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/contact') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Contact
@@ -432,7 +459,7 @@ const Navbar = () => {
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#128C7E' }}>
                           <span className="text-white font-medium">{getUserInitials()}</span>
                         </div>
                       )}
@@ -460,9 +487,10 @@ const Navbar = () => {
                     to="/"
                     className={`block py-2 transition-colors ${
                       isActive('/') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.home')}
@@ -471,9 +499,10 @@ const Navbar = () => {
                     to="/docs"
                     className={`block py-2 transition-colors ${
                       isActive('/docs') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/docs') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.docs')}
@@ -482,9 +511,10 @@ const Navbar = () => {
                     to="/pricing"
                     className={`block py-2 transition-colors ${
                       isActive('/pricing') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/pricing') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.pricing')}
@@ -493,9 +523,10 @@ const Navbar = () => {
                     to="/faq"
                     className={`block py-2 transition-colors ${
                       isActive('/faq') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/faq') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.faq')}
@@ -504,8 +535,8 @@ const Navbar = () => {
                     to="/contact"
                     className={`block py-2 transition-colors ${
                       isActive('/contact') 
-                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-primary-600'
+                        ? 'text-whatsapp-dark bg-whatsapp-light px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-whatsapp-dark'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -522,7 +553,7 @@ const Navbar = () => {
                     </Link>
                     <Link
                       to="/signup"
-                      className="block w-full text-center bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+                      className="block w-full text-center bg-whatsapp-dark text-white px-6 py-3 rounded-lg hover:bg-whatsapp transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {t('nav.signup')}
@@ -541,10 +572,10 @@ const Navbar = () => {
                       setMobileMenuOpen(false);
                     }}
                     className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors ${
-                      i18n.language === lang.code ? 'bg-primary-50 text-primary-700' : 'text-gray-700'
+                      i18n.language === lang.code ? 'bg-whatsapp-light text-whatsapp-dark' : 'text-gray-700'
                     }`}
                   >
-                    <span className="text-xl">{lang.flag}</span>
+                    <Globe size={16} />
                     <span>{lang.name}</span>
                   </button>
                 ))}

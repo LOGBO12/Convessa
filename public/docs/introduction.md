@@ -1,4 +1,4 @@
-# Convessa — API WhatsApp
+# Convessa—API WhatsApp
 
 Convessa est une plateforme d'envoi de messages WhatsApp via API REST. Vous connectez votre propre numéro WhatsApp, vous obtenez une clé API, et vous envoyez des messages depuis n'importe quelle application en un seul appel HTTP.
 

@@ -8,22 +8,22 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#e7f9f0',
-          100: '#c2f0d8',
-          200: '#9ae7bf',
-          300: '#72dea5',
-          400: '#4fd591',
-          500: '#25D366', // Vert WhatsApp principal
-          600: '#20c158',
-          700: '#1aa94a',
-          800: '#15923d',
-          900: '#0f6b2c',
+          50: '#e6f4f3',
+          100: '#b3ddd9',
+          200: '#80c6bf',
+          300: '#4dafa5',
+          400: '#2a9b9f',
+          500: '#128C7E', // Couleur turquoise unique
+          600: '#107d71',
+          700: '#0d6459',
+          800: '#0a4b42',
+          900: '#07322a',
         },
         whatsapp: {
-          light: '#25D366',
-          DEFAULT: '#25D366',
+          light: '#2a9b9f',
+          DEFAULT: '#128C7E',
           dark: '#128C7E',
-          darker: '#075E54',
+          darker: '#0d6459',
         },
       },
       animation: {

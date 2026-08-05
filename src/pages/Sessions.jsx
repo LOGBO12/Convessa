@@ -124,7 +124,7 @@ const Sessions = () => {
             setReferralCodeInput('');
             setActivationModal(true);
           } else {
-            setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
+            setSuccessMsg('WhatsApp connecté avec succès ! Votre clé API a été générée.');
           }
         }
       } catch { /* ignorer les erreurs réseau passagères */ }
@@ -178,7 +178,7 @@ const Sessions = () => {
             setCommunityModal(true);
           }, 3000);
         } else {
-          setSuccessMsg('✅ WhatsApp connecté avec succès ! Votre clé API a été générée.');
+          setSuccessMsg('WhatsApp connecté avec succès ! Votre clé API a été générée.');
         }
         refreshSession();
       }

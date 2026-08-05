@@ -121,7 +121,7 @@ export default function Pricing() {
 
         setPaymentResult({
           success:  true,
-          message:  `✅ Abonnement "${data.planName ?? ''}" activé ! Votre clé API a été renouvelée.`,
+          message:  `Abonnement "${data.planName ?? ''}" activé ! Votre clé API a été renouvelée.`,
           apiKey:   data.apiKey ?? null,
           expiresAt: data.apiKeyExpiresAt ?? null,
         });
@@ -274,32 +274,19 @@ export default function Pricing() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-16 sm:py-20">
 
-      {/* Header avec gradient background */}
+      {/* Header simplifié */}
       <div className="text-center mb-16 relative">
-        {/* Décorations d'arrière-plan */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-primary-100/40 via-primary-50/30 to-green-100/40 rounded-full blur-3xl opacity-60" />
-        </div>
-        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-700 rounded-full text-sm font-semibold mb-6">
-            <Zap size={16} className="text-primary-600" />
-            <span>Tarifs simples et transparents</span>
-          </div>
-          
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
             Choisissez votre plan
           </h1>
           
           <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Tous les plans incluent l'accès complet à l'API WhatsApp, la documentation détaillée et le support technique.
-            <span className="block mt-2 text-primary-600 font-medium">
-              Payez en FCFA via FedaPay ou KKiaPay
-            </span>
           </p>
         </motion.div>
       </div>
@@ -344,222 +331,147 @@ export default function Pricing() {
         )}
       </AnimatePresence>
 
-      {/* Grille des plans - Style amélioré */}
-      <div className={`grid gap-6 lg:gap-8 mb-16 ${
+      {/* Grille des plans - Design inspiré de la page d'accueil */}
+      <div className={`grid gap-6 md:gap-8 mb-16 max-w-6xl mx-auto ${
         {
-          1: 'sm:grid-cols-1 max-w-md mx-auto',
-          2: 'sm:grid-cols-2 max-w-4xl mx-auto',
+          1: 'sm:grid-cols-1 max-w-md',
+          2: 'sm:grid-cols-2 max-w-4xl',
           3: 'sm:grid-cols-2 lg:grid-cols-3',
         }[Math.min(plans.length, 3)] || 'sm:grid-cols-2 lg:grid-cols-3'
       }`}>
         {plans.map((plan, index) => {
-          const Icon       = getPlanIcon(index, plan.isPopular);
           const UsageIcon  = getUsageIcon(plan);
           const isFree     = plan.price === 0;
+          const isPopular = plan.isPopular || (!isFree && plans.length >= 3 && index === Math.floor((plans.length - 1) / 2));
 
           return (
             <motion.div
               key={plan.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.12, duration: 0.5 }}
-              className={`relative bg-white rounded-3xl overflow-hidden flex flex-col group ${
-                plan.isPopular
-                  ? 'border-2 border-primary-400 shadow-2xl shadow-primary-100/50 scale-105 lg:scale-110'
-                  : 'border border-gray-200 shadow-lg hover:shadow-xl hover:border-primary-200'
-              } transition-all duration-300 hover:-translate-y-1`}
+              transition={{ delay: index * 0.1 }}
+              className={`rounded-3xl p-6 sm:p-8 ${
+                isPopular
+                  ? 'bg-whatsapp-dark text-white shadow-2xl sm:transform sm:scale-105 border-4 border-whatsapp-dark'
+                  : 'bg-white border-2 border-gray-200 hover:border-whatsapp-dark hover:shadow-xl transition-all duration-300'
+              }`}
             >
-              {/* Badge populaire avec gradient */}
-              {plan.isPopular && (
-                <div className="bg-gradient-to-r from-primary-600 via-primary-500 to-green-500 text-white text-sm font-bold uppercase tracking-wider text-center py-2.5 px-4 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  <span className="relative flex items-center justify-center gap-2">
-                    <Crown size={16} className="animate-bounce" />
-                    Le plus populaire
-                  </span>
+              {isPopular && (
+                <div className="inline-flex items-center space-x-1 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold mb-6">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span>POPULAIRE</span>
                 </div>
               )}
 
-              <div className="p-6 sm:p-8 flex flex-col flex-1">
-                {/* Icône + Nom avec meilleur style */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md transition-transform group-hover:scale-110 ${
-                    plan.isPopular 
-                      ? 'bg-gradient-to-br from-primary-500 to-primary-600' 
-                      : isFree 
-                        ? 'bg-gradient-to-br from-gray-100 to-gray-200'
-                        : 'bg-gradient-to-br from-gray-800 to-gray-900'
-                  }`}>
-                    <Icon size={26} className={plan.isPopular || !isFree ? 'text-white' : 'text-gray-600'} />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
-                    {plan.isPopular && <span className="text-xs text-primary-600 font-semibold">⚡ Recommandé</span>}
-                  </div>
-                </div>
+              <h3 className={`text-2xl font-bold mb-4 ${isPopular ? 'text-white' : 'text-gray-900'}`}>
+                {plan.name}
+              </h3>
 
-                {/* Prix avec meilleur style */}
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className={`text-5xl sm:text-6xl font-black ${
-                      plan.isPopular ? 'bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent' : 'text-gray-900'
-                    }`}>
-                      {isFree ? 'Gratuit' : new Intl.NumberFormat('fr-FR').format(plan.price)}
-                    </span>
-                    {!isFree && <span className="text-gray-500 text-xl font-medium">FCFA</span>}
-                  </div>
-                  {!isFree && <p className="text-sm text-gray-500 mt-1">Paiement unique</p>}
-                </div>
-
-                {/* Usage avec badge amélioré */}
-                <div className={`flex items-center gap-2.5 mb-6 px-4 py-3 rounded-xl text-sm font-semibold shadow-sm ${
-                  plan.isPopular 
-                    ? 'bg-gradient-to-r from-primary-50 to-green-50 text-primary-700 border border-primary-200' 
-                    : 'bg-gray-50 text-gray-700 border border-gray-200'
-                }`}>
-                  <UsageIcon size={18} className={plan.isPopular ? 'text-primary-600' : 'text-gray-600'} />
-                  <span>{getUsageLabel(plan)}</span>
-                </div>
-
-                {/* Description */}
-                {plan.description && (
-                  <p className="text-gray-600 text-base mb-6 leading-relaxed">{plan.description}</p>
-                )}
-
-                {/* Séparateur */}
-                <div className="border-t border-gray-100 my-4" />
-
-                {/* Features avec meilleur style */}
-                {plan.features && plan.features.length > 0 && (
-                  <ul className="space-y-3.5 mb-8 flex-1">
-                    {plan.features.map((feat, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                          plan.isPopular ? 'bg-green-100' : 'bg-gray-100'
-                        }`}>
-                          <Check size={14} className={plan.isPopular ? 'text-green-600' : 'text-gray-600'} strokeWidth={3} />
-                        </div>
-                        <span className="leading-relaxed">{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                <div className="flex-1" />
-
-                {/* Bouton avec meilleur style */}
-                {isFree ? (
-                  <button
-                    onClick={() => navigate(user ? '/sessions' : '/login')}
-                    className="w-full py-4 rounded-xl border-2 border-gray-300 text-gray-700 font-bold text-base hover:border-gray-900 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 group"
-                  >
-                    <span>Commencer gratuitement</span>
-                    <ExternalLink size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      if (!user) { navigate('/login?redirect=/pricing'); return; }
-                      setInitError('');
-                      setGatewayModal({ plan });
-                    }}
-                    className={`w-full py-4 rounded-xl font-bold text-base transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
-                      plan.isPopular
-                        ? 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white'
-                        : 'bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white'
-                    }`}
-                  >
-                    <CreditCard size={19} />
-                    <span>Obtenir ce plan</span>
-                  </button>
-                )}
+              {/* Prix */}
+              <div className="mb-8">
+                <span className="text-3xl sm:text-5xl font-bold">
+                  {isFree ? 'Gratuit' : formatPrice(plan.price)}
+                </span>
               </div>
+
+              {/* Usage */}
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start space-x-3">
+                  <Check
+                    className={`flex-shrink-0 mt-1 ${isPopular ? 'text-white' : 'text-whatsapp-dark'}`}
+                    size={20}
+                    strokeWidth={3}
+                  />
+                  <span className={`${isPopular ? 'text-white' : 'text-gray-700'}`}>
+                    {getUsageLabel(plan)}
+                  </span>
+                </li>
+                {plan.features && plan.features.length > 0 && plan.features.slice(0, 3).map((feat, i) => (
+                  <li key={i} className="flex items-start space-x-3">
+                    <Check
+                      className={`flex-shrink-0 mt-1 ${isPopular ? 'text-white' : 'text-whatsapp-dark'}`}
+                      size={20}
+                      strokeWidth={3}
+                    />
+                    <span className={`${isPopular ? 'text-white' : 'text-gray-700'}`}>
+                      {feat}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Bouton */}
+              {isFree ? (
+                <button
+                  onClick={() => navigate(user ? '/sessions' : '/login')}
+                  className={`block w-full text-center py-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                    isPopular
+                      ? 'bg-white text-whatsapp-dark hover:bg-gray-50 shadow-lg'
+                      : 'bg-whatsapp-dark text-white hover:bg-whatsapp-dark shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  Commencer gratuitement
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (!user) { navigate('/login?redirect=/pricing'); return; }
+                    setInitError('');
+                    setGatewayModal({ plan });
+                  }}
+                  className={`block w-full text-center py-4 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                    isPopular
+                      ? 'bg-white text-whatsapp-dark hover:bg-gray-50 shadow-lg'
+                      : 'bg-whatsapp-dark text-white hover:bg-whatsapp-dark shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  Choisir ce plan
+                </button>
+              )}
             </motion.div>
           );
         })}
       </div>
 
-      {/* Sécurité et garanties - Style amélioré */}
+      {/* Badges de confiance simplifiés */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
         className="mt-16"
       >
-        {/* Badges de confiance */}
         <div className="grid sm:grid-cols-3 gap-6 mb-12">
-          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
               <Shield size={24} className="text-green-600" />
             </div>
             <div>
               <h4 className="font-bold text-gray-900 text-sm">Paiements sécurisés</h4>
-              <p className="text-xs text-gray-600">SSL · Aucune carte enregistrée</p>
+              <p className="text-xs text-gray-600">FedaPay et KKiaPay</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
               <CheckCircle size={24} className="text-blue-600" />
             </div>
             <div>
               <h4 className="font-bold text-gray-900 text-sm">Activation instantanée</h4>
-              <p className="text-xs text-gray-600">Accès immédiat après paiement</p>
+              <p className="text-xs text-gray-600">Prêt en 2 minutes</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <CreditCard size={24} className="text-purple-600" />
+              <MessageSquare size={24} className="text-purple-600" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">Paiements locaux</h4>
-              <p className="text-xs text-gray-600">FedaPay · KKiaPay · Mobile Money</p>
+              <h4 className="font-bold text-gray-900 text-sm">Support 24/7</h4>
+              <p className="text-xs text-gray-600">Assistance complète</p>
             </div>
           </div>
-        </div>
-
-        {/* CTA finale */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-green-500 rounded-3xl p-8 sm:p-12 text-center shadow-2xl">
-          {/* Décorations */}
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJWMGgydjMwem0wIDMwdi0ySDZ2MmgzMHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20" />
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="relative z-10"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold mb-4">
-              <Star size={16} />
-              <span>Une question sur les tarifs ?</span>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-              Besoin d'aide pour choisir ?
-            </h2>
-            <p className="text-primary-50 text-base sm:text-lg mb-6 max-w-2xl mx-auto">
-              Notre équipe est là pour vous conseiller et vous aider à trouver le plan qui correspond à vos besoins.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button
-                onClick={() => navigate('/contact')}
-                className="px-8 py-4 bg-white text-primary-600 rounded-xl font-bold text-base hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-              >
-                <MessageSquare size={20} />
-                <span>Contactez-nous</span>
-              </button>
-              
-              <button
-                onClick={() => navigate('/docs?section=introduction')}
-                className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold text-base hover:bg-white/10 transition-all backdrop-blur-sm flex items-center gap-2"
-              >
-                <ExternalLink size={20} />
-                <span>Voir la documentation</span>
-              </button>
-            </div>
-          </motion.div>
         </div>
       </motion.div>
 

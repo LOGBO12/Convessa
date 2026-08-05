@@ -109,7 +109,7 @@ const Dashboard = () => {
           className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b border-gray-200 pb-6"
         >
           <div>
-            <p className="text-sm font-medium text-green-700 mb-1 capitalize">{today}</p>
+            <p className="text-sm font-medium text-whatsapp-dark mb-1 capitalize">{today}</p>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Bonjour {firstName}
             </h1>
@@ -139,7 +139,7 @@ const Dashboard = () => {
               aria-labelledby="session-heading"
             >
               <div className="border-b border-gray-100 px-6 py-4 flex items-center gap-2">
-                <MessageCircle size={20} className="text-green-700" />
+                <MessageCircle size={20} className="text-whatsapp-dark" />
                 <h2 id="session-heading" className="text-lg font-semibold text-gray-900">
                   Ma session WhatsApp
                 </h2>
@@ -167,7 +167,7 @@ const Dashboard = () => {
                     </p>
                     <button
                       onClick={() => navigate('/sessions')}
-                      className="inline-flex items-center gap-2 bg-green-700 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
+                      className="inline-flex items-center gap-2 bg-whatsapp-dark text-white px-5 py-2.5 rounded-lg font-medium hover:bg-whatsapp-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
                     >
                       <QrCode size={18} />
                       <span>Connecter WhatsApp</span>
@@ -202,7 +202,7 @@ const Dashboard = () => {
                       <div className="rounded-xl border border-green-200 bg-green-50 p-5">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-semibold text-gray-900 flex items-center gap-2 text-sm">
-                            <Key size={16} className="text-green-700" />
+                            <Key size={16} className="text-whatsapp-dark" />
                             <span>Votre clé API</span>
                           </h4>
                         </div>
@@ -242,7 +242,7 @@ const Dashboard = () => {
                         </div>
 
                         <p className="text-xs text-gray-600 mt-3 flex items-start gap-1.5">
-                          <ShieldCheck size={14} className="text-green-700 shrink-0 mt-0.5" />
+                          <ShieldCheck size={14} className="text-whatsapp-dark shrink-0 mt-0.5" />
                           <span>Gardez votre clé secrète.</span>
                         </p>
                       </div>
@@ -252,7 +252,7 @@ const Dashboard = () => {
                     {userSession.status !== 'connected' && (
                       <button
                         onClick={() => navigate('/sessions')}
-                        className="w-full flex items-center justify-center gap-2 bg-green-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 bg-whatsapp-dark text-white px-6 py-3 rounded-lg font-medium hover:bg-whatsapp-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
                       >
                         <QrCode size={18} />
                         <span>Scanner le QR code</span>
@@ -272,7 +272,7 @@ const Dashboard = () => {
               aria-labelledby="usage-heading"
             >
               <div className="flex items-center gap-2 mb-6">
-                <BarChart3 size={20} className="text-green-700" />
+                <BarChart3 size={20} className="text-whatsapp-dark" />
                 <h2 id="usage-heading" className="text-lg font-semibold text-gray-900">
                   Mon usage ce mois-ci
                 </h2>
@@ -297,7 +297,7 @@ const Dashboard = () => {
                           <p className="text-xs text-gray-500">quota total</p>
                         </>
                       ) : (
-                        <div className="flex items-center gap-1 text-green-700">
+                        <div className="flex items-center gap-1 text-whatsapp-dark">
                           <Infinity size={18} />
                           <p className="text-xs text-gray-500">illimité</p>
                         </div>
@@ -327,7 +327,7 @@ const Dashboard = () => {
 
                   {usageType === 'duration' && expiresAt && (
                     <div className={`mt-3 flex items-center gap-2 text-sm px-3 py-2 rounded-lg ${
-                      isExpired() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+                      isExpired() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-whatsapp-dark'
                     }`}>
                       <Calendar size={15} />
                       <span>
@@ -343,7 +343,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-gray-100">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp size={17} className="text-green-700" />
+                      <TrendingUp size={17} className="text-whatsapp-dark" />
                       <p className="text-sm text-gray-500">Taux de succès</p>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">—</p>
@@ -351,7 +351,7 @@ const Dashboard = () => {
 
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Zap size={17} className="text-green-700" />
+                      <Zap size={17} className="text-whatsapp-dark" />
                       <p className="text-sm text-gray-500">Type de plan</p>
                     </div>
                     <p className="text-base font-bold text-gray-900 capitalize">
@@ -371,7 +371,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.24, duration: 0.35 }}
               className={`bg-white rounded-2xl border-2 p-6 ${
-                isExpired() ? 'border-red-400' : 'border-green-700'
+                isExpired() ? 'border-red-400' : 'border-whatsapp-dark'
               }`}
               aria-labelledby="plan-heading"
             >
@@ -379,7 +379,7 @@ const Dashboard = () => {
                 <h3 id="plan-heading" className="font-semibold text-gray-500 text-sm">
                   Mon abonnement
                 </h3>
-                <CreditCard size={20} className={isExpired() ? 'text-red-500' : 'text-green-700'} />
+                <CreditCard size={20} className={isExpired() ? 'text-red-500' : 'text-whatsapp-dark'} />
               </div>
 
               {sessionLoading ? (
@@ -399,7 +399,7 @@ const Dashboard = () => {
                       isExpired()
                         ? 'bg-red-100 text-red-700'
                         : usageType === 'unlimited'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-green-100 text-whatsapp-dark'
                         : 'bg-blue-100 text-blue-700'
                     }`}>
                       {usageType === 'unlimited' && <Infinity size={14} />}
@@ -431,22 +431,22 @@ const Dashboard = () => {
                   <ul className="space-y-2.5 mb-5">
                     {usageType === 'requests' && messagesLimit !== null && (
                       <li className="flex items-center gap-2 text-gray-700 text-sm">
-                        <CheckCircle size={15} className="text-green-700 shrink-0" />
+                        <CheckCircle size={15} className="text-whatsapp-dark shrink-0" />
                         <span>{messagesLimit.toLocaleString()} messages au total</span>
                       </li>
                     )}
                     {usageType === 'unlimited' && (
                       <li className="flex items-center gap-2 text-gray-700 text-sm">
-                        <CheckCircle size={15} className="text-green-700 shrink-0" />
+                        <CheckCircle size={15} className="text-whatsapp-dark shrink-0" />
                         <span>Aucune limite d'envoi</span>
                       </li>
                     )}
                     <li className="flex items-center gap-2 text-gray-700 text-sm">
-                      <CheckCircle size={15} className="text-green-700 shrink-0" />
+                      <CheckCircle size={15} className="text-whatsapp-dark shrink-0" />
                       <span>API REST WhatsApp</span>
                     </li>
                     <li className="flex items-center gap-2 text-gray-700 text-sm">
-                      <CheckCircle size={15} className="text-green-700 shrink-0" />
+                      <CheckCircle size={15} className="text-whatsapp-dark shrink-0" />
                       <span>Support inclus</span>
                     </li>
                   </ul>
@@ -457,7 +457,7 @@ const Dashboard = () => {
                       className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
                         isExpired()
                           ? 'bg-red-600 hover:bg-red-700 text-white focus-visible:ring-red-500'
-                          : 'bg-green-700 hover:bg-green-800 text-white focus-visible:ring-green-600'
+                          : 'bg-whatsapp-dark hover:bg-whatsapp-dark text-white focus-visible:ring-green-600'
                       }`}
                     >
                       {isExpired() ? (
@@ -480,14 +480,14 @@ const Dashboard = () => {
               aria-labelledby="actions-heading"
             >
               <h3 id="actions-heading" className="font-semibold text-gray-900 mb-4 flex items-center gap-2 text-sm">
-                <Zap size={18} className="text-green-700" />
+                <Zap size={18} className="text-whatsapp-dark" />
                 <span>Actions rapides</span>
               </h3>
 
               <div className="space-y-2">
                 <button
                   onClick={() => navigate('/send-message')}
-                  className="w-full text-left px-4 py-3 rounded-lg bg-green-700 text-white hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium flex items-center gap-3"
+                  className="w-full text-left px-4 py-3 rounded-lg bg-whatsapp-dark text-white hover:bg-whatsapp-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium flex items-center gap-3"
                 >
                   <Send size={17} />
                   <span>Envoyer un message</span>
@@ -504,7 +504,7 @@ const Dashboard = () => {
                     className="group w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:border-green-600 hover:bg-green-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex items-center justify-between"
                   >
                     <span className="flex items-center gap-3">
-                      <Icon size={17} className="text-gray-500 group-hover:text-green-700" />
+                      <Icon size={17} className="text-gray-500 group-hover:text-whatsapp-dark" />
                       <span className="text-gray-700 group-hover:text-gray-900 text-sm">{label}</span>
                     </span>
                     <ChevronRight size={16} className="text-gray-300 group-hover:text-green-600" />
