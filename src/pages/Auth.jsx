@@ -68,7 +68,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-whatsapp-light py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -78,7 +78,7 @@ const Auth = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 bg-whatsapp rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-2xl">C</span>
             </div>
             <span className="text-3xl font-bold text-gray-900">Convessa</span>
@@ -191,7 +191,7 @@ const Auth = () => {
               className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold text-lg ${
                 loading || !phoneValue
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 transform hover:-translate-y-0.5'
+                  : 'bg-whatsapp text-white hover:bg-whatsapp-dark transform hover:-translate-y-0.5'
               }`}
             >
               {loading ? (

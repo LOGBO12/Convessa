@@ -166,7 +166,7 @@ const FAQ = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white pt-16">
+    <div className="min-h-screen bg-white pt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <motion.div
@@ -257,7 +257,7 @@ const FAQ = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="mt-16 text-center bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-6 sm:p-12 shadow-xl"
+          className="mt-16 text-center bg-whatsapp rounded-2xl p-6 sm:p-12 shadow-xl"
         >
           <h2 className="text-xl sm:text-3xl font-bold text-white mb-4">
             Vous ne trouvez pas votre réponse ?
@@ -267,13 +267,13 @@ const FAQ = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:supportconvessa@gmail.com"
+              href="/contact"
               className="w-full sm:w-auto bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md text-center"
             >
               Contacter le support
             </a>
             <a
-              href="/docs"
+              href="/docs?section=introduction"
               className="w-full sm:w-auto bg-primary-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-900 transition-colors text-center"
             >
               Consulter la documentation

@@ -506,7 +506,7 @@ const Sessions = () => {
           <button
             onClick={handleCreateSession}
             disabled={creating}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center space-x-2 bg-whatsapp text-white px-8 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {creating ? (
               <><Loader className="animate-spin" size={20} /><span>Préparation...</span></>
@@ -556,7 +556,7 @@ const Sessions = () => {
                 const fullKey = getTenantApiKey(user?.uid);
                 const displayKey = fullKey || userSession.apiKeyHint;
                 return (
-                <div className="bg-gradient-to-r from-primary-50 to-purple-50 border-2 border-primary-200 rounded-xl p-6 mb-6">
+                <div className="bg-whatsapp-light border-2 border-primary-200 rounded-xl p-6 mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-gray-900 flex items-center space-x-2">
                       <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -599,7 +599,7 @@ const Sessions = () => {
               {(userSession.status === 'pending_qr' || userSession.status === 'disconnected') && (
                 <button
                   onClick={() => handleShowQR()}
-                  className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg font-medium"
+                  className="w-full flex items-center justify-center space-x-2 bg-whatsapp text-white px-6 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg font-medium"
                 >
                   <QrCode size={20} />
                   <span>Scanner le QR Code</span>
@@ -658,7 +658,7 @@ const Sessions = () => {
               className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+              <div className="bg-whatsapp px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center space-x-2">
                   <QrCode size={24} />
                   <span>Scanner le QR Code</span>
@@ -763,7 +763,7 @@ const Sessions = () => {
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+              <div className="bg-whatsapp px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center space-x-2">
                   <CheckCircle size={24} />
                   <span>WhatsApp connecté !</span>
@@ -868,7 +868,7 @@ const Sessions = () => {
               className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden"
             >
               {/* Header */}
-              <div className="relative bg-gradient-to-r from-green-500 to-green-600 px-8 py-6">
+              <div className="relative bg-whatsapp px-8 py-6">
                 <button
                   onClick={handleCloseApiKeyModal}
                   className="absolute top-4 right-4 text-white/80 hover:text-white"
@@ -987,7 +987,7 @@ const Sessions = () => {
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-primary-600 to-purple-700 px-6 py-5">
+              <div className="bg-whatsapp px-6 py-5">
                 <h2 className="text-xl font-bold text-white">
                   🚀 Rejoignez la communauté Convessa !
                 </h2>
@@ -1067,7 +1067,7 @@ const Sessions = () => {
                         <button
                           type="submit"
                           disabled={communitySubmitting || !communityForm.firstName.trim() || !communityForm.lastName.trim() || !communityForm.phone.trim()}
-                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 flex items-center justify-center gap-2 bg-whatsapp text-white py-3 rounded-lg hover:bg-whatsapp-dark transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {communitySubmitting ? (
                             <><Loader className="animate-spin" size={16} /><span>Inscription...</span></>

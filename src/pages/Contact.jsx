@@ -9,7 +9,7 @@ import 'react-phone-number-input/style.css';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
-  Mail, Phone, MessageSquare, Send, CheckCircle,
+  MessageSquare, Send, CheckCircle,
   AlertCircle, Loader, Clock, ExternalLink,
 } from 'lucide-react';
 import { contactAPI } from '../services/api';
@@ -60,7 +60,7 @@ export default function Contact() {
     <div className="min-h-screen bg-gray-50 pt-16">
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-whatsapp-darker via-whatsapp-dark to-primary-700 py-14 sm:py-20">
+      <section className="bg-whatsapp-dark py-14 sm:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 px-4 py-2 rounded-full mb-6 text-sm font-medium">
@@ -80,66 +80,11 @@ export default function Contact() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-10">
 
-          {/* Infos de contact */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-6"
-          >
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Informations de contact</h2>
-              <div className="space-y-4">
-                {[
-                  { icon: Mail, label: 'Email', value: 'supportconvessa@gmail.com', href: 'mailto:supportconvessa@gmail.com' },
-                  { icon: Phone, label: 'WhatsApp', value: 'Discuter sur WhatsApp', href: 'https://wa.me/22990000000' },
-                  { icon: Clock, label: 'Disponibilité', value: 'Lun–Sam, 8h–20h (WAT)' },
-                ].map(({ icon: Icon, label, value, href }) => (
-                  <div key={label} className="flex items-start gap-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Icon size={20} className="text-primary-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</p>
-                      {href ? (
-                        <a href={href} target="_blank" rel="noopener noreferrer"
-                          className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1 mt-0.5">
-                          {value} <ExternalLink size={12} />
-                        </a>
-                      ) : (
-                        <p className="text-sm text-gray-900 font-medium mt-0.5">{value}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Liens rapides */}
-            <div className="bg-primary-50 border border-primary-200 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm">Ressources utiles</h3>
-              <ul className="space-y-2">
-                {[
-                  { label: 'Documentation API', href: '/docs' },
-                  { label: 'FAQ', href: '/faq' },
-                  { label: 'Plans & Tarifs', href: '/pricing' },
-                ].map(({ label, href }) => (
-                  <li key={label}>
-                    <a href={href} className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-primary-500 rounded-full" />
-                      {label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </motion.div>
-
-          {/* Formulaire */}
+          {/* Formulaire de contact - Prend 2 colonnes */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.1 }}
             className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8"
           >
             <h2 className="text-xl font-bold text-gray-900 mb-6">Envoyer un message</h2>
@@ -239,7 +184,7 @@ export default function Contact() {
 
                 <button
                   type="submit" disabled={sending}
-                  className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3.5 rounded-xl hover:from-primary-700 hover:to-primary-800 font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2.5 bg-whatsapp text-white py-3.5 rounded-xl hover:bg-whatsapp-dark font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {sending ? (
                     <><Loader size={18} className="animate-spin" /> Envoi en cours...</>
@@ -254,6 +199,58 @@ export default function Contact() {
               </form>
             )}
           </motion.div>
+
+          {/* Ressources utiles - Sidebar à droite */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 }}
+            className="space-y-6"
+          >
+            <div className="bg-primary-50 border border-primary-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-4 text-lg">Ressources utiles</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Consultez nos ressources avant de nous contacter, vous trouverez peut-être rapidement votre réponse.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  { label: 'Documentation API', href: '/docs', desc: 'Guides complets et exemples de code' },
+                  { label: 'FAQ', href: '/faq', desc: 'Questions fréquemment posées' },
+                  { label: 'Plans & Tarifs', href: '/pricing', desc: 'Découvrez nos offres' },
+                ].map(({ label, href, desc }) => (
+                  <li key={label}>
+                    <a 
+                      href={href} 
+                      className="block p-3 bg-white rounded-lg border border-primary-100 hover:border-primary-300 hover:shadow-sm transition-all group"
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-primary-600 group-hover:text-primary-700 flex items-center gap-1">
+                            {label}
+                            <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Info supplémentaire */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
+                <Clock size={16} className="text-primary-600" />
+                Délai de réponse
+              </h4>
+              <p className="text-sm text-gray-600">
+                Nous répondons généralement sous <strong>24 heures</strong> pendant les jours ouvrables.
+              </p>
+            </div>
+          </motion.div>
+
         </div>
       </div>
     </div>

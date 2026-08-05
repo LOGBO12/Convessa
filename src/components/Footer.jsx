@@ -7,25 +7,25 @@ const Footer = () => {
 
   const footerLinks = {
     product: [
-      { name: 'Documentation', href: '/docs' },
-      { name: 'API Reference', href: '/docs#api' },
+      { name: 'Documentation', href: '/docs?section=introduction' },
+      { name: 'API Reference', href: '/docs?section=reference-api' },
       { name: 'Tarifs', href: '/pricing' },
-      { name: 'Exemples', href: '#' },
+      { name: 'Exemples', href: '/docs?section=integration#exemples-par-langage' },
     ],
     company: [
-      { name: 'À propos', href: '#' },
+      { name: 'À propos', href: '/#about' },
       { name: 'Blog', href: '#' },
       { name: 'Carrières', href: '#' },
-      { name: 'Contact', href: '#' },
+      { name: 'Contact', href: '/contact' },
     ],
     legal: [
-      { name: "Conditions d'utilisation", href: '/docs/terms-of-service' },
-      { name: 'Politique de confidentialité', href: '#' },
-      { name: 'Mentions légales', href: '/docs/legal-warnings' },
+      { name: "Conditions d'utilisation", href: '/docs?section=legal' },
+      { name: 'Politique de confidentialité', href: '/docs?section=legal' },
+      { name: 'Mentions légales', href: '/docs?section=legal' },
       { name: 'Cookies', href: '#' },
     ],
     support: [
-      { name: 'Centre d\'aide', href: '#' },
+      { name: 'Centre d\'aide', href: '/contact' },
       { name: 'Communauté', href: '#' },
       { name: 'Status', href: '#' },
       { name: 'FAQ', href: '/faq' },
@@ -40,7 +40,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-whatsapp rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">C</span>
               </div>
               <span className="text-2xl font-bold text-white">Convessa</span>

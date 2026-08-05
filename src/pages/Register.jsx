@@ -66,25 +66,46 @@ const Register = () => {
   const isDisabled = loading || socialLoading !== null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+      {/* Background moderne avec gradients et formes */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-primary-50" />
+      
+      {/* Cercles décoratifs animés */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary-200/40 to-primary-300/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-tl from-green-200/40 to-whatsapp/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+      <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-gradient-to-r from-primary-100/30 to-green-100/30 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+      
+      {/* Motif de points */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
+        backgroundSize: '32px 32px'
+      }} />
+      
+      {/* Lignes décoratives */}
+      <div className="absolute top-20 left-10 w-32 h-0.5 bg-gradient-to-r from-transparent via-primary-300 to-transparent opacity-40 rotate-45" />
+      <div className="absolute bottom-32 right-16 w-40 h-0.5 bg-gradient-to-r from-transparent via-green-300 to-transparent opacity-40 -rotate-45" />
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-md w-full"
+        className="max-w-md w-full relative z-10"
       >
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 bg-whatsapp rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-2xl">C</span>
             </div>
             <span className="text-3xl font-bold text-gray-900">Convessa</span>
           </Link>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-gray-100">
+        {/* Card avec effet glassmorphism */}
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 relative overflow-hidden">
+          {/* Effet de brillance en haut */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+          
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h2>
             <p className="text-gray-600">Rejoignez Convessa en quelques secondes</p>
@@ -196,7 +217,7 @@ const Register = () => {
               className={`w-full flex items-center justify-center space-x-2 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl font-semibold text-lg ${
                 isDisabled || !phoneValue
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 transform hover:-translate-y-0.5'
+                  : 'bg-whatsapp text-white hover:bg-whatsapp-dark transform hover:-translate-y-0.5'
               }`}
             >
               {loading ? (

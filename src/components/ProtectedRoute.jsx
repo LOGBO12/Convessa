@@ -11,7 +11,7 @@ function ProtectedRoute({ children }) {
   // Afficher un loader pendant la vérification de l'authentification
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-whatsapp-light">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Chargement...</p>

@@ -310,7 +310,7 @@ const SendMessage = () => {
 
           <Link
             to="/sessions"
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg font-medium"
+            className="inline-flex items-center space-x-2 bg-whatsapp text-white px-8 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg font-medium"
           >
             <Smartphone size={20} />
             <span>Aller à la page Sessions</span>
@@ -336,7 +336,7 @@ const SendMessage = () => {
           </p>
           <Link
             to="/sessions"
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-4 rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all shadow-md hover:shadow-lg font-medium"
+            className="inline-flex items-center space-x-2 bg-whatsapp text-white px-8 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg font-medium"
           >
             <Smartphone size={20} />
             <span>Aller à la page Sessions</span>
@@ -357,7 +357,7 @@ const SendMessage = () => {
         className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
+        <div className="bg-whatsapp px-6 py-4">
           <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center space-x-2">
             <Send size={24} />
             <span>Envoyer un Message WhatsApp</span>
@@ -659,7 +659,7 @@ const SendMessage = () => {
             className={`w-full flex items-center justify-center space-x-2 py-4 rounded-lg transition-all shadow-md hover:shadow-lg font-semibold ${
               sending || (!message && !mediaFile)
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800'
+                : 'bg-whatsapp text-white hover:bg-whatsapp-dark'
             }`}
           >
             {sending ? (

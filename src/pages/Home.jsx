@@ -79,7 +79,7 @@ const Home = () => {
   return (
     <div className="pt-16">
       {/* Hero Section - Dégradé vert WhatsApp */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-whatsapp-darker via-whatsapp-dark to-primary-700 py-20 md:py-32">
+      <section className="relative overflow-hidden bg-whatsapp-dark py-20 md:py-32">
         {/* Pattern de fond */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -206,7 +206,7 @@ const response = await fetch('https://api.convessa.dev/send', {
       </section>
 
       {/* How It Works Section - Fond vert très clair */}
-      <section className="py-20 bg-gradient-to-br from-primary-50 to-emerald-50">
+      <section className="py-20 bg-whatsapp-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -236,7 +236,7 @@ const response = await fetch('https://api.convessa.dev/send', {
               >
                 <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full border-2 border-primary-100">
                   <div className="text-7xl font-bold text-primary-100 mb-4">{step}</div>
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center mb-6 shadow-lg">
+                  <div className="w-14 h-14 rounded-xl bg-whatsapp flex items-center justify-center mb-6 shadow-lg">
                     <Icon className="text-white" size={28} />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -310,7 +310,7 @@ const response = await fetch('https://api.convessa.dev/send', {
                   transition={{ delay: index * 0.1 }}
                   className={`rounded-3xl p-6 sm:p-8 ${
                     isPopular
-                      ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-2xl sm:transform sm:scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
+                      ? 'bg-whatsapp text-white shadow-2xl sm:transform sm:scale-105 border-4 border-primary-400 ring-4 ring-primary-200'
                       : 'bg-white border-2 border-gray-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300'
                   }`}
                 >
@@ -397,7 +397,7 @@ const response = await fetch('https://api.convessa.dev/send', {
       </section>
 
       {/* CTA Section - Dégradé vert WhatsApp */}
-      <section className="py-24 bg-gradient-to-br from-whatsapp-dark via-primary-600 to-primary-700 text-white relative overflow-hidden">
+      <section className="py-24 bg-whatsapp-dark text-white relative overflow-hidden">
         {/* Pattern décoratif */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{

@@ -272,15 +272,36 @@ export default function Pricing() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-16">
+    <div className="max-w-7xl mx-auto px-4 py-16 sm:py-20">
 
-      {/* Header */}
-      <div className="text-center mb-14">
-        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-4">Choisissez votre plan</h1>
-        <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-          Tous les plans incluent l'accès à l'API WhatsApp, la documentation et le support.
-          Payez en FCFA via FedaPay ou KKiaPay.
-        </p>
+      {/* Header avec gradient background */}
+      <div className="text-center mb-16 relative">
+        {/* Décorations d'arrière-plan */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-primary-100/40 via-primary-50/30 to-green-100/40 rounded-full blur-3xl opacity-60" />
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-700 rounded-full text-sm font-semibold mb-6">
+            <Zap size={16} className="text-primary-600" />
+            <span>Tarifs simples et transparents</span>
+          </div>
+          
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+            Choisissez votre plan
+          </h1>
+          
+          <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Tous les plans incluent l'accès complet à l'API WhatsApp, la documentation détaillée et le support technique.
+            <span className="block mt-2 text-primary-600 font-medium">
+              Payez en FCFA via FedaPay ou KKiaPay
+            </span>
+          </p>
+        </motion.div>
       </div>
 
       {/* Résultat paiement */}
@@ -323,16 +344,11 @@ export default function Pricing() {
         )}
       </AnimatePresence>
 
-      {/* Grille des plans */}
-      {/* IMPORTANT — Tailwind ne détecte que des noms de classes complets et
-          statiques dans le code source. Une classe construite par
-          concaténation (`'md:grid-cols-' + n`) n'est pas fiable : elle ne
-          fonctionne que si cette chaîne exacte apparaît ailleurs, littéralement,
-          dans le projet. On utilise donc une correspondance statique. */}
-      <div className={`grid gap-8 ${
+      {/* Grille des plans - Style amélioré */}
+      <div className={`grid gap-6 lg:gap-8 mb-16 ${
         {
-          1: 'sm:grid-cols-1',
-          2: 'sm:grid-cols-2',
+          1: 'sm:grid-cols-1 max-w-md mx-auto',
+          2: 'sm:grid-cols-2 max-w-4xl mx-auto',
           3: 'sm:grid-cols-2 lg:grid-cols-3',
         }[Math.min(plans.length, 3)] || 'sm:grid-cols-2 lg:grid-cols-3'
       }`}>
@@ -344,61 +360,86 @@ export default function Pricing() {
           return (
             <motion.div
               key={plan.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.08 }}
-              className={`relative bg-white rounded-2xl shadow-sm border-2 overflow-hidden flex flex-col ${
+              transition={{ delay: index * 0.12, duration: 0.5 }}
+              className={`relative bg-white rounded-3xl overflow-hidden flex flex-col group ${
                 plan.isPopular
-                  ? 'border-primary-500 shadow-lg shadow-primary-100'
-                  : 'border-gray-200 hover:border-primary-200'
-              } transition-all`}
+                  ? 'border-2 border-primary-400 shadow-2xl shadow-primary-100/50 scale-105 lg:scale-110'
+                  : 'border border-gray-200 shadow-lg hover:shadow-xl hover:border-primary-200'
+              } transition-all duration-300 hover:-translate-y-1`}
             >
-              {/* Badge populaire */}
+              {/* Badge populaire avec gradient */}
               {plan.isPopular && (
-                <div className="bg-primary-600 text-white text-xs font-bold uppercase tracking-wider text-center py-1.5 px-4">
-                  ⭐ Le plus populaire
+                <div className="bg-gradient-to-r from-primary-600 via-primary-500 to-green-500 text-white text-sm font-bold uppercase tracking-wider text-center py-2.5 px-4 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  <span className="relative flex items-center justify-center gap-2">
+                    <Crown size={16} className="animate-bounce" />
+                    Le plus populaire
+                  </span>
                 </div>
               )}
 
-              <div className="p-4 sm:p-7 flex flex-col flex-1">
-                {/* Icône + Nom */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-                    plan.isPopular ? 'bg-primary-100' : 'bg-gray-100'
+              <div className="p-6 sm:p-8 flex flex-col flex-1">
+                {/* Icône + Nom avec meilleur style */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md transition-transform group-hover:scale-110 ${
+                    plan.isPopular 
+                      ? 'bg-gradient-to-br from-primary-500 to-primary-600' 
+                      : isFree 
+                        ? 'bg-gradient-to-br from-gray-100 to-gray-200'
+                        : 'bg-gradient-to-br from-gray-800 to-gray-900'
                   }`}>
-                    <Icon size={22} className={plan.isPopular ? 'text-primary-600' : 'text-gray-600'} />
+                    <Icon size={26} className={plan.isPopular || !isFree ? 'text-white' : 'text-gray-600'} />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
+                    {plan.isPopular && <span className="text-xs text-primary-600 font-semibold">⚡ Recommandé</span>}
+                  </div>
                 </div>
 
-                {/* Prix */}
-                <div className="mb-2">
-                  <span className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-                    {isFree ? 'Gratuit' : new Intl.NumberFormat('fr-FR').format(plan.price)}
-                  </span>
-                  {!isFree && <span className="text-gray-500 ml-1 text-lg">FCFA</span>}
+                {/* Prix avec meilleur style */}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-5xl sm:text-6xl font-black ${
+                      plan.isPopular ? 'bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent' : 'text-gray-900'
+                    }`}>
+                      {isFree ? 'Gratuit' : new Intl.NumberFormat('fr-FR').format(plan.price)}
+                    </span>
+                    {!isFree && <span className="text-gray-500 text-xl font-medium">FCFA</span>}
+                  </div>
+                  {!isFree && <p className="text-sm text-gray-500 mt-1">Paiement unique</p>}
                 </div>
 
-                {/* Usage */}
-                <div className={`flex items-center gap-2 mb-5 px-3 py-2 rounded-lg text-sm font-medium ${
-                  plan.isPopular ? 'bg-primary-50 text-primary-700' : 'bg-gray-50 text-gray-700'
+                {/* Usage avec badge amélioré */}
+                <div className={`flex items-center gap-2.5 mb-6 px-4 py-3 rounded-xl text-sm font-semibold shadow-sm ${
+                  plan.isPopular 
+                    ? 'bg-gradient-to-r from-primary-50 to-green-50 text-primary-700 border border-primary-200' 
+                    : 'bg-gray-50 text-gray-700 border border-gray-200'
                 }`}>
-                  <UsageIcon size={15} />
+                  <UsageIcon size={18} className={plan.isPopular ? 'text-primary-600' : 'text-gray-600'} />
                   <span>{getUsageLabel(plan)}</span>
                 </div>
 
                 {/* Description */}
                 {plan.description && (
-                  <p className="text-gray-600 text-sm mb-5 leading-relaxed">{plan.description}</p>
+                  <p className="text-gray-600 text-base mb-6 leading-relaxed">{plan.description}</p>
                 )}
 
-                {/* Features */}
+                {/* Séparateur */}
+                <div className="border-t border-gray-100 my-4" />
+
+                {/* Features avec meilleur style */}
                 {plan.features && plan.features.length > 0 && (
-                  <ul className="space-y-2.5 mb-6 flex-1">
+                  <ul className="space-y-3.5 mb-8 flex-1">
                     {plan.features.map((feat, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
-                        <Check size={16} className="text-green-500 flex-shrink-0 mt-0.5" />
-                        <span>{feat}</span>
+                      <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          plan.isPopular ? 'bg-green-100' : 'bg-gray-100'
+                        }`}>
+                          <Check size={14} className={plan.isPopular ? 'text-green-600' : 'text-gray-600'} strokeWidth={3} />
+                        </div>
+                        <span className="leading-relaxed">{feat}</span>
                       </li>
                     ))}
                   </ul>
@@ -406,13 +447,14 @@ export default function Pricing() {
 
                 <div className="flex-1" />
 
-                {/* Bouton */}
+                {/* Bouton avec meilleur style */}
                 {isFree ? (
                   <button
                     onClick={() => navigate(user ? '/sessions' : '/login')}
-                    className="w-full py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all"
+                    className="w-full py-4 rounded-xl border-2 border-gray-300 text-gray-700 font-bold text-base hover:border-gray-900 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 group"
                   >
-                    Commencer gratuitement
+                    <span>Commencer gratuitement</span>
+                    <ExternalLink size={18} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 ) : (
                   <button
@@ -421,14 +463,14 @@ export default function Pricing() {
                       setInitError('');
                       setGatewayModal({ plan });
                     }}
-                    className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                    className={`w-full py-4 rounded-xl font-bold text-base transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
                       plan.isPopular
-                        ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
+                        ? 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white'
+                        : 'bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white'
                     }`}
                   >
-                    <CreditCard size={17} className="inline mr-2 -mt-0.5" />
-                    Obtenir ce plan
+                    <CreditCard size={19} />
+                    <span>Obtenir ce plan</span>
                   </button>
                 )}
               </div>
@@ -437,11 +479,89 @@ export default function Pricing() {
         })}
       </div>
 
-      {/* Sécurité */}
-      <div className="mt-12 text-center flex items-center justify-center gap-2 text-gray-500 text-sm">
-        <Shield size={16} />
-        <span>Paiements sécurisés par FedaPay et KKiaPay · SSL · Aucune carte enregistrée</span>
-      </div>
+      {/* Sécurité et garanties - Style amélioré */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="mt-16"
+      >
+        {/* Badges de confiance */}
+        <div className="grid sm:grid-cols-3 gap-6 mb-12">
+          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+              <Shield size={24} className="text-green-600" />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-900 text-sm">Paiements sécurisés</h4>
+              <p className="text-xs text-gray-600">SSL · Aucune carte enregistrée</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <CheckCircle size={24} className="text-blue-600" />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-900 text-sm">Activation instantanée</h4>
+              <p className="text-xs text-gray-600">Accès immédiat après paiement</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 p-5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <CreditCard size={24} className="text-purple-600" />
+            </div>
+            <div>
+              <h4 className="font-bold text-gray-900 text-sm">Paiements locaux</h4>
+              <p className="text-xs text-gray-600">FedaPay · KKiaPay · Mobile Money</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA finale */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-green-500 rounded-3xl p-8 sm:p-12 text-center shadow-2xl">
+          {/* Décorations */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJWMGgydjMwem0wIDMwdi0ySDZ2MmgzMHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20" />
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+            className="relative z-10"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold mb-4">
+              <Star size={16} />
+              <span>Une question sur les tarifs ?</span>
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+              Besoin d'aide pour choisir ?
+            </h2>
+            <p className="text-primary-50 text-base sm:text-lg mb-6 max-w-2xl mx-auto">
+              Notre équipe est là pour vous conseiller et vous aider à trouver le plan qui correspond à vos besoins.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <button
+                onClick={() => navigate('/contact')}
+                className="px-8 py-4 bg-white text-primary-600 rounded-xl font-bold text-base hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
+              >
+                <MessageSquare size={20} />
+                <span>Contactez-nous</span>
+              </button>
+              
+              <button
+                onClick={() => navigate('/docs?section=introduction')}
+                className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold text-base hover:bg-white/10 transition-all backdrop-blur-sm flex items-center gap-2"
+              >
+                <ExternalLink size={20} />
+                <span>Voir la documentation</span>
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* ── Modal choix passerelle ─────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -461,7 +581,7 @@ export default function Pricing() {
               className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4 flex items-center justify-between">
+              <div className="bg-whatsapp px-6 py-4 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-white">Choisir la méthode de paiement</h2>
                   <p className="text-primary-200 text-sm mt-0.5">

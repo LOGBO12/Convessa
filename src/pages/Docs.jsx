@@ -319,7 +319,7 @@ export default function Docs() {
       }
 
       return (
-        <code className="bg-gray-100 text-primary-700 text-[0.8125rem] font-mono px-1.5 py-0.5 rounded">
+        <code className="bg-primary-50 text-primary-700 text-sm font-mono px-2 py-1 rounded-md border border-primary-100">
           {children}
         </code>
       );
@@ -329,7 +329,7 @@ export default function Docs() {
     h1: ({ children }) => {
       const id = slugify(String(children));
       return (
-        <h1 id={id} className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 pb-5 border-b border-gray-200 tracking-tight">
+        <h1 id={id} className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 pb-6 border-b-2 border-gray-200 tracking-tight leading-tight">
           {children}
         </h1>
       );
@@ -337,7 +337,7 @@ export default function Docs() {
     h2: ({ children }) => {
       const id = slugify(String(children));
       return (
-        <h2 id={id} className="text-xl font-semibold text-gray-900 mt-12 mb-4 scroll-mt-24 pb-2 border-b border-gray-100">
+        <h2 id={id} className="text-2xl sm:text-3xl font-bold text-gray-900 mt-16 mb-5 scroll-mt-24 pb-3 border-b border-gray-200">
           {children}
         </h2>
       );
@@ -345,7 +345,7 @@ export default function Docs() {
     h3: ({ children }) => {
       const id = slugify(String(children));
       return (
-        <h3 id={id} className="text-base font-semibold text-gray-800 mt-8 mb-3 scroll-mt-24">
+        <h3 id={id} className="text-xl sm:text-2xl font-semibold text-gray-800 mt-10 mb-4 scroll-mt-24">
           {children}
         </h3>
       );
@@ -353,7 +353,7 @@ export default function Docs() {
 
     // Paragraphe
     p: ({ children }) => (
-      <p className="text-gray-700 leading-relaxed mb-4 text-[0.9375rem]">{children}</p>
+      <p className="text-gray-700 leading-[1.8] mb-5 text-base sm:text-lg">{children}</p>
     ),
 
     // Liens
@@ -377,41 +377,41 @@ export default function Docs() {
 
     // Tableaux
     table: ({ children }) => (
-      <div className="overflow-x-auto my-6 rounded-xl border border-gray-200 shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">{children}</table>
+      <div className="overflow-x-auto my-8 rounded-xl border border-gray-200 shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200 text-base">{children}</table>
       </div>
     ),
     thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
     th: ({ children }) => (
-      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+      <th className="px-5 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
         {children}
       </th>
     ),
     td: ({ children }) => (
-      <td className="px-4 py-3 text-gray-700 border-t border-gray-100 align-top">
+      <td className="px-5 py-4 text-gray-700 border-t border-gray-100 align-top leading-relaxed">
         {children}
       </td>
     ),
 
     // Blockquote
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-amber-400 bg-amber-50 text-amber-900 pl-4 pr-4 py-3 my-5 rounded-r-lg text-sm leading-relaxed">
+      <blockquote className="border-l-4 border-amber-400 bg-amber-50 text-amber-900 pl-5 pr-5 py-4 my-6 rounded-r-lg text-base leading-[1.8]">
         {children}
       </blockquote>
     ),
 
     // Listes
-    ul: ({ children }) => <ul className="my-4 space-y-1.5 list-none pl-0">{children}</ul>,
-    ol: ({ children }) => <ol className="my-4 space-y-1.5 list-decimal list-inside text-gray-700">{children}</ol>,
+    ul: ({ children }) => <ul className="my-5 space-y-3 list-none pl-0">{children}</ul>,
+    ol: ({ children }) => <ol className="my-5 space-y-3 list-decimal list-inside text-gray-700 text-base sm:text-lg">{children}</ol>,
     li: ({ children }) => (
-      <li className="flex items-start gap-2.5 text-[0.9375rem] text-gray-700">
-        <span className="mt-2 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary-500" />
-        <span>{children}</span>
+      <li className="flex items-start gap-3 text-base sm:text-lg text-gray-700">
+        <span className="mt-2.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary-500" />
+        <span className="leading-[1.8]">{children}</span>
       </li>
     ),
 
     // hr
-    hr: () => <hr className="my-8 border-gray-200" />,
+    hr: () => <hr className="my-10 border-gray-200" />,
   };
 
   // ── Rendu ─────────────────────────────────────────────────────────────────
@@ -446,20 +446,20 @@ export default function Docs() {
             `}
           >
             {/* Bouton fermeture mobile */}
-            <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200">
-              <span className="font-semibold text-gray-900">Documentation</span>
-              <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
-                <X size={20} />
+            <div className="lg:hidden flex items-center justify-between p-5 border-b border-gray-200 bg-white">
+              <span className="font-bold text-gray-900 text-lg">Documentation</span>
+              <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <X size={22} />
               </button>
             </div>
 
             <nav className="py-6 pr-4 lg:pr-2 xl:pr-4 pl-4 lg:pl-0">
               {NAV.map((group) => (
-                <div key={group.group} className="mb-7">
-                  <p className="text-[0.6875rem] font-semibold uppercase tracking-widest text-gray-400 mb-2 px-3">
+                <div key={group.group} className="mb-8">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-3">
                     {group.group}
                   </p>
-                  <ul className="space-y-0.5">
+                  <ul className="space-y-1">
                     {group.items.map((item) => {
                       const isActive = item.id === activeId;
                       return (
@@ -467,9 +467,9 @@ export default function Docs() {
                           <button
                             onClick={() => goTo(item.id)}
                             className={`
-                              w-full text-left px-3 py-2 rounded-lg text-sm transition-colors duration-150
+                              w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                               ${isActive
-                                ? 'bg-primary-50 text-primary-700 font-medium'
+                                ? 'bg-primary-50 text-primary-700 font-semibold shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}
                             `}
                           >
@@ -501,35 +501,35 @@ export default function Docs() {
             <div className="lg:hidden mb-6">
               <button
                 onClick={() => setMobileOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 shadow-sm hover:border-gray-300 transition-colors"
+                className="flex items-center gap-2.5 px-5 py-3 bg-white border-2 border-gray-200 rounded-xl text-base font-semibold text-gray-700 shadow-sm hover:border-primary-300 hover:bg-primary-50 transition-all"
               >
-                <Menu size={16} />
+                <Menu size={18} />
                 <span>Navigation</span>
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 sm:px-8 py-8 sm:py-10 lg:px-12 lg:py-12">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 sm:px-10 py-10 sm:py-12 lg:px-14 lg:py-14 max-w-none">
 
               {/* État chargement */}
               {loading && (
-                <div className="space-y-4 animate-pulse">
-                  <div className="h-8 bg-gray-100 rounded-lg w-1/2" />
-                  <div className="h-4 bg-gray-100 rounded w-3/4" />
-                  <div className="h-4 bg-gray-100 rounded w-full" />
-                  <div className="h-4 bg-gray-100 rounded w-5/6" />
-                  <div className="h-32 bg-gray-100 rounded-xl mt-6" />
-                  <div className="h-4 bg-gray-100 rounded w-2/3" />
-                  <div className="h-4 bg-gray-100 rounded w-full" />
+                <div className="space-y-5 animate-pulse">
+                  <div className="h-10 bg-gray-100 rounded-lg w-2/3" />
+                  <div className="h-5 bg-gray-100 rounded w-4/5" />
+                  <div className="h-5 bg-gray-100 rounded w-full" />
+                  <div className="h-5 bg-gray-100 rounded w-5/6" />
+                  <div className="h-40 bg-gray-100 rounded-xl mt-8" />
+                  <div className="h-5 bg-gray-100 rounded w-3/4" />
+                  <div className="h-5 bg-gray-100 rounded w-full" />
                 </div>
               )}
 
               {/* Erreur */}
               {!loading && error && (
-                <div className="text-center py-16 text-gray-500">
-                  <p className="text-base">{error}</p>
+                <div className="text-center py-20 text-gray-500">
+                  <p className="text-lg">{error}</p>
                   <button
                     onClick={() => loadSection(activeId)}
-                    className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                    className="mt-6 px-6 py-3 text-base text-primary-600 hover:text-primary-700 font-semibold hover:bg-primary-50 rounded-lg transition-colors"
                   >
                     Réessayer
                   </button>
@@ -551,13 +551,13 @@ export default function Docs() {
 
               {/* Navigation prev / next */}
               {!loading && !error && (
-                <div className="mt-14 pt-8 border-t border-gray-200 flex items-center justify-between gap-4">
+                <div className="mt-16 pt-10 border-t-2 border-gray-200 flex items-center justify-between gap-6">
                   {prevItem ? (
                     <button
                       onClick={() => goTo(prevItem.id)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 font-medium hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 transition-all"
+                      className="flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 border-gray-200 text-base text-gray-700 font-semibold hover:border-primary-400 hover:text-primary-700 hover:bg-primary-50 transition-all shadow-sm hover:shadow-md"
                     >
-                      <ChevronRight size={16} className="rotate-180 flex-shrink-0" />
+                      <ChevronRight size={18} className="rotate-180 flex-shrink-0" />
                       <span>{prevItem.label}</span>
                     </button>
                   ) : <div />}
@@ -565,10 +565,10 @@ export default function Docs() {
                   {nextItem ? (
                     <button
                       onClick={() => goTo(nextItem.id)}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 font-medium hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 transition-all"
+                      className="flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 border-gray-200 text-base text-gray-700 font-semibold hover:border-primary-400 hover:text-primary-700 hover:bg-primary-50 transition-all shadow-sm hover:shadow-md"
                     >
                       <span>{nextItem.label}</span>
-                      <ChevronRight size={16} className="flex-shrink-0" />
+                      <ChevronRight size={18} className="flex-shrink-0" />
                     </button>
                   ) : <div />}
                 </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu, X, Globe, ChevronDown, User, LogOut, Settings, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ const Navbar = () => {
   const { t, i18n } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -21,6 +22,7 @@ const Navbar = () => {
   ];
 
   const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
     i18n.changeLanguage(lng);
     setLangMenuOpen(false);
   };
@@ -59,6 +61,11 @@ const Navbar = () => {
     return user?.provider || 'Compte';
   };
 
+  // Fonction pour vérifier si un lien est actif
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   const currentLang = languages.find((lang) => lang.code === i18n.language) || languages[0];
 
   return (
@@ -78,39 +85,119 @@ const Navbar = () => {
             {isAuthenticated ? (
               // Menu après connexion
               <>
-                <Link to="/dashboard" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                <Link 
+                  to="/dashboard" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
+                    isActive('/dashboard') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   Dashboard
+                  {isActive('/dashboard') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/send-message" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                <Link 
+                  to="/send-message" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
+                    isActive('/send-message') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   Messages
+                  {isActive('/send-message') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/sessions" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                <Link 
+                  to="/sessions" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
+                    isActive('/sessions') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   Sessions
+                  {isActive('/sessions') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/docs" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                <Link 
+                  to="/docs" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
+                    isActive('/docs') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   Documentation
+                  {isActive('/docs') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors font-medium">
+                <Link 
+                  to="/contact" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors font-medium ${
+                    isActive('/contact') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   Contact
+                  {isActive('/contact') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
               </>
             ) : (
               // Menu avant connexion
               <>
-                <Link to="/" className="text-gray-700 hover:text-primary-600 transition-colors">
+                <Link 
+                  to="/" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
+                    isActive('/') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   {t('nav.home')}
+                  {isActive('/') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/docs" className="text-gray-700 hover:text-primary-600 transition-colors">
+                <Link 
+                  to="/docs" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
+                    isActive('/docs') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   {t('nav.docs')}
+                  {isActive('/docs') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/pricing" className="text-gray-700 hover:text-primary-600 transition-colors">
+                <Link 
+                  to="/pricing" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
+                    isActive('/pricing') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   {t('nav.pricing')}
+                  {isActive('/pricing') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/faq" className="text-gray-700 hover:text-primary-600 transition-colors">
+                <Link 
+                  to="/faq" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
+                    isActive('/faq') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   {t('nav.faq')}
+                  {isActive('/faq') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
-                <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors">
+                <Link 
+                  to="/contact" 
+                  className={`relative text-gray-700 hover:text-primary-600 transition-colors ${
+                    isActive('/contact') ? 'text-primary-600 font-semibold' : ''
+                  }`}
+                >
                   Contact
+                  {isActive('/contact') && (
+                    <span className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary-600"></span>
+                  )}
                 </Link>
               </>
             )}
@@ -282,35 +369,55 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/dashboard"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2 font-medium"
+                    className={`block py-2 font-medium transition-colors ${
+                      isActive('/dashboard') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <Link
                     to="/send-message"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2 font-medium"
+                    className={`block py-2 font-medium transition-colors ${
+                      isActive('/send-message') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Messages
                   </Link>
                   <Link
                     to="/sessions"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2 font-medium"
+                    className={`block py-2 font-medium transition-colors ${
+                      isActive('/sessions') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sessions
                   </Link>
                   <Link
                     to="/docs"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2 font-medium"
+                    className={`block py-2 font-medium transition-colors ${
+                      isActive('/docs') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Documentation
                   </Link>
                   <Link
                     to="/contact"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2 font-medium"
+                    className={`block py-2 font-medium transition-colors ${
+                      isActive('/contact') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Contact
@@ -351,35 +458,55 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    className={`block py-2 transition-colors ${
+                      isActive('/') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.home')}
                   </Link>
                   <Link
                     to="/docs"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    className={`block py-2 transition-colors ${
+                      isActive('/docs') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.docs')}
                   </Link>
                   <Link
                     to="/pricing"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    className={`block py-2 transition-colors ${
+                      isActive('/pricing') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.pricing')}
                   </Link>
                   <Link
                     to="/faq"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    className={`block py-2 transition-colors ${
+                      isActive('/faq') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.faq')}
                   </Link>
                   <Link
                     to="/contact"
-                    className="block text-gray-700 hover:text-primary-600 transition-colors py-2"
+                    className={`block py-2 transition-colors ${
+                      isActive('/contact') 
+                        ? 'text-primary-600 bg-primary-50 px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700 hover:text-primary-600'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Contact
