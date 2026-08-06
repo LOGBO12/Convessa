@@ -243,5 +243,13 @@
     "videoLimit": "Videos: 64 MB máx (MP4, 3GPP)",
     "audioLimit": "Audio: 16 MB máx (MP3, OGG, AAC)",
     "documentLimit": "Documentos: 100 MB máx (PDF, DOC, TXT, etc.)"
+  },
+  "chatbot": {
+    "title": "Asistente",
+    "welcome": "¡Hola! Pregúntame lo que quieras sobre el servicio.",
+    "placeholder": "Escribe tu pregunta...",
+    "send": "Enviar",
+    "typing": "El asistente está escribiendo...",
+    "error": "Ha ocurrido un error, inténtalo de nuevo."
   }
 }

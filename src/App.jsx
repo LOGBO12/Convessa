@@ -4,6 +4,7 @@ import { SessionProvider } from './contexts/SessionContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ChatWidget from './components/ChatWidget';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -23,8 +24,7 @@ function App() {
     <AuthProvider>
       <SessionProvider>
       <div className="min-h-screen bg-white flex flex-col">
-        <Routes>
-          {/* Public routes with Navbar (Footer already in Home) */}
+        <Routes>          {/* Public routes with Navbar (Footer already in Home) */}
           <Route
             path="/"
             element={
@@ -150,6 +150,8 @@ function App() {
             }
           />
         </Routes>
+        {/* ChatWidget — flottant, rendu uniquement si connecté, isolé du reste */}
+        <ChatWidget />
       </div>
       </SessionProvider>
     </AuthProvider>
