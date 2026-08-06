@@ -46,6 +46,17 @@ const NAV = [
         ],
       },
       {
+        id: 'connecter-whatsapp',
+        label: 'Connecter WhatsApp',
+        file: 'connecter-whatsapp.md',
+        anchors: [
+          { id: 'etape-1-acceder-aux-sessions', label: 'Accéder aux sessions' },
+          { id: 'etape-2-generer-le-qr-code',   label: 'Générer le QR code'   },
+          { id: 'etape-3-scanner-avec-whatsapp',label: 'Scanner le QR code'   },
+          { id: 'statuts-de-session',           label: 'Statuts de session'   },
+        ],
+      },
+      {
         id: 'integration',
         label: 'Intégration',
         file: 'integration.md',
@@ -104,6 +115,16 @@ const NAV = [
         ],
       },
       {
+        id: 'tarifs-et-limites',
+        label: 'Tarifs et limites',
+        file: 'tarifs-et-limites.md',
+        anchors: [
+          { id: 'forfaits-disponibles', label: 'Forfaits disponibles' },
+          { id: 'quotas-et-renouvellement', label: 'Quotas' },
+          { id: 'modes-de-paiement', label: 'Modes de paiement' },
+        ],
+      },
+      {
         id: 'erreurs-limites',
         label: 'Erreurs et limites',
         file: 'erreurs-limites.md',
@@ -112,6 +133,16 @@ const NAV = [
           { id: 'limites-de-debit',   label: 'Limites de débit'  },
           { id: 'limites-des-medias', label: 'Limites des médias'},
           { id: 'bonnes-pratiques',   label: 'Bonnes pratiques'  },
+        ],
+      },
+      {
+        id: 'depannage-faq',
+        label: 'Dépannage & FAQ',
+        file: 'depannage-faq.md',
+        anchors: [
+          { id: 'problemes-de-connexion', label: 'Problèmes de connexion' },
+          { id: 'problemes-d-envoi', label: 'Problèmes d\'envoi' },
+          { id: 'bannissement-whatsapp', label: 'Bannissement WhatsApp' },
         ],
       },
     ],
