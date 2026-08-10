@@ -5,7 +5,7 @@
 Chaque requête d'envoi doit inclure votre clé API dans le header :
 
 ```
-X-Api-Key: pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+X-Api-Key: pk_convessa_xxxxxx...xxxxxx
 ```
 
 Ce header identifie votre session WhatsApp. L'expéditeur est automatiquement déduit de votre clé.
@@ -43,7 +43,7 @@ Si `connected` est `false`, reconnectez votre numéro depuis le tableau de bord.
 Stockez votre clé dans une variable d'environnement. Ne la commitez jamais dans votre code source.
 
 ```bash
-CONVESSA_API_KEY=pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CONVESSA_API_KEY=pk_convessa_xxxxxx...xxxxxx
 ```
 
 ## Exemples par langage

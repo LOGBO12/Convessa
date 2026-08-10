@@ -22,7 +22,7 @@ Una vez establecida la conexión, tu sesión pasa al estado **Conectado**.
 Tu clave API está disponible en la sección **Sesiones** de tu panel de control. Tiene este formato:
 
 ```
-pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+pk_convessa_xxxxxx...xxxxxx
 ```
 
 Cópiala de inmediato: por razones de seguridad, no volverá a mostrarse completa después de esta primera visualización.
@@ -33,7 +33,7 @@ Guarda tu clave en una variable de entorno, nunca directamente en tu código fue
 
 ```bash
 # .env
-CONVESSA_API_KEY=pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CONVESSA_API_KEY=pk_convessa_xxxxxx...xxxxxx
 ```
 
 Nunca subas tu archivo `.env` a un repositorio Git. Añádelo a tu `.gitignore`.

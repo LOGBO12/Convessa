@@ -5,7 +5,7 @@
 Cada solicitud de envío debe incluir tu clave API en el encabezado:
 
 ```
-X-Api-Key: pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+X-Api-Key: pk_convessa_xxxxxx...xxxxxx
 ```
 
 Este encabezado identifica tu sesión de WhatsApp. El remitente se deduce automáticamente de tu clave.
@@ -43,7 +43,7 @@ Si `connected` es `false`, vuelve a conectar tu número desde el panel de contro
 Guarda tu clave en una variable de entorno. Nunca la subas a tu código fuente.
 
 ```bash
-CONVESSA_API_KEY=pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CONVESSA_API_KEY=pk_convessa_xxxxxx...xxxxxx
 ```
 
 ## Ejemplos por lenguaje

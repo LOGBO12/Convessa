@@ -5,7 +5,7 @@
 Every send request must include your API key in the header:
 
 ```
-X-Api-Key: pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+X-Api-Key: pk_convessa_xxxxxx...xxxxxx
 ```
 
 This header identifies your WhatsApp session. The sender is automatically deduced from your key.
@@ -43,7 +43,7 @@ If `connected` is `false`, reconnect your number from the dashboard.
 Store your key in an environment variable. Never commit it to your source code.
 
 ```bash
-CONVESSA_API_KEY=pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CONVESSA_API_KEY=pk_convessa_xxxxxx...xxxxxx
 ```
 
 ## Examples by language

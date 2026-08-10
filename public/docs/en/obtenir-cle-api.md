@@ -22,7 +22,7 @@ Once the connection is established, your session switches to the **Connected** s
 Your API key is available in the **Sessions** section of your dashboard. It looks like this:
 
 ```
-pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+pk_convessa_xxxxxx...xxxxxx
 ```
 
 Copy it immediately: for security reasons, it will no longer be shown in full after this first display.
@@ -33,7 +33,7 @@ Store your key in an environment variable, never hardcoded in your source code.
 
 ```bash
 # .env
-CONVESSA_API_KEY=pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CONVESSA_API_KEY=pk_convessa_xxxxxx...xxxxxx
 ```
 
 Never commit your `.env` file to a Git repository. Add it to your `.gitignore`.

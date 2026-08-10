@@ -3,7 +3,7 @@
 All sending endpoints require:
 
 ```
-X-Api-Key: pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+X-Api-Key: pk_convessa_xxxxxx...xxxxxx
 Content-Type: application/json
 ```
 
@@ -165,80 +165,6 @@ Generates or returns the group's WhatsApp invite link.
 Adds participants to an existing group.
 
 **Body:** `{ "participants": ["229xxxxxxxxx"] }`
-
----
-
-## Session
-
-These endpoints use a Firebase Bearer token (`Authorization: Bearer {idToken}`).
-
-### POST /api/v1/tenants
-
-Creates a WhatsApp session.
-
-**Body (optional):** `{ "name": "My bot", "webhookUrl": "https://..." }`
-
-**201 response:**
-
-```json
-{
-  "success": true,
-  "tenantId": "uuid",
-  "status": "pending_qr",
-  "message": "Session starting. Call GET /api/v1/tenants/me/qr in 3-5 seconds."
-}
-```
-
-### GET /api/v1/tenants/me
-
-Returns information about your session.
-
-**200 response:**
-
-```json
-{
-  "success": true,
-  "tenantId": "uuid",
-  "phone": "229xxxxxxxx",
-  "status": "connected",
-  "apiKeyHint": "pk_convessa_xxxx...",
-  "apiKeyExpiresAt": "2026-08-20T00:00:00.000Z",
-  "connectedAt": "2026-07-20T10:00:00.000Z",
-  "usageType": "requests",
-  "messagesLimit": 500,
-  "messagesSent": 47
-}
-```
-
-### GET /api/v1/tenants/me/qr
-
-Returns the QR code to scan (base64 PNG). Call it 3 to 5 seconds after `POST /tenants`.
-
-### POST /api/v1/tenants/me/activate
-
-Generates the API key after scanning the QR code.
-
-**Body (optional):** `{ "referralCode": "CODE" }`
-
-**200 response:**
-
-```json
-{
-  "success": true,
-  "tenantId": "uuid",
-  "apiKey": "pk_convessa_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "apiKeyHint": "pk_convessa_xxxx...",
-  "apiKeyExpiresAt": "2026-08-20T00:00:00.000Z"
-}
-```
-
-### GET /api/v1/tenants/me/api-key
-
-Retrieves the full API key of your session.
-
-### DELETE /api/v1/tenants/me
-
-Deletes your WhatsApp session and revokes your API key.
 
 ---
 
