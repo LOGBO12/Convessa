@@ -36,7 +36,7 @@ Réponse **201 Created** (ou 200 si déjà existant) :
 }
 ```
 
-`invitedByLink` indique combien de participants ont été invités par lien en raison de leurs paramètres de confidentialité WhatsApp. Convessa leur envoie automatiquement le lien en message privé.
+`invitedByLink` indique combien de participants ont été invités par lien en raison de leurs paramètres de confidentialité WhatsApp. Le lien est automatiquement envoyé en message privé.
 
 ## Lister vos groupes
 
