@@ -915,7 +915,7 @@
   "chatbot": {
     "title": "Assistant API Convessa",
     "status": "En ligne · Prêt à vous aider",
-    "placeholder": "Posez une question sur l'API, les endpoints, les Webhooks...",
+    "placeholder": "Posez une question...",
     "send": "Envoyer",
     "error": "Désolé, une erreur est survenue lors de la communication avec l'assistant. Veuillez réessayer.",
     "tooltipFirst": "Besoin d'aide pour démarrer avec l'API ?",

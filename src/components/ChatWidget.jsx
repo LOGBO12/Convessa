@@ -166,6 +166,48 @@ function ChatWidgetInner() {
   const [input, setInput]       = useState('');
   const [loading, setLoading]   = useState(false);
 
+  // ── Révélation mot-par-mot (jamais d'affichage instantané d'un message bot) ─
+  // Anime le DERNIER message de la liste (qui doit déjà être un placeholder
+  // { role: 'bot', text: '' }) : délai de réflexion (~800-1200ms, variable
+  // pour ne pas paraître mécanique) puis révélation mot par mot, vitesse
+  // légèrement variable selon la longueur du mot. Utilisé pour TOUT message
+  // affiché par le bot — réponse locale, mode limité, erreurs, retour en
+  // ligne — pour qu'aucun message n'apparaisse jamais de façon statique.
+  //
+  // IMPORTANT : les champs "extraFields" (ex: intentKey) ne sont posés que
+  // sur le TOUT DERNIER setMessages, une fois le texte final atteint.
+  // Ne jamais les poser sur le placeholder initial dans sendQuery, sinon
+  // renderBotMessage() (qui fait de la traduction réactive pour les
+  // messages FAQ déjà terminés) se déclenche dès le premier mot streamé et
+  // écrase le snapshot partiel par la réponse complète → effet de bloc
+  // statique au lieu du mot par mot.
+  const revealBotMessageWords = useCallback(async (finalText, extraFields = {}) => {
+    setLoading(true);
+    const thinkDelay = 800 + Math.random() * 400;
+    await new Promise(r => setTimeout(r, thinkDelay));
+
+    const words = finalText.split(' ');
+    let streamed = '';
+    for (let i = 0; i < words.length; i++) {
+      streamed += (i === 0 ? '' : ' ') + words[i];
+      const snapshot = streamed;
+      setMessages(prev => {
+        const copy = [...prev];
+        copy[copy.length - 1] = { ...copy[copy.length - 1], role: 'bot', text: snapshot };
+        return copy;
+      });
+      const delay = words[i].length > 6 ? 35 : 22;
+      await new Promise(r => setTimeout(r, delay));
+    }
+
+    setMessages(prev => {
+      const copy = [...prev];
+      copy[copy.length - 1] = { ...copy[copy.length - 1], role: 'bot', text: finalText, ...extraFields };
+      return copy;
+    });
+    setLoading(false);
+  }, []);
+
   // ── Disponibilité du service (sans polling en arrière-plan) ────────────────
   // Optimiste par défaut (true) pour ne pas afficher un flash ambre avant la
   // toute première vérification — corrigé en un instant si c'est faux.
@@ -230,12 +272,10 @@ function ChatWidgetInner() {
   useEffect(() => {
     if (available && wasLimitedRef.current) {
       wasLimitedRef.current = false;
-      setMessages(prev => [
-        ...prev,
-        { role: 'bot', text: t('chatbot.recovered', "C'est revenu — vous pouvez reposer votre question.") }
-      ]);
+      setMessages(prev => [...prev, { role: 'bot', text: '' }]);
+      revealBotMessageWords(t('chatbot.recovered', "C'est revenu — vous pouvez reposer votre question."));
     }
-  }, [available, t]);
+  }, [available, t, revealBotMessageWords]);
 
   const [retryTick, setRetryTick] = useState(0);
 
@@ -361,55 +401,24 @@ function ChatWidgetInner() {
     const resolvedIntent = intentKey || detectIntent(text);
 
     if (resolvedIntent) {
-      // Ajouter message utilisateur + placeholder bot vide
+      // Ajouter message utilisateur + placeholder bot vide.
+      // NB : intentKey n'est PAS posé ici volontairement — voir le
+      // commentaire au-dessus de revealBotMessageWords. Il est ajouté
+      // uniquement dans extraFields, donc seulement une fois le texte
+      // final atteint, une fois le mot-par-mot terminé.
       setMessages(prev => [
         ...prev,
         { role: 'user', text },
         { role: 'bot', text: '' }
       ]);
-      setLoading(true);
 
-      // Simuler la réflexion (~800ms – 1s)
-      const thinkDelay = 800 + Math.random() * 400;
-      await new Promise(r => setTimeout(r, thinkDelay));
-
-      // Lire la réponse traduite localement
       const fullAnswer = t(`chatbot.quickAnswers.${resolvedIntent}`, '');
-
-      // Simuler le streaming mot après mot
-      const words = fullAnswer.split(' ');
-      let streamed = '';
-      for (let i = 0; i < words.length; i++) {
-        streamed += (i === 0 ? '' : ' ') + words[i];
-        const snapshot = streamed;
-        setMessages(prev => {
-          const copy = [...prev];
-          copy[copy.length - 1] = { role: 'bot', text: snapshot, intentKey: resolvedIntent };
-          return copy;
-        });
-        // Vitesse variable : plus rapide sur les mots courts, plus lent sur les longs
-        const delay = words[i].length > 6 ? 35 : 22;
-        await new Promise(r => setTimeout(r, delay));
-      }
-
-      // Ajouter 3 suggestions de suivi depuis la liste des questions connues
       const followUpSuggestions = suggestedQuestions
         .filter(s => s.intentKey !== resolvedIntent)
         .slice(0, 3)
         .map(s => s.text);
 
-      setMessages(prev => {
-        const copy = [...prev];
-        copy[copy.length - 1] = {
-          ...copy[copy.length - 1],
-          text: fullAnswer,
-          intentKey: resolvedIntent,
-          suggestions: followUpSuggestions
-        };
-        return copy;
-      });
-
-      setLoading(false);
+      await revealBotMessageWords(fullAnswer, { intentKey: resolvedIntent, suggestions: followUpSuggestions });
       return;
     }
 
@@ -423,18 +432,13 @@ function ChatWidgetInner() {
     ]);
 
     // Mode limité connu : inutile de tenter un appel voué à l'échec — on
-    // répond tout de suite avec un message clair, et on invite vers ce qui
-    // marche déjà (les suggestions FAQ, 100% locales).
+    // répond avec un message clair (animé comme toute réponse, jamais
+    // instantané), et on invite vers ce qui marche déjà (suggestions FAQ).
     if (!available) {
-      setMessages(prev => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          role: 'bot',
-          text: t('chatbot.limitedMode', 'Notre assistant prend une courte pause pour les questions les plus poussées. En attendant, je peux déjà vous aider sur ces sujets :'),
-          suggestions: suggestedQuestions.slice(0, 3).map(s => s.text),
-        };
-        return updated;
-      });
+      await revealBotMessageWords(
+        t('chatbot.limitedMode', 'Notre assistant prend une courte pause pour les questions les plus poussées. En attendant, je peux déjà vous aider sur ces sujets :'),
+        { suggestions: suggestedQuestions.slice(0, 3).map(s => s.text) }
+      );
       return;
     }
 
@@ -467,11 +471,7 @@ function ChatWidgetInner() {
         const errText = isRateLimited
           ? t('chatbot.rateLimited', 'Vous avez atteint la limite de messages. Merci de patienter une minute avant de réessayer.')
           : t('chatbot.error');
-        setMessages(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: 'bot', text: errText };
-          return updated;
-        });
+        await revealBotMessageWords(errText);
         return;
       }
 
@@ -529,25 +529,17 @@ function ChatWidgetInner() {
       }
 
       if (!streamText.trim()) {
-        setMessages(prev => {
-          const copy = [...prev];
-          copy[copy.length - 1] = { role: 'bot', text: t('chatbot.error') };
-          return copy;
-        });
+        await revealBotMessageWords(t('chatbot.error'));
       }
     } catch {
       // Échec réseau complet (pas juste une réponse HTTP d'erreur) : le
       // service est probablement injoignable, on met à jour le statut.
       applyAvailability(false);
-      setMessages(prev => {
-        const copy = [...prev];
-        copy[copy.length - 1] = { role: 'bot', text: t('chatbot.error') };
-        return copy;
-      });
+      await revealBotMessageWords(t('chatbot.error'));
     } finally {
       setLoading(false);
     }
-  }, [input, loading, messages, i18n.language, t, available, applyAvailability, suggestedQuestions]);
+  }, [input, loading, messages, i18n.language, t, available, applyAvailability, suggestedQuestions, revealBotMessageWords]);
 
   const sendMessage = () => sendQuery();
 
@@ -741,7 +733,7 @@ function ChatWidgetInner() {
             <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-100 px-4 py-2">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" aria-hidden="true" />
               <p className="text-[11px] text-amber-800 leading-snug">
-                {t('chatbot.limitedBanner', 'Notre assistant se concentre sur vos questions les plus fréquentes en ce moment.')}
+                {t('chatbot.limitedBanner', 'Notre assistant répond à vos questions les plus fréquentes.')}
               </p>
             </div>
           )}
