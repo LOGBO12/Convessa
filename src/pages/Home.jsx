@@ -19,7 +19,7 @@ import Footer from '../components/Footer';
 import { plansAPI } from '../services/api';
 
 const Home = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   usePageTitle(null); // titre par défaut = Convessa : API WhatsApp pour développeurs
 
   const [plans, setPlans] = useState([]);
@@ -39,7 +39,7 @@ const Home = () => {
         }
       } catch (err) {
         if (!cancelled) {
-          setPlansError(err.message || 'Erreur lors du chargement des plans.');
+          setPlansError(err.message || t('homePage.loadPlansError'));
         }
       } finally {
         if (!cancelled) setPlansLoading(false);
@@ -51,14 +51,14 @@ const Home = () => {
   }, []);
 
   function formatPlanPrice(price) {
-    if (!price || price === 0) return 'Gratuit';
-    return `${Number(price).toLocaleString('fr-FR')} Frs CFA`;
+    if (!price || price === 0) return t('homePage.free');
+    return `${Number(price).toLocaleString(i18n.language)} Frs CFA`;
   }
 
   function formatPlanUsage(plan) {
-    if (plan.unlimited) return 'Usage illimité';
-    if (plan.usageType === 'duration') return `Valable ${plan.usageValue} jour(s)`;
-    if (plan.usageType === 'requests') return `${plan.usageValue} requête(s) incluses`;
+    if (plan.unlimited) return t('homePage.unlimitedUsage');
+    if (plan.usageType === 'duration') return t('homePage.validForDays', { count: plan.usageValue });
+    if (plan.usageType === 'requests') return t('homePage.requestsIncluded', { count: plan.usageValue });
     return null;
   }
 

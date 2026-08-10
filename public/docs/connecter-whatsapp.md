@@ -1,49 +1,57 @@
 # Connecter et Gérer votre Session WhatsApp
 
-Pour envoyer des messages via la plateforme Convessa, vous devez connecter votre numéro de téléphone WhatsApp personnel ou professionnel à votre compte.
+Pour envoyer des messages via CONVESSA, vous devez connecter votre numéro WhatsApp personnel ou professionnel à votre compte. Ce numéro devient l'expéditeur de tous vos messages.
 
 ---
 
-## 1. Comment connecter votre numéro WhatsApp
+## Accéder aux sessions
 
-1. Connectez-vous à votre tableau de bord **Convessa**.
-2. Dans le menu latéral, cliquez sur **Sessions** (ou **Connexion WhatsApp**).
-3. Cliquez sur le bouton **Connecter un numéro**. Un **QR Code** unique s'affiche à l'écran.
-4. Ouvrez l'application **WhatsApp** ou **WhatsApp Business** sur votre téléphone mobile.
-5. Allez dans :
-   - Sur Android : **Menu (3 points en haut à droite) > Appareils liés**
-   - Sur iPhone : **Réglages (en bas à droite) > Appareils liés**
-6. Appuyez sur **Lier un appareil**.
-7. Scannez le QR Code affiché sur votre écran d'ordinateur.
-8. En quelques secondes, le statut de votre session passe à **Connecté** (`connected`).
+Depuis votre tableau de bord CONVESSA, cliquez sur **Sessions** dans le menu latéral. C'est ici que vous gérez toutes vos connexions WhatsApp et que vous récupérez votre clé API.
 
 ---
 
-## 2. Comprendre les Statuts de Session
+## Générer le QR code
 
-| Statut | Signification | Actions recommandées |
+1. Dans l'onglet **Sessions**, cliquez sur le bouton **Connecter un numéro**.
+2. Un **QR Code unique** s'affiche à l'écran. Il est valable **60 secondes**.
+3. Si le QR code expire avant que vous le scanniez, rafraîchissez simplement la page pour en générer un nouveau.
+
+> Si le QR code ne s'affiche pas ou tourne en boucle, vérifiez votre connexion internet et assurez-vous qu'aucun bloqueur de publicité ou extension navigateur ne bloque les requêtes WebSocket.
+
+---
+
+## Scanner le QR code
+
+Ouvrez **WhatsApp** ou **WhatsApp Business** sur votre téléphone, puis accédez aux appareils liés :
+
+- **Sur Android** : Menu (3 points en haut à droite) > **Appareils liés**
+- **Sur iPhone** : Réglages (en bas à droite) > **Appareils liés**
+
+Appuyez sur **Lier un appareil** et scannez le QR code affiché sur votre écran d'ordinateur.
+
+En quelques secondes, le statut de votre session passe à **Connecté** (`connected`) et votre clé API est disponible dans l'onglet Sessions.
+
+---
+
+## Statuts de session
+
+| Statut | Signification | Action recommandée |
 | :--- | :--- | :--- |
-| **En attente (pending_qr)** | Le QR code a été généré et attend d'être scanné sur le téléphone. | Scannez le QR code dans les 60 secondes. Si expirée, rafraîchissez la page. |
-| **Connecté (connected)** | La session est active et opérationnelle. Votre clé API est prête à l'emploi. | Vous pouvez commencer à envoyer des messages via l'API ou l'interface. |
-| **Déconnecté (disconnected)** | La connexion WhatsApp a été fermée (déconnexion depuis le téléphone ou expiration). | Cliquez sur **Reconnecter** et scannez un nouveau QR code. |
+| **En attente** (`pending_qr`) | Le QR code a été généré et attend d'être scanné. | Scannez dans les 60 secondes. Si expiré, rafraîchissez la page. |
+| **Connecté** (`connected`) | La session est active. Votre clé API est prête à l'emploi. | Vous pouvez commencer à envoyer des messages via l'API. |
+| **Déconnecté** (`disconnected`) | La connexion a été fermée (déconnexion téléphone ou expiration). | Cliquez sur **Reconnecter** et scannez un nouveau QR code. |
 
 ---
 
-## 3. Comment Reconnecter ou Changer de Numéro
+## Reconnecter ou changer de numéro
 
-- **Reconnecter le même numéro** : Allez dans **Sessions**, puis cliquez sur **Reconnecter** et scannez à nouveau le QR code.
-- **Changer de numéro expéditeur** : Déconnectez d'abord la session active depuis l'onglet **Sessions**, puis cliquez sur **Lier un nouveau numéro**.
+- **Reconnecter le même numéro** : Dans l'onglet **Sessions**, cliquez sur **Reconnecter** et scannez à nouveau le QR code. Votre clé API reste inchangée.
+- **Changer de numéro expéditeur** : Déconnectez d'abord la session active, puis cliquez sur **Lier un nouveau numéro**. Une nouvelle clé API est générée.
 
 ---
 
-## 4. Résolution des Problèmes de Connexion (Dépannage)
+## Bonnes pratiques de stabilité
 
-### Le QR Code ne s'affiche pas ou tourne en boucle
-- Vérifiez votre connexion internet.
-- Rafraîchissez la page de votre navigateur.
-- Assurez-vous qu'aucun bloqueur de publicité ou d'extension navigateur ne bloque les requêtes WebSocket (`Socket.io`).
-
-### WhatsApp se déconnecte fréquemment
-- Assurez-vous que votre téléphone mobile reste connecté à un réseau internet stable (Wi-Fi ou 4G/5G).
-- Désactivez l'optimisation de la batterie pour WhatsApp sur Android afin d'éviter que le système ne ferme l'application en arrière-plan.
-- Ne déconnectez pas la session "Convessa / Appareil lié" depuis l'application mobile WhatsApp.
+- Maintenez votre smartphone connecté à un réseau internet stable (Wi-Fi ou 4G/5G).
+- Sur Android, désactivez l'optimisation de la batterie pour WhatsApp afin d'éviter que le système ne ferme l'application en arrière-plan.
+- Ne déconnectez jamais la session **Convessa / Appareil lié** depuis l'application mobile WhatsApp — gérez toujours la connexion depuis votre tableau de bord.

@@ -9,6 +9,8 @@
  * (X-Api-Key: pk_convessa_...) pour l'envoi de messages et la gestion des groupes.
  */
 
+import i18n from '../i18n/i18n';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   ? `${import.meta.env.VITE_API_BASE_URL}/api/v1`
   : '/api/v1';
@@ -42,7 +44,7 @@ async function fetchAPI(endpoint, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const err = new Error(data.error?.message || 'Erreur API');
+    const err = new Error(data.error?.message || i18n.t('apiErrors.generic'));
     err.code = data.error?.code;
     err.status = response.status;
     err.data = data;
@@ -58,7 +60,7 @@ async function fetchAPI(endpoint, options = {}) {
  */
 async function fetchWithTenantKey(endpoint, tenantApiKey, options = {}) {
   if (!tenantApiKey) {
-    const err = new Error('Clé API introuvable. Reconnectez votre WhatsApp.');
+    const err = new Error(i18n.t('apiErrors.noApiKey'));
     err.code = 'NO_API_KEY';
     throw err;
   }
@@ -74,7 +76,7 @@ async function fetchWithTenantKey(endpoint, tenantApiKey, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const err = new Error(data.error?.message || 'Erreur API');
+    const err = new Error(data.error?.message || i18n.t('apiErrors.generic'));
     err.code = data.error?.code;
     err.status = response.status;
     err.data = data;

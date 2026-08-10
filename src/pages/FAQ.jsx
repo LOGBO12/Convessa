@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 const FAQ = () => {
   const { t } = useTranslation();
-  usePageTitle('Foire aux questions');
+  usePageTitle('pageTitles.faq');
   const [openIndex, setOpenIndex] = useState(null);
 
   const faqCategories = [
@@ -175,10 +175,10 @@ const FAQ = () => {
           className="text-center mb-16"
         >
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Questions Fréquentes
+            {t('faqPage.heroTitle')}
           </h1>
           <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Trouvez rapidement des réponses à vos questions sur Convessa, notre API WhatsApp et nos services.
+            {t('faqPage.heroSubtitle')}
           </p>
         </motion.div>
 
@@ -260,23 +260,23 @@ const FAQ = () => {
           className="mt-16 text-center bg-whatsapp rounded-2xl p-6 sm:p-12 shadow-xl"
         >
           <h2 className="text-xl sm:text-3xl font-bold text-white mb-4">
-            Vous ne trouvez pas votre réponse ?
+            {t('faqPage.ctaTitle')}
           </h2>
           <p className="text-primary-100 text-base sm:text-lg mb-8">
-            Notre équipe de support est là pour vous aider
+            {t('faqPage.ctaSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="/contact"
               className="w-full sm:w-auto bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md text-center"
             >
-              Contacter le support
+              {t('faqPage.ctaContact')}
             </a>
             <a
               href="/docs?section=introduction"
               className="w-full sm:w-auto bg-primary-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-900 transition-colors text-center"
             >
-              Consulter la documentation
+              {t('faqPage.ctaDocs')}
             </a>
           </div>
         </motion.div>

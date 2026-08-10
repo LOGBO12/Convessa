@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -29,24 +30,25 @@ import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
 import { connectSocket, onMessageStatus } from '../services/socket';
 
-// Types de médias acceptés
+// Types de médias acceptés (labels traduits via t('sendMessagePage.media.<type>'))
 const MEDIA_TYPES = {
-  image:    { icon: Image,    label: 'Image',    accept: 'image/*',                              maxMb: 16  },
-  video:    { icon: Video,    label: 'Vidéo',     accept: 'video/*',                              maxMb: 64  },
-  audio:    { icon: Music,    label: 'Audio',     accept: 'audio/*',                              maxMb: 16  },
-  document: { icon: FileText, label: 'Document',  accept: '.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx', maxMb: 100 },
+  image:    { icon: Image,    accept: 'image/*',                              maxMb: 16  },
+  video:    { icon: Video,    accept: 'video/*',                              maxMb: 64  },
+  audio:    { icon: Music,    accept: 'audio/*',                              maxMb: 16  },
+  document: { icon: FileText, accept: '.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx', maxMb: 100 },
 };
 
-// Mode de destinataire
+// Mode de destinataire (labels traduits via t('sendMessagePage.recipientModes.<id>'))
 const RECIPIENT_MODES = [
-  { id: 'contact',  label: 'Un contact',           icon: User },
-  { id: 'multiple', label: 'Plusieurs contacts',   icon: Users },
-  { id: 'group',    label: 'Un groupe',            icon: UsersRound },
+  { id: 'contact',  icon: User },
+  { id: 'multiple', icon: Users },
+  { id: 'group',    icon: UsersRound },
 ];
 
 const SendMessage = () => {
   const { user } = useAuth();
-  usePageTitle('Envoyer un message');
+  const { t } = useTranslation();
+  usePageTitle('pageTitles.sendMessage');
   const { session: userSession, loading: sessionLoading } = useUserSession();
   const tenantApiKey = getTenantApiKey(user?.uid);
 
@@ -128,7 +130,7 @@ const SendMessage = () => {
 
       const maxSize = MEDIA_TYPES[type].maxMb * 1024 * 1024;
       if (file.size > maxSize) {
-        setError(`Fichier trop volumineux. Taille max: ${MEDIA_TYPES[type].maxMb} MB`);
+        setError(t('sendMessagePage.fileTooLarge', { max: MEDIA_TYPES[type].maxMb }));
         return;
       }
 
@@ -157,13 +159,13 @@ const SendMessage = () => {
   // ── Créer un nouveau groupe (idempotent par nom côté backend) ──────────────
   const handleCreateGroup = async () => {
     if (!newGroupName.trim()) {
-      setError('Le nom du groupe est requis');
+      setError(t('sendMessagePage.groupNameRequired'));
       return;
     }
     const participants = newGroupParticipants.filter(p => p && p.trim());
 
     if (participants.length === 0) {
-      setError('Ajoutez au moins un participant');
+      setError(t('sendMessagePage.addAtLeastOneParticipant'));
       return;
     }
 
@@ -180,7 +182,7 @@ const SendMessage = () => {
         setError(''); // pas une erreur — informatif seulement
       }
     } catch (err) {
-      setError(err.message || 'Erreur lors de la création du groupe');
+      setError(err.message || t('sendMessagePage.createGroupError'));
     } finally {
       setCreatingGroup(false);
     }
@@ -207,19 +209,19 @@ const SendMessage = () => {
     if (!to || (Array.isArray(to) && to.length === 0)) {
       setError(
         recipientMode === 'group'
-          ? 'Sélectionnez ou créez un groupe'
-          : 'Veuillez entrer un numéro de téléphone'
+          ? t('sendMessagePage.selectOrCreateGroup')
+          : t('sendMessagePage.enterPhoneNumber')
       );
       return;
     }
 
     if (!message && !mediaFile) {
-      setError('Veuillez entrer un message ou sélectionner un média');
+      setError(t('sendMessagePage.enterMessageOrMedia'));
       return;
     }
 
     if (!tenantApiKey) {
-      setError('Clé API introuvable. Reconnectez votre WhatsApp depuis la page Sessions.');
+      setError(t('sendMessagePage.apiKeyNotFound'));
       return;
     }
 
@@ -266,7 +268,7 @@ const SendMessage = () => {
       if (recipientMode === 'multiple') setMultiplePhones('');
     } catch (err) {
       console.error('Erreur envoi message:', err);
-      setError(err.message || "Erreur lors de l'envoi du message");
+      setError(err.message || t('sendMessagePage.sendError'));
     } finally {
       setSending(false);
     }
@@ -299,13 +301,13 @@ const SendMessage = () => {
           )}
 
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {userSession ? 'Session WhatsApp non connectée' : 'Aucune session WhatsApp'}
+            {userSession ? t('sendMessagePage.notConnectedTitle') : t('sendMessagePage.noSessionTitle')}
           </h3>
 
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
             {userSession
-              ? `Votre session WhatsApp est en statut "${userSession.status}". Vous devez d'abord la connecter pour envoyer des messages.`
-              : "Vous devez d'abord connecter votre WhatsApp depuis la page Sessions pour pouvoir envoyer des messages."}
+              ? t('sendMessagePage.notConnectedDesc', { status: userSession.status })
+              : t('sendMessagePage.noSessionDesc')}
           </p>
 
           <Link
@@ -313,7 +315,7 @@ const SendMessage = () => {
             className="inline-flex items-center space-x-2 bg-whatsapp text-white px-8 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg font-medium"
           >
             <Smartphone size={20} />
-            <span>Aller à la page Sessions</span>
+            <span>{t('sendMessagePage.goToSessions')}</span>
           </Link>
         </motion.div>
       </div>
@@ -330,16 +332,16 @@ const SendMessage = () => {
           className="bg-white rounded-xl shadow-sm border border-red-200 p-12 text-center"
         >
           <AlertCircle className="mx-auto text-red-400 mb-4" size={64} />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Clé API introuvable</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('sendMessagePage.apiKeyMissingTitle')}</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Votre clé API n'est pas disponible localement. Reconnectez votre WhatsApp pour la régénérer.
+            {t('sendMessagePage.apiKeyMissingDesc')}
           </p>
           <Link
             to="/sessions"
             className="inline-flex items-center space-x-2 bg-whatsapp text-white px-8 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg font-medium"
           >
             <Smartphone size={20} />
-            <span>Aller à la page Sessions</span>
+            <span>{t('sendMessagePage.goToSessions')}</span>
           </Link>
         </motion.div>
       </div>
@@ -360,10 +362,10 @@ const SendMessage = () => {
         <div className="bg-whatsapp px-6 py-4">
           <h2 className="text-lg sm:text-2xl font-bold text-white flex items-center space-x-2">
             <Send size={24} />
-            <span>Envoyer un Message WhatsApp</span>
+            <span>{t('sendMessagePage.title')}</span>
           </h2>
           <p className="text-primary-100 text-sm mt-1">
-            Envoi depuis : <span className="font-semibold text-white">+{userSession.phone}</span>
+            {t('sendMessagePage.sendingFrom')} <span className="font-semibold text-white">+{userSession.phone}</span>
           </p>
         </div>
 
@@ -371,7 +373,7 @@ const SendMessage = () => {
         <form onSubmit={handleSend} className="p-6 space-y-6">
           {/* Sélecteur de mode destinataire */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Destinataire</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">{t('sendMessagePage.recipient')}</label>
             <div className="grid grid-cols-3 gap-2">
               {RECIPIENT_MODES.map((m) => {
                 const Icon = m.icon;
@@ -388,7 +390,7 @@ const SendMessage = () => {
                     }`}
                   >
                     <Icon size={18} />
-                    <span className="text-xs sm:text-sm leading-tight text-center">{m.label}</span>
+                    <span className="text-xs sm:text-sm leading-tight text-center">{t(`sendMessagePage.recipientModes.${m.id}`)}</span>
                   </button>
                 );
               })}
@@ -398,7 +400,7 @@ const SendMessage = () => {
           {/* Mode : un contact */}
           {recipientMode === 'contact' && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro du destinataire</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t('sendMessagePage.recipientNumber')}</label>
               <PhoneInput
                 international
                 defaultCountry="BJ"
@@ -407,7 +409,7 @@ const SendMessage = () => {
                 className="phone-input-dashboard"
                 placeholder="94 00 00 00"
               />
-              <p className="text-xs text-gray-500 mt-2">Format international requis (ex: +33612345678)</p>
+              <p className="text-xs text-gray-500 mt-2">{t('sendMessagePage.internationalFormat')}</p>
             </div>
           )}
 
@@ -415,7 +417,7 @@ const SendMessage = () => {
           {recipientMode === 'multiple' && (
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Numéros des destinataires
+                {t('sendMessagePage.recipientNumbers')}
               </label>
               <div className="space-y-2">
                 {multiplePhones.map((phone, idx) => (
@@ -449,11 +451,11 @@ const SendMessage = () => {
                   onClick={() => setMultiplePhones([...multiplePhones, ''])}
                   className="mt-2 flex items-center gap-1.5 text-sm text-whatsapp-dark hover:text-whatsapp font-medium"
                 >
-                  <Plus size={14} /> Ajouter un numéro
+                  <Plus size={14} /> {t('sendMessagePage.addNumber')}
                 </button>
               )}
               <p className="text-xs text-gray-500 mt-2">
-                50 destinataires maximum par envoi. Le même message est envoyé individuellement à chacun.
+                {t('sendMessagePage.maxRecipients')}
               </p>
             </div>
           )}
@@ -461,7 +463,7 @@ const SendMessage = () => {
           {/* Mode : groupe */}
           {recipientMode === 'group' && (
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-700">Groupe</label>
+              <label className="block text-sm font-semibold text-gray-700">{t('sendMessagePage.group')}</label>
 
               {!showNewGroupForm ? (
                 <>
@@ -472,11 +474,11 @@ const SendMessage = () => {
                       className="flex-1 border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:border-whatsapp-dark focus:outline-none"
                     >
                       <option value="">
-                        {groupsLoading ? 'Chargement...' : groups.length === 0 ? 'Aucun groupe — créez-en un' : 'Sélectionner un groupe'}
+                        {groupsLoading ? t('sendMessagePage.loadingGroups') : groups.length === 0 ? t('sendMessagePage.noGroupsCreateOne') : t('sendMessagePage.selectGroup')}
                       </option>
                       {groups.map((g) => (
-                        <option key={g.groupId} value={g.groupId}>
-                          {g.name} ({g.participantsCount} membres)
+                         <option key={g.groupId} value={g.groupId}>
+                          {g.name} ({g.participantsCount} {t('sendMessagePage.members')})
                         </option>
                       ))}
                     </select>
@@ -486,17 +488,17 @@ const SendMessage = () => {
                       className="flex items-center gap-1.5 px-4 py-2.5 border-2 border-whatsapp-dark text-whatsapp-dark rounded-lg hover:bg-whatsapp-light text-sm font-medium whitespace-nowrap"
                     >
                       <Plus size={16} />
-                      Nouveau
+                      {t('sendMessagePage.newGroup')}
                     </button>
                   </div>
                   <p className="text-xs text-gray-500">
-                    Le groupe créé une fois reste disponible pour tous vos envois futurs.
+                    {t('sendMessagePage.groupAvailableForFuture')}
                   </p>
                 </>
               ) : (
                 <div className="border-2 border-whatsapp-light bg-whatsapp-light rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-900">Créer un nouveau groupe</p>
+                    <p className="text-sm font-semibold text-gray-900">{t('sendMessagePage.createNewGroup')}</p>
                     <button type="button" onClick={() => setShowNewGroupForm(false)} className="text-gray-400 hover:text-gray-600">
                       <X size={18} />
                     </button>
@@ -505,11 +507,11 @@ const SendMessage = () => {
                     type="text"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="Nom du groupe"
+                    placeholder={t('sendMessagePage.groupNamePlaceholder')}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-whatsapp-dark focus:outline-none"
                   />
                   <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-600">Participants</label>
+                    <label className="block text-xs font-medium text-gray-600">{t('sendMessagePage.participants')}</label>
                     {newGroupParticipants.map((phone, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <PhoneInput
@@ -539,7 +541,7 @@ const SendMessage = () => {
                       onClick={() => setNewGroupParticipants([...newGroupParticipants, ''])}
                       className="flex items-center gap-1.5 text-sm text-whatsapp-dark hover:text-whatsapp font-medium"
                     >
-                      <Plus size={14} /> Ajouter un participant
+                      <Plus size={14} /> {t('sendMessagePage.addParticipant')}
                     </button>
                   </div>
                   <button
@@ -549,11 +551,10 @@ const SendMessage = () => {
                     className="w-full flex items-center justify-center gap-2 bg-whatsapp-dark text-white py-2.5 rounded-lg hover:bg-whatsapp disabled:opacity-50 text-sm font-medium"
                   >
                     {creatingGroup ? <Loader className="animate-spin" size={16} /> : <UsersRound size={16} />}
-                    <span>{creatingGroup ? 'Création...' : 'Créer le groupe'}</span>
+                    <span>{creatingGroup ? t('sendMessagePage.creating') : t('sendMessagePage.createGroup')}</span>
                   </button>
                   <p className="text-xs text-gray-600">
-                    Les contacts dont les réglages de confidentialité empêchent l'ajout direct
-                    recevront automatiquement un lien d'invitation en message privé.
+                    {t('sendMessagePage.privacyNotice')}
                   </p>
                 </div>
               )}
@@ -563,18 +564,18 @@ const SendMessage = () => {
           {/* Message Text */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Message (optionnel si média)
+              {t('sendMessagePage.messageLabel')}
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={6}
               maxLength={4096}
-              placeholder="Entrez votre message ici..."
+              placeholder={t('sendMessagePage.messagePlaceholder')}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-whatsapp-dark focus:outline-none resize-none"
             />
             <div className="flex justify-between items-center mt-2">
-              <p className="text-xs text-gray-500">Maximum 4096 caractères</p>
+              <p className="text-xs text-gray-500">{t('sendMessagePage.maxChars')}</p>
               <p className="text-xs text-gray-600 font-medium">{message.length} / 4096</p>
             </div>
           </div>
@@ -582,7 +583,7 @@ const SendMessage = () => {
           {/* Media Selection */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Ajouter un média (optionnel)
+              {t('sendMessagePage.addMedia')}
             </label>
 
             {!mediaFile ? (
@@ -597,7 +598,7 @@ const SendMessage = () => {
                       className="flex flex-col items-center justify-center p-4 border-2 border-gray-300 border-dashed rounded-lg hover:border-whatsapp-dark hover:bg-whatsapp-light transition-all group"
                     >
                       <Icon className="text-gray-400 group-hover:text-whatsapp-dark mb-2" size={32} />
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-whatsapp-dark">{cfg.label}</span>
+                      <span className="text-sm font-medium text-gray-600 group-hover:text-whatsapp-dark">{t(`sendMessagePage.media.${type}`)}</span>
                     </button>
                   );
                 })}
@@ -609,7 +610,7 @@ const SendMessage = () => {
                     {mediaPreview ? (
                       <div className="relative">
                         {mediaType === 'image' && (
-                          <img src={mediaPreview} alt="Aperçu" className="w-24 h-24 object-cover rounded-lg" />
+                          <img src={mediaPreview} alt={t('sendMessagePage.preview')} className="w-24 h-24 object-cover rounded-lg" />
                         )}
                         {mediaType === 'video' && (
                           <video src={mediaPreview} className="w-24 h-24 object-cover rounded-lg" controls={false} />
@@ -623,7 +624,7 @@ const SendMessage = () => {
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{mediaFile.name}</p>
                       <p className="text-sm text-gray-600">
-                        {(mediaFile.size / 1024).toFixed(2)} KB • {MEDIA_TYPES[mediaType].label}
+                        {(mediaFile.size / 1024).toFixed(2)} KB • {t(`sendMessagePage.media.${mediaType}`)}
                       </p>
                     </div>
                   </div>
@@ -631,7 +632,7 @@ const SendMessage = () => {
                     type="button"
                     onClick={removeMedia}
                     className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                    aria-label="Supprimer le média"
+                    aria-label={t('sendMessagePage.removeMedia')}
                   >
                     <X className="text-red-600" size={20} />
                   </button>
@@ -665,12 +666,12 @@ const SendMessage = () => {
             {sending ? (
               <>
                 <Loader className="animate-spin" size={20} />
-                <span>Envoi en cours...</span>
+                <span>{t('sendMessagePage.sending')}</span>
               </>
             ) : (
               <>
                 <Send size={20} />
-                <span>Envoyer le message</span>
+                <span>{t('sendMessagePage.sendMessageBtn')}</span>
               </>
             )}
           </button>
@@ -684,7 +685,7 @@ const SendMessage = () => {
           animate={{ opacity: 1 }}
           className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-5"
         >
-          <h3 className="font-semibold text-gray-900 mb-3">Suivi des envois</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">{t('sendMessagePage.trackingTitle')}</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {trackedList.map(([messageId, info]) => (
               <div key={messageId} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg text-sm">
@@ -698,15 +699,15 @@ const SendMessage = () => {
                   <span className={`text-xs font-medium ${
                     info.status === 'sent' ? 'text-green-700' : info.status === 'failed' ? 'text-red-700' : 'text-yellow-700'
                   }`}>
-                    {info.status === 'queued' && 'Envoi en cours...'}
-                    {info.status === 'sent'   && 'Envoyé'}
-                    {info.status === 'failed' && (info.error || 'Échec')}
+                    {info.status === 'queued' && t('sendMessagePage.statusQueued')}
+                    {info.status === 'sent'   && t('sendMessagePage.statusSent')}
+                    {info.status === 'failed' && (info.error || t('sendMessagePage.statusFailed'))}
                   </span>
                   <button
                     type="button"
                     onClick={() => copyText(messageId)}
                     className="p-1 hover:bg-gray-200 rounded"
-                    title="Copier l'ID du message"
+                    title={t('sendMessagePage.copyMessageId')}
                   >
                     <Copy size={12} className="text-gray-400" />
                   </button>
@@ -715,9 +716,7 @@ const SendMessage = () => {
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Un envoi peut légitimement prendre plus de temps pour les médias volumineux (vidéo,
-            document) — "Envoi en cours" ne signifie pas un échec, seulement que Baileys n'a pas
-            encore confirmé la remise.
+            {t('sendMessagePage.trackingNote')}
           </p>
         </motion.div>
       )}
@@ -729,12 +728,12 @@ const SendMessage = () => {
         transition={{ delay: 0.2 }}
         className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4"
       >
-        <h3 className="font-semibold text-blue-900 mb-2">Limites des médias</h3>
+        <h3 className="font-semibold text-blue-900 mb-2">{t('sendMessagePage.mediaLimitsTitle')}</h3>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Images : 16 MB max (JPEG, PNG, GIF, WebP)</li>
-          <li>• Vidéos : 64 MB max (MP4, 3GPP)</li>
-          <li>• Audio : 16 MB max (MP3, OGG, AAC)</li>
-          <li>• Documents : 100 MB max (PDF, DOC, TXT, etc.)</li>
+          <li>• {t('sendMessagePage.mediaLimits.image')}</li>
+          <li>• {t('sendMessagePage.mediaLimits.video')}</li>
+          <li>• {t('sendMessagePage.mediaLimits.audio')}</li>
+          <li>• {t('sendMessagePage.mediaLimits.document')}</li>
         </ul>
       </motion.div>
     </div>

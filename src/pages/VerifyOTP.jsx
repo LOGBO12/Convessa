@@ -3,8 +3,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, AlertCircle, Lightbulb, CheckCircle } from 'lucide-react';
 import { verifyPhoneOTP, sendPhoneOTP } from '../services/authService';
+import { useTranslation } from 'react-i18next';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const VerifyOTP = () => {
+  const { t } = useTranslation();
+  usePageTitle('pageTitles.verify');
   const navigate = useNavigate();
   const location = useLocation();
   const phone = location.state?.phone;
@@ -92,7 +96,7 @@ const VerifyOTP = () => {
       navigate('/dashboard');
     } else {
       // Erreur
-      setError(result.error || 'Code invalide. Veuillez réessayer.');
+      setError(result.error || t('verifyOtp.invalidCode'));
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     }
@@ -111,7 +115,7 @@ const VerifyOTP = () => {
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
       // Notification de succès
-      alert('Un nouveau code a été envoyé sur WhatsApp !');
+      alert(t('verifyOtp.codeResent'));
     } else {
       setError(result.error || 'Erreur lors du renvoi du code');
     }
@@ -148,10 +152,10 @@ const VerifyOTP = () => {
 
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Vérification
+              {t('verifyLoginPage.title')}
             </h2>
             <p className="text-gray-600">
-              Code envoyé sur WhatsApp au
+              {t('verifyLoginPage.subtitle')}
             </p>
             <p className="text-primary-600 font-semibold text-lg mt-1">
               {phone}
@@ -202,7 +206,7 @@ const VerifyOTP = () => {
                 className="flex items-center justify-center space-x-2 text-primary-600"
               >
                 <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-                <span className="font-medium">Vérification en cours...</span>
+                <span className="font-medium">{t('verifyOtp.verifying')}</span>
               </motion.div>
             )}
           </div>
@@ -211,14 +215,14 @@ const VerifyOTP = () => {
           <div className="text-center mb-6">
             {resendTimer > 0 ? (
               <p className="text-gray-500 text-sm">
-                Renvoyer le code dans <span className="font-bold text-primary-600">{resendTimer}s</span>
+                {t('verifyOtp.resendIn')} <span className="font-bold text-primary-600">{resendTimer}s</span>
               </p>
             ) : (
               <button
                 onClick={handleResend}
                 className="text-primary-600 hover:text-primary-700 font-semibold text-sm underline"
               >
-                Renvoyer le code
+                {t('verifyOtp.resend')}
               </button>
             )}
           </div>
@@ -228,7 +232,7 @@ const VerifyOTP = () => {
             <div className="flex items-start space-x-3">
               <Lightbulb className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
               <p className="text-blue-800 text-sm">
-                <strong>Astuce :</strong> Vérifiez vos messages WhatsApp et entrez le code à 6 chiffres
+                <strong>{t('verifyOtp.tipLabel')}</strong> {t('verifyLoginPage.tipText')}
               </p>
             </div>
           </div>
@@ -239,8 +243,8 @@ const VerifyOTP = () => {
               <div className="flex items-start space-x-3">
                 <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
                 <div className="text-yellow-800 text-sm">
-                  <strong>Mode Développement</strong>
-                  <p className="mt-1">Code OTP de test: <span className="font-mono font-bold text-lg">{devOtp}</span></p>
+                  <strong>{t('verifyOtp.devModeLabel')}</strong>
+                  <p className="mt-1">{t('verifyOtp.testCodeLabel')} <span className="font-mono font-bold text-lg">{devOtp}</span></p>
                 </div>
               </div>
             </div>
@@ -253,7 +257,7 @@ const VerifyOTP = () => {
             className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
           >
             <ArrowLeft size={16} />
-            <span>Changer de numéro</span>
+            <span>{t('verifyOtp.changeNumber')}</span>
           </button>
         </div>
       </motion.div>

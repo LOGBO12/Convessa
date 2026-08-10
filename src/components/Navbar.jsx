@@ -23,7 +23,6 @@ const Navbar = () => {
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
-    i18n.changeLanguage(lng);
     setLangMenuOpen(false);
   };
 
@@ -51,14 +50,14 @@ const Navbar = () => {
   };
 
   const getDisplayName = () => {
-    return user?.displayName || user?.email || user?.phone || 'Utilisateur';
+    return user?.displayName || user?.email || user?.phone || t('nav.defaultUser');
   };
 
   const getProviderText = () => {
-    if (user?.provider === 'google.com') return 'Google';
-    if (user?.provider === 'github.com') return 'GitHub';
-    if (user?.provider === 'phone') return 'Téléphone';
-    return user?.provider || 'Compte';
+    if (user?.provider === 'google.com') return t('nav.provider.google');
+    if (user?.provider === 'github.com') return t('nav.provider.github');
+    if (user?.provider === 'phone') return t('nav.provider.phone');
+    return user?.provider || t('nav.provider.account');
   };
 
   // Fonction pour vérifier si un lien est actif
@@ -94,7 +93,7 @@ const Navbar = () => {
                   onMouseEnter={(e) => e.target.style.color = '#128C7E'}
                   onMouseLeave={(e) => !isActive('/dashboard') && (e.target.style.color = '')}
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                   {isActive('/dashboard') && (
                     <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
@@ -108,7 +107,7 @@ const Navbar = () => {
                   onMouseEnter={(e) => e.target.style.color = '#128C7E'}
                   onMouseLeave={(e) => !isActive('/send-message') && (e.target.style.color = '')}
                 >
-                  Messages
+                  {t('nav.messages')}
                   {isActive('/send-message') && (
                     <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
@@ -122,7 +121,7 @@ const Navbar = () => {
                   onMouseEnter={(e) => e.target.style.color = '#128C7E'}
                   onMouseLeave={(e) => !isActive('/sessions') && (e.target.style.color = '')}
                 >
-                  Sessions
+                  {t('nav.sessions')}
                   {isActive('/sessions') && (
                     <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
@@ -136,7 +135,7 @@ const Navbar = () => {
                   onMouseEnter={(e) => e.target.style.color = '#128C7E'}
                   onMouseLeave={(e) => !isActive('/docs') && (e.target.style.color = '')}
                 >
-                  Documentation
+                  {t('nav.docs')}
                   {isActive('/docs') && (
                     <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
@@ -150,7 +149,7 @@ const Navbar = () => {
                   onMouseEnter={(e) => e.target.style.color = '#128C7E'}
                   onMouseLeave={(e) => !isActive('/contact') && (e.target.style.color = '')}
                 >
-                  Contact
+                  {t('nav.contact')}
                   {isActive('/contact') && (
                     <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
@@ -224,7 +223,7 @@ const Navbar = () => {
                   onMouseEnter={(e) => e.target.style.color = '#128C7E'}
                   onMouseLeave={(e) => !isActive('/contact') && (e.target.style.color = '')}
                 >
-                  Contact
+                  {t('nav.contact')}
                   {isActive('/contact') && (
                     <span className="absolute -bottom-[21px] left-0 right-0 h-0.5" style={{ backgroundColor: '#128C7E' }}></span>
                   )}
@@ -317,10 +316,10 @@ const Navbar = () => {
                         <div className="px-4 py-3 border-b border-gray-100">
                           <p className="text-sm font-medium text-gray-900">{getDisplayName()}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {user?.email || user?.phone || 'Aucun email'}
+                            {user?.email || user?.phone || t('nav.noEmail')}
                           </p>
                           <p className="text-xs mt-1 font-medium" style={{ color: '#128C7E' }}>
-                            Connecté via {getProviderText()}
+                            {t('nav.connectedVia')} {getProviderText()}
                           </p>
                         </div>
 
@@ -334,7 +333,7 @@ const Navbar = () => {
                             className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                           >
                             <LogOut size={16} />
-                            <span>Se déconnecter</span>
+                            <span>{t('nav.logout')}</span>
                           </button>
                         </div>
                       </motion.div>
@@ -399,7 +398,7 @@ const Navbar = () => {
                     style={isActive('/dashboard') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    {t('nav.dashboard')}
                   </Link>
                   <Link
                     to="/send-message"
@@ -411,7 +410,7 @@ const Navbar = () => {
                     style={isActive('/send-message') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Messages
+                    {t('nav.messages')}
                   </Link>
                   <Link
                     to="/sessions"
@@ -423,7 +422,7 @@ const Navbar = () => {
                     style={isActive('/sessions') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Sessions
+                    {t('nav.sessions')}
                   </Link>
                   <Link
                     to="/docs"
@@ -435,7 +434,7 @@ const Navbar = () => {
                     style={isActive('/docs') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Documentation
+                    {t('nav.docs')}
                   </Link>
                   <Link
                     to="/contact"
@@ -447,7 +446,7 @@ const Navbar = () => {
                     style={isActive('/contact') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Contact
+                    {t('nav.contact')}
                   </Link>
 
                   <div className="border-t border-gray-200 pt-4">
@@ -476,7 +475,7 @@ const Navbar = () => {
                       className="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-600 px-6 py-3 rounded-lg hover:bg-red-100 transition-colors"
                     >
                       <LogOut size={18} />
-                      <span>Se déconnecter</span>
+                      <span>{t('nav.logout')}</span>
                     </button>
                   </div>
                 </>
@@ -535,12 +534,13 @@ const Navbar = () => {
                     to="/contact"
                     className={`block py-2 transition-colors ${
                       isActive('/contact') 
-                        ? 'text-whatsapp-dark bg-whatsapp-light px-3 rounded-lg font-semibold' 
-                        : 'text-gray-700 hover:text-whatsapp-dark'
+                        ? 'px-3 rounded-lg font-semibold' 
+                        : 'text-gray-700'
                     }`}
+                    style={isActive('/contact') ? { color: '#128C7E', backgroundColor: '#e6f4f3' } : {}}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Contact
+                    {t('nav.contact')}
                   </Link>
 
                   <div className="border-t border-gray-200 pt-4 space-y-3">

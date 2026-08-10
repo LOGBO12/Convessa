@@ -6,9 +6,11 @@ import { ArrowRight, Smartphone, AlertCircle } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { signInWithGoogle, signInWithGithub, sendPhoneOTP } from '../services/authService';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const Auth = () => {
   const { t } = useTranslation();
+  usePageTitle('pageTitles.login');
   const navigate = useNavigate();
   const [phoneValue, setPhoneValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +20,7 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!phoneValue) {
-      setError('Veuillez entrer un numéro de téléphone valide');
+      setError(t('loginPage.phoneRequired'));
       return;
     }
 
@@ -40,7 +42,7 @@ const Auth = () => {
         } 
       });
     } else {
-      setError(result.error || 'Erreur lors de l\'envoi du code');
+      setError(result.error || t('loginPage.sendCodeError'));
     }
     
     setLoading(false);
@@ -61,7 +63,7 @@ const Auth = () => {
       // Rediriger vers le dashboard
       navigate('/dashboard');
     } else {
-      setError(result.error || `Erreur lors de la connexion avec ${provider}`);
+      setError(result.error || t('loginPage.socialError', { provider }));
     }
 
     setSocialLoading(null);
@@ -89,10 +91,10 @@ const Auth = () => {
         <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Bienvenue
+              {t('loginPage.title')}
             </h2>
             <p className="text-gray-600">
-              Connectez-vous ou créez un compte en quelques secondes
+              {t('loginPage.subtitle')}
             </p>
           </div>
 
@@ -137,7 +139,7 @@ const Auth = () => {
                   />
                 </svg>
               )}
-              <span>Continuer avec Google</span>
+              <span>{t('loginPage.continueWithGoogle')}</span>
             </button>
 
             <button
@@ -152,7 +154,7 @@ const Auth = () => {
                 <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
               </svg>
               )}
-              <span>Continuer avec GitHub</span>
+              <span>{t('loginPage.continueWithGithub')}</span>
             </button>
           </div>
 
@@ -161,7 +163,7 @@ const Auth = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">Ou avec votre téléphone</span>
+              <span className="px-4 bg-white text-gray-500 font-medium">{t('loginPage.orWithPhone')}</span>
             </div>
           </div>
 
@@ -170,7 +172,7 @@ const Auth = () => {
             <div>
               <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
                 <Smartphone size={18} />
-                <span>Numéro de téléphone WhatsApp</span>
+                <span>{t('loginPage.whatsappPhoneLabel')}</span>
               </label>
               <PhoneInput
                 international
@@ -181,7 +183,7 @@ const Auth = () => {
                 placeholder="+229 94 11 94 76"
               />
               <p className="mt-2 text-xs text-gray-500">
-                Nous enverrons un code de vérification sur WhatsApp
+                {t('loginPage.otpNotice')}
               </p>
             </div>
 
@@ -197,11 +199,11 @@ const Auth = () => {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Envoi en cours...</span>
+                  <span>{t('loginPage.sending')}</span>
                 </>
               ) : (
                 <>
-                  <span>Recevoir le code</span>
+                  <span>{t('loginPage.receiveCode')}</span>
                   <ArrowRight size={20} />
                 </>
               )}
@@ -209,20 +211,20 @@ const Auth = () => {
           </form>
 
           <div className="mt-6 text-center text-xs text-gray-500">
-            En continuant, vous acceptez nos{' '}
+            {t('loginPage.termsNotice')}{' '}
             <Link to="/terms" className="text-whatsapp-dark hover:text-whatsapp font-medium">
-              Conditions d'utilisation
+              {t('loginPage.termsLink')}
             </Link>{' '}
-            et notre{' '}
+            {t('loginPage.andOur')}{' '}
             <Link to="/privacy" className="text-whatsapp-dark hover:text-whatsapp font-medium">
-              Politique de confidentialité
+              {t('loginPage.privacyLink')}
             </Link>
           </div>
         </div>
 
         <div className="mt-6 text-center">
           <Link to="/" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-            Retour à l'accueil
+            {t('loginPage.backHome')}
           </Link>
         </div>
       </motion.div>

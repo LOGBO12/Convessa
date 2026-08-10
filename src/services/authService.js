@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { getCachedMachineHash } from './deviceFingerprint';
+import i18n from '../i18n/i18n';
 
 // ---------------------------------------------------------------------------
 // Base URL — pointe vers le backend production si VITE_API_BASE_URL est défini,
@@ -31,24 +32,25 @@ const githubProvider = new GithubAuthProvider();
 // ---------------------------------------------------------------------------
 // Error code → French message map
 // ---------------------------------------------------------------------------
-const ERROR_MESSAGES = {
-  DEVICE_ALREADY_REGISTERED:      'Cet appareil a déjà un compte. Utilisez la connexion.',
-  DEVICE_BOUND_TO_ANOTHER_ACCOUNT:'Cet appareil est lié à un autre compte. Accès refusé.',
-  PHONE_ALREADY_REGISTERED:       'Ce numéro est déjà inscrit. Utilisez la connexion.',
-  DEVICE_BLOCKED:                 'Cet appareil a été bloqué. Contactez le support.',
-  PHONE_NOT_REGISTERED:           'Aucun compte avec ce numéro. Inscrivez-vous d\'abord.',
-  ACCOUNT_DISABLED:               'Ce compte a été désactivé.',
-  INVALID:                        'Code incorrect.',
-  EXPIRED:                        'Code expiré. Demandez un nouveau code.',
-  EXCEEDED:                       'Trop de tentatives. Demandez un nouveau code.',
-  WHATSAPP_UNAVAILABLE:           'Service temporairement indisponible. Réessayez plus tard.',
+// Map code d'erreur backend → clé i18n (namespace authErrors)
+const ERROR_KEYS = {
+  DEVICE_ALREADY_REGISTERED:       'authErrors.deviceAlreadyRegistered',
+  DEVICE_BOUND_TO_ANOTHER_ACCOUNT: 'authErrors.deviceBoundToAnotherAccount',
+  PHONE_ALREADY_REGISTERED:        'authErrors.phoneAlreadyRegistered',
+  DEVICE_BLOCKED:                  'authErrors.deviceBlocked',
+  PHONE_NOT_REGISTERED:            'authErrors.phoneNotRegistered',
+  ACCOUNT_DISABLED:                'authErrors.accountDisabled',
+  INVALID:                         'authErrors.invalidCode',
+  EXPIRED:                         'authErrors.expiredCode',
+  EXCEEDED:                        'authErrors.tooManyAttempts',
+  WHATSAPP_UNAVAILABLE:            'authErrors.whatsappUnavailable',
 };
 
 function mapErrorCode(code, fallbackMessage) {
-  if (code && ERROR_MESSAGES[code]) {
-    return ERROR_MESSAGES[code];
+  if (code && ERROR_KEYS[code]) {
+    return i18n.t(ERROR_KEYS[code]);
   }
-  return fallbackMessage || 'Une erreur est survenue.';
+  return fallbackMessage || i18n.t('authErrors.genericError');
 }
 
 // ---------------------------------------------------------------------------
@@ -79,7 +81,7 @@ async function apiFetch(path, options = {}) {
   try {
     response = await fetch(`${API_BASE}${path}`, { headers, ...rest });
   } catch (_networkErr) {
-    throw { code: 'NETWORK_ERROR', message: 'Impossible de joindre le serveur.' };
+    throw { code: 'NETWORK_ERROR', message: i18n.t('authErrors.networkError') };
   }
 
   let data;
@@ -131,20 +133,20 @@ async function _handleOAuthPopup(provider) {
   } catch (err) {
     // Firebase popup errors
     if (err?.code === 'auth/popup-closed-by-user') {
-      return { success: false, error: 'Connexion annulée.' };
+      return { success: false, error: i18n.t('authErrors.popupCancelled') };
     }
     if (err?.code === 'auth/popup-blocked') {
-      return { success: false, error: 'Popup bloquée par le navigateur. Autorisez les popups pour ce site.' };
+      return { success: false, error: i18n.t('authErrors.popupBlocked') };
     }
     if (err?.code === 'auth/unauthorized-domain') {
-      return { success: false, error: 'Domaine non autorisé. Vérifiez la configuration Firebase.' };
+      return { success: false, error: i18n.t('authErrors.unauthorizedDomain') };
     }
     if (err?.code === 'auth/operation-not-allowed') {
-      return { success: false, error: 'Ce fournisseur OAuth n\'est pas activé. Contactez l\'administrateur.' };
+      return { success: false, error: i18n.t('authErrors.oauthProviderDisabled') };
     }
 
     // apiFetch errors (have .message already mapped)
-    const message = err?.message || 'Une erreur est survenue.';
+    const message = err?.message || i18n.t('authErrors.genericError');
     return { success: false, error: message };
   }
 }
@@ -205,9 +207,9 @@ export async function verifyRegisterOTP(phone, code) {
   } catch (err) {
     // Firebase custom token errors
     if (err?.code?.startsWith?.('auth/')) {
-      return { success: false, error: 'Erreur lors de la connexion Firebase. Réessayez.' };
+      return { success: false, error: i18n.t('authErrors.firebaseConnectionError') };
     }
-    return { success: false, error: err.message || 'Une erreur est survenue.' };
+    return { success: false, error: err.message || i18n.t('authErrors.genericError') };
   }
 }
 
@@ -258,9 +260,9 @@ export async function verifyLoginOTP(phone, code) {
     return { success: true, user };
   } catch (err) {
     if (err?.code?.startsWith?.('auth/')) {
-      return { success: false, error: 'Erreur lors de la connexion Firebase. Réessayez.' };
+      return { success: false, error: i18n.t('authErrors.firebaseConnectionError') };
     }
-    return { success: false, error: err.message || 'Une erreur est survenue.' };
+    return { success: false, error: err.message || i18n.t('authErrors.genericError') };
   }
 }
 

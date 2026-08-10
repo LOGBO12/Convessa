@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { useTranslation, Trans } from 'react-i18next';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
@@ -14,17 +15,10 @@ import {
 } from 'lucide-react';
 import { contactAPI } from '../services/api';
 
-const SUBJECTS = [
-  'Question générale',
-  'Support technique',
-  'Facturation / Abonnement',
-  'Signaler un problème',
-  'Partenariat',
-  'Autre',
-];
-
 export default function Contact() {
-  usePageTitle('Nous contacter');
+  const { t } = useTranslation();
+  usePageTitle('pageTitles.contact');
+  const SUBJECTS = t('contactPage.subjects', { returnObjects: true });
   const [form, setForm]       = useState({ name: '', email: '', subject: SUBJECTS[0], message: '' });
   const [phoneValue, setPhoneValue] = useState('');
   const [sending, setSending] = useState(false);
@@ -39,22 +33,28 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !phoneValue || !form.message.trim()) {
-      setError('Veuillez remplir tous les champs obligatoires (le téléphone est requis pour recevoir la confirmation WhatsApp).');
+      setError(t('contactPage.requiredFieldsError'));
       return;
     }
     setSending(true);
     setError('');
     try {
       const res = await contactAPI.send({ ...form, phone: phoneValue });
-      setSuccess(res.message || 'Message envoyé ! Nous vous répondrons bientôt.');
+      setSuccess(res.message || t('contactPage.sentDefault'));
       setForm({ name: '', email: '', subject: SUBJECTS[0], message: '' });
       setPhoneValue('');
     } catch (err) {
-      setError(err.message || "Erreur lors de l'envoi. Réessayez.");
+      setError(err.message || t('contactPage.sendError'));
     } finally {
       setSending(false);
     }
   };
+
+  const resourceLinks = [
+    { key: 'docs', href: '/docs' },
+    { key: 'faq', href: '/faq' },
+    { key: 'pricing', href: '/pricing' },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
@@ -65,13 +65,13 @@ export default function Contact() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 px-4 py-2 rounded-full mb-6 text-sm font-medium">
               <MessageSquare size={16} />
-              Nous sommes à votre écoute
+              {t('contactPage.heroTag')}
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold text-white mb-4 leading-tight">
-              Contactez-nous
+              {t('contactPage.heroTitle')}
             </h1>
             <p className="text-base sm:text-xl text-white/85 max-w-2xl mx-auto">
-              Une question, une suggestion, un partenariat ? Envoyez-nous un message — nous répondons sous 24h.
+              {t('contactPage.heroSubtitle')}
             </p>
           </motion.div>
         </div>
@@ -87,7 +87,7 @@ export default function Contact() {
             transition={{ delay: 0.1 }}
             className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8"
           >
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Envoyer un message</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">{t('contactPage.formTitle')}</h2>
 
             {success ? (
               <motion.div
@@ -96,13 +96,13 @@ export default function Contact() {
                 className="flex flex-col items-center justify-center py-12 gap-4 text-center"
               >
                 <CheckCircle size={56} className="text-green-500" />
-                <h3 className="text-xl font-bold text-gray-900">Message envoyé !</h3>
+                <h3 className="text-xl font-bold text-gray-900">{t('contactPage.sentTitle')}</h3>
                 <p className="text-gray-600 max-w-sm">{success}</p>
                 <button
                   onClick={() => setSuccess('')}
                   className="mt-2 px-6 py-2.5 bg-whatsapp-dark text-white rounded-xl hover:bg-whatsapp-dark font-medium transition-colors"
                 >
-                  Envoyer un autre message
+                  {t('contactPage.sendAnother')}
                 </button>
               </motion.div>
             ) : (
@@ -111,18 +111,18 @@ export default function Contact() {
                   {/* Nom */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Nom complet <span className="text-red-500">*</span>
+                      {t('contactPage.fullName')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="name" value={form.name} onChange={handleChange} required
-                      placeholder="Don Diègue MIKPONHOUE"
+                      placeholder={t('contactPage.namePlaceholder')}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-dark focus:outline-none transition-colors"
                     />
                   </div>
                   {/* Email */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Email <span className="text-red-500">*</span>
+                      {t('contactPage.email')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       name="email" type="email" value={form.email} onChange={handleChange} required
@@ -136,7 +136,7 @@ export default function Contact() {
                   {/* Téléphone */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Téléphone WhatsApp <span className="text-red-500">*</span>
+                      {t('contactPage.whatsappPhone')} <span className="text-red-500">*</span>
                     </label>
                     <PhoneInput
                       international
@@ -146,12 +146,12 @@ export default function Contact() {
                       className="phone-input-contact"
                       placeholder="94 00 00 00"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Utilisé pour vous confirmer la réception sur WhatsApp et vous répondre.</p>
+                    <p className="text-xs text-gray-400 mt-1">{t('contactPage.phoneHint')}</p>
                   </div>
                   {/* Sujet */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Sujet <span className="text-red-500">*</span>
+                      {t('contactPage.subject')} <span className="text-red-500">*</span>
                     </label>
                     <select
                       name="subject" value={form.subject} onChange={handleChange}
@@ -165,14 +165,14 @@ export default function Contact() {
                 {/* Message */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Message <span className="text-red-500">*</span>
+                    {t('contactPage.message')} <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="message" value={form.message} onChange={handleChange} required
-                    rows={6} placeholder="Décrivez votre demande en détail..."
+                    rows={6} placeholder={t('contactPage.messagePlaceholder')}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-dark focus:outline-none transition-colors resize-none"
                   />
-                  <p className="text-xs text-gray-400 mt-1">{form.message.length} / 2000 caractères</p>
+                  <p className="text-xs text-gray-400 mt-1">{form.message.length} / 2000 {t('contactPage.charCount')}</p>
                 </div>
 
                 {error && (
@@ -187,14 +187,14 @@ export default function Contact() {
                   className="w-full flex items-center justify-center gap-2.5 bg-whatsapp-dark text-white py-3.5 rounded-xl hover:bg-whatsapp-dark font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {sending ? (
-                    <><Loader size={18} className="animate-spin" /> Envoi en cours...</>
+                    <><Loader size={18} className="animate-spin" /> {t('contactPage.sending')}</>
                   ) : (
-                    <><Send size={18} /> Envoyer le message</>
+                    <><Send size={18} /> {t('contactPage.sendMessage')}</>
                   )}
                 </button>
 
                 <p className="text-xs text-center text-gray-400">
-                  En envoyant ce formulaire, vous acceptez de recevoir une confirmation et une réponse sur WhatsApp au numéro indiqué.
+                  {t('contactPage.consentNotice')}
                 </p>
               </form>
             )}
@@ -208,17 +208,13 @@ export default function Contact() {
             className="space-y-6"
           >
             <div className="bg-gray-100 border border-gray-200 rounded-xl p-6">
-              <h3 className="font-bold text-gray-900 mb-4 text-lg">Ressources utiles</h3>
+              <h3 className="font-bold text-gray-900 mb-4 text-lg">{t('contactPage.resourcesTitle')}</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Consultez nos ressources avant de nous contacter, vous trouverez peut-être rapidement votre réponse.
+                {t('contactPage.resourcesSubtitle')}
               </p>
               <ul className="space-y-3">
-                {[
-                  { label: 'Documentation API', href: '/docs', desc: 'Guides complets et exemples de code' },
-                  { label: 'FAQ', href: '/faq', desc: 'Questions fréquemment posées' },
-                  { label: 'Plans & Tarifs', href: '/pricing', desc: 'Découvrez nos offres' },
-                ].map(({ label, href, desc }) => (
-                  <li key={label}>
+                {resourceLinks.map(({ key, href }) => (
+                  <li key={key}>
                     <a 
                       href={href} 
                       className="block p-3 bg-white rounded-lg border border-whatsapp-light hover:border-whatsapp-dark hover:shadow-sm transition-all group"
@@ -227,10 +223,10 @@ export default function Contact() {
                         <span className="w-1.5 h-1.5 bg-whatsapp-dark rounded-full mt-2 flex-shrink-0" />
                         <div>
                           <p className="inline-flex items-center gap-2 text-sm font-semibold text-whatsapp-dark">
-                            {label}
+                            {t(`contactPage.resources.${key}.label`)}
                             <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{t(`contactPage.resources.${key}.desc`)}</p>
                         </div>
                       </div>
                     </a>
@@ -243,10 +239,10 @@ export default function Contact() {
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h4 className="font-semibold text-gray-900 mb-3 text-sm flex items-center gap-2">
                 <Clock size={16} className="text-whatsapp-dark" />
-                Délai de réponse
+                {t('contactPage.responseTimeTitle')}
               </h4>
               <p className="text-sm text-gray-600">
-                Nous répondons généralement sous <strong>24 heures</strong> pendant les jours ouvrables.
+                <Trans i18nKey="contactPage.responseTimeText" components={{ strong: <strong /> }} />
               </p>
             </div>
           </motion.div>

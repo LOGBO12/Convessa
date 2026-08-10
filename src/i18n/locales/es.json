@@ -6,7 +6,20 @@
     "faq": "Preguntas frecuentes",
     "login": "Iniciar sesión",
     "signup": "Registrarse",
-    "dashboard": "Panel"
+    "dashboard": "Panel",
+    "messages": "Mensajes",
+    "sessions": "Sesiones",
+    "logout": "Cerrar sesión",
+    "defaultUser": "Usuario",
+    "provider": {
+      "google": "Google",
+      "github": "GitHub",
+      "phone": "Teléfono",
+      "account": "Cuenta"
+    },
+    "noEmail": "Sin correo",
+    "connectedVia": "Conectado vía",
+    "contact": "Contacto"
   },
   "home": {
     "hero": {
@@ -129,7 +142,9 @@
       "submit": "Iniciar sesión",
       "noAccount": "¿No tienes una cuenta?",
       "signupLink": "Crear cuenta",
-      "orContinueWith": "O continuar con"
+      "orContinueWith": "O continuar con",
+      "orWithPhone": "O con tu teléfono",
+      "whatsappPhoneNumber": "Número de teléfono de WhatsApp"
     },
     "signup": {
       "title": "Crear cuenta",
@@ -244,12 +259,697 @@
     "audioLimit": "Audio: 16 MB máx (MP3, OGG, AAC)",
     "documentLimit": "Documentos: 100 MB máx (PDF, DOC, TXT, etc.)"
   },
+  "common": {
+    "siteName": "Convessa",
+    "defaultTitle": "Convessa: API de WhatsApp para desarrolladores",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "error": "Error",
+    "success": "Éxito",
+    "retry": "Reintentar",
+    "learnMore": "Saber más",
+    "optional": "opcional",
+    "required": "obligatorio",
+    "loadingAuth": "Cargando..."
+  },
+  "pageTitles": {
+    "sessions": "Mis sesiones de WhatsApp",
+    "paymentCallback": "Confirmación de pago",
+    "verify": "Verificación",
+    "sendMessage": "Enviar un mensaje",
+    "contact": "Contáctanos",
+    "pricing": "Precios y planes",
+    "docs": "Documentación de la API",
+    "verifyRegister": "Confirmación de registro",
+    "dashboard": "Panel de control",
+    "faq": "Preguntas frecuentes",
+    "login": "Iniciar sesión",
+    "register": "Crear una cuenta"
+  },
+  "footer": {
+    "tagline": "La API de WhatsApp más simple para desarrolladores.",
+    "product": "Producto",
+    "company": "Empresa",
+    "support": "Soporte",
+    "legal": "Legal",
+    "links": {
+      "docs": "Documentación",
+      "apiReference": "Referencia de la API",
+      "pricing": "Precios",
+      "examples": "Ejemplos",
+      "about": "Acerca de",
+      "blog": "Blog",
+      "careers": "Empleo",
+      "contact": "Contacto",
+      "terms": "Términos de servicio",
+      "privacy": "Política de privacidad",
+      "legalNotice": "Aviso legal",
+      "cookies": "Cookies",
+      "helpCenter": "Centro de ayuda",
+      "community": "Comunidad",
+      "status": "Estado",
+      "faq": "Preguntas frecuentes"
+    },
+    "copyright": "Todos los derechos reservados.",
+    "madeWith": "Hecho con pasión para desarrolladores",
+    "poweredBy": "Impulsado por WhatsApp"
+  },
+  "loginPage": {
+    "phoneRequired": "Por favor, introduce un número de teléfono válido.",
+    "sendCodeError": "Error al enviar el código.",
+    "socialError": "Error al iniciar sesión con {{provider}}.",
+    "title": "Iniciar sesión",
+    "subtitle": "Bienvenido de nuevo a Convessa",
+    "signupCta": "Registrarse",
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithGithub": "Continuar con GitHub",
+    "orWithPhone": "O con tu teléfono",
+    "whatsappPhoneLabel": "Número de teléfono de WhatsApp",
+    "otpNotice": "Enviaremos un código de inicio de sesión por WhatsApp",
+    "sending": "Enviando...",
+    "receiveCode": "Recibir código de inicio de sesión",
+    "noAccount": "¿Aún no tienes una cuenta?",
+    "termsNotice": "Al continuar, aceptas nuestros",
+    "termsLink": "Términos de servicio",
+    "andOur": "y nuestra",
+    "privacyLink": "Política de privacidad",
+    "backHome": "Volver al inicio"
+  },
+  "registerPage": {
+    "title": "Crear una cuenta",
+    "subtitle": "Únete a Convessa en segundos",
+    "loginHint": "Iniciar sesión",
+    "otpNotice": "Enviaremos un código de verificación por WhatsApp",
+    "receiveCode": "Recibir código",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "loginCta": "Iniciar sesión"
+  },
+  "verifyOtp": {
+    "invalidCode": "Código inválido. Inténtalo de nuevo.",
+    "resendError": "Error al reenviar el código.",
+    "codeResent": "Se ha enviado un nuevo código por WhatsApp.",
+    "devModeLabel": "Modo desarrollo",
+    "testCodeLabel": "Código OTP de prueba:",
+    "verifying": "Verificando...",
+    "resendIn": "Reenviar código en",
+    "resend": "Reenviar código",
+    "sending": "Enviando...",
+    "changeNumber": "Cambiar número",
+    "tipLabel": "Consejo:"
+  },
+  "verifyLoginPage": {
+    "title": "Código de inicio de sesión",
+    "subtitle": "Introduce el código enviado por WhatsApp",
+    "confirmButton": "Iniciar sesión",
+    "tipText": "Revisa tus mensajes de WhatsApp e introduce el código de 6 dígitos recibido."
+  },
+  "verifyRegisterPage": {
+    "title": "Confirma tu registro",
+    "subtitle": "Se envió un código por WhatsApp para activar tu cuenta",
+    "confirmButton": "Confirmar código",
+    "tipText": "Revisa tus mensajes de WhatsApp e introduce el código de 6 dígitos para activar tu cuenta.",
+    "toastNewAccount": "¡Cuenta creada con éxito! Bienvenido a Convessa.",
+    "toastExistingAccount": "Cuenta existente encontrada. Has iniciado sesión."
+  },
+  "payment": {
+    "verifying": "Verificando el pago...",
+    "cancelled": "Pago cancelado. Puedes volver a intentarlo desde la página de precios.",
+    "missingParam": "Falta el parámetro de pago.",
+    "confirmed": "¡Pago confirmado! Tu suscripción ya está activa.",
+    "notConfirmed": "No se pudo confirmar el pago.",
+    "networkError": "Error de red durante la verificación. Comprueba tu sesión.",
+    "checkingTitle": "Verificación en curso",
+    "successTitle": "¡Pago exitoso!",
+    "closingTab": "Cerrando esta pestaña...",
+    "redirecting": "Redirigiendo a tu sesión...",
+    "errorTitle": "Problema de pago",
+    "backToPlans": "Volver a los planes",
+    "closeTab": "Cerrar esta pestaña"
+  },
+  "contactPage": {
+    "subjects": [
+      "Pregunta general",
+      "Soporte técnico",
+      "Facturación / Suscripción",
+      "Reportar un problema",
+      "Colaboración",
+      "Otro"
+    ],
+    "requiredFieldsError": "Por favor completa todos los campos obligatorios (el teléfono es necesario para recibir la confirmación por WhatsApp).",
+    "sentDefault": "¡Mensaje enviado! Te responderemos pronto.",
+    "sendError": "Error al enviar. Inténtalo de nuevo.",
+    "heroTag": "Estamos aquí para escucharte",
+    "heroTitle": "Contáctanos",
+    "heroSubtitle": "¿Una pregunta, una sugerencia, una colaboración? Envíanos un mensaje: respondemos en 24h.",
+    "formTitle": "Enviar un mensaje",
+    "sentTitle": "¡Mensaje enviado!",
+    "sendAnother": "Enviar otro mensaje",
+    "fullName": "Nombre completo",
+    "email": "Correo electrónico",
+    "whatsappPhone": "Teléfono de WhatsApp",
+    "phoneHint": "Se usa para confirmarte la recepción por WhatsApp y responderte.",
+    "subject": "Asunto",
+    "message": "Mensaje",
+    "messagePlaceholder": "Describe tu solicitud en detalle...",
+    "charCount": "caracteres",
+    "sending": "Enviando...",
+    "sendMessage": "Enviar mensaje",
+    "consentNotice": "Al enviar este formulario, aceptas recibir una confirmación y una respuesta por WhatsApp al número indicado.",
+    "resourcesTitle": "Recursos útiles",
+    "resourcesSubtitle": "Consulta nuestros recursos antes de contactarnos; quizás encuentres tu respuesta rápidamente.",
+    "resources": {
+      "docs": {
+        "label": "Documentación de la API",
+        "desc": "Guías completas y ejemplos de código"
+      },
+      "faq": {
+        "label": "Preguntas frecuentes",
+        "desc": "Preguntas frecuentemente formuladas"
+      },
+      "pricing": {
+        "label": "Planes y precios",
+        "desc": "Descubre nuestras ofertas"
+      }
+    },
+    "responseTimeTitle": "Tiempo de respuesta",
+    "responseTimeText": "Normalmente respondemos en <strong>24 horas</strong> en días hábiles.",
+    "namePlaceholder": "Juan Pérez"
+  },
+  "pricingPage": {
+    "free": "Gratis",
+    "unlimitedMessages": "Mensajes ilimitados",
+    "validForDays": "Válido por {{count}} día",
+    "validForDays_plural": "Válido por {{count}} días",
+    "messagesCount": "{{count}} mensajes",
+    "definedUsage": "Uso definido",
+    "loadPlansError": "No se pudieron cargar los planes",
+    "initPaymentError": "Error al iniciar el pago",
+    "confirmPaymentError": "Error al confirmar el pago",
+    "kkiapayLoadError": "No se pudo cargar el widget de KKiaPay. Comprueba tu conexión.",
+    "paymentFailed": "El pago ha fallado. Inténtalo de nuevo.",
+    "subscriptionActivated": "¡Suscripción \"{{planName}}\" activada! Tu clave API ha sido renovada.",
+    "retry": "Reintentar",
+    "title": "Elige tu plan",
+    "subtitle": "Todos los planes incluyen acceso completo a la API de WhatsApp, documentación detallada y soporte técnico.",
+    "expiresOn": "Expira el:",
+    "viewMySession": "Ver mi sesión →",
+    "popularBadge": "POPULAR",
+    "startFree": "Empezar gratis",
+    "choosePlan": "Elegir este plan",
+    "chooseGateway": "Elige el método de pago",
+    "fedapayDesc": "Mobile Money, Tarjeta bancaria",
+    "kkiapayDesc": "MTN, Moov, Tarjeta, Orange",
+    "securePaymentNotice": "Pago seguro · Activación inmediata tras la confirmación",
+    "fedapayPaymentTitle": "Pago con FedaPay",
+    "paymentWindowOpenTitle": "Ventana de pago abierta",
+    "paymentWindowOpenDesc": "Completa tu pago en la ventana de FedaPay que se abrió. Esta página se actualizará automáticamente una vez confirmado el pago.",
+    "waitingConfirmation": "Esperando confirmación del pago...",
+    "reopenPaymentWindow": "Reabrir la ventana de pago",
+    "cancel": "Cancelar",
+    "fedapaySecureNotice": "Pago seguro con FedaPay · Activación inmediata tras la confirmación",
+    "openingWidget": "Abriendo el widget de pago...",
+    "kkiapayWidgetDesc": "Se abrirá una ventana de pago de KKiaPay. Completa el pago para activar tu suscripción.",
+    "trust": {
+      "securePayments": "Pagos seguros",
+      "securePaymentsDesc": "FedaPay y KKiaPay",
+      "instantActivation": "Activación instantánea",
+      "instantActivationDesc": "Listo en 2 minutos",
+      "support247": "Soporte 24/7",
+      "support247Desc": "Asistencia completa"
+    }
+  },
+  "docsPage": {
+    "overview": "Vista general",
+    "gettingStarted": "Inicio",
+    "features": "Características",
+    "reference": "Referencia",
+    "legal": "Legal",
+    "groups": {
+      "overview": "Vista general",
+      "gettingStarted": "Inicio",
+      "features": "Características",
+      "reference": "Referencia",
+      "legal": "Legal"
+    },
+    "sections": {
+      "introduction": "Presentación",
+      "obtenir-cle-api": "Obtener clave API",
+      "connecter-whatsapp": "Conectar WhatsApp",
+      "integration": "Integración",
+      "envoyer-message": "Envío de mensajes",
+      "groupes": "Grupos de WhatsApp",
+      "reference-api": "Referencia API",
+      "tarifs-et-limites": "Tarifas y límites",
+      "erreurs-limites": "Errores y límites",
+      "depannage-faq": "Solución de problemas y FAQ",
+      "legal": "Términos de uso"
+    },
+    "notFound": "Documento no encontrado",
+    "loadError": "No se pudo cargar esta sección.",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copyTitle": "Copiar",
+    "documentation": "Documentación",
+    "navigation": "Navegación",
+    "retry": "Reintentar",
+    "onThisPage": "En esta página"
+  },
+  "dashboardPage": {
+    "unlimited": "Ilimitado",
+    "expired": "Expirado",
+    "daysRemaining": "{{count}} día restante",
+    "daysRemaining_plural": "{{count}} días restantes",
+    "msgRemaining": "{{count}} msj. restantes",
+    "greeting": "Hola {{name}}",
+    "subtitle": "Gestiona tu API de WhatsApp y sigue tus estadísticas",
+    "apiActive": "API activa",
+    "sessionTitle": "Mi sesión de WhatsApp",
+    "loadingSession": "Cargando sesión",
+    "noSessionTitle": "Ninguna sesión conectada",
+    "noSessionDesc": "Escanea un código QR para vincular tu número de WhatsApp y generar tu clave API.",
+    "connectWhatsapp": "Conectar WhatsApp",
+    "status": "Estado",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "phoneNumber": "Número",
+    "yourApiKey": "Tu clave API",
+    "hideApiKey": "Ocultar clave API",
+    "showApiKey": "Mostrar clave API",
+    "copyApiKey": "Copiar clave API",
+    "keepKeySecret": "Mantén tu clave en secreto.",
+    "scanQrCode": "Escanear el código QR",
+    "usageTitle": "Mi uso este mes",
+    "messagesSent": "mensajes enviados",
+    "totalQuota": "cuota total",
+    "unlimitedLower": "ilimitado",
+    "messagesRemainingPct": "{{count}} mensajes restantes · {{pct}}% usado",
+    "subscriptionExpired": "Suscripción expirada",
+    "expiresOn": "Expira el {{date}}",
+    "successRate": "Tasa de éxito",
+    "planType": "Tipo de plan",
+    "duration": "Duración",
+    "quota": "Cuota",
+    "mySubscription": "Mi suscripción",
+    "connectToSeePlan": "Conecta WhatsApp para ver tu plan.",
+    "unlimitedBadge": "Ilimitado",
+    "limitedDuration": "Duración limitada",
+    "messageQuota": "Cuota de mensajes",
+    "expiresOnFull": "Expira el {{date}}",
+    "subscriptionExpiredRenew": "Suscripción expirada — renueva para seguir enviando.",
+    "totalMessages": "{{count}} mensajes en total",
+    "noSendLimit": "Sin límite de envío",
+    "restApi": "API REST de WhatsApp",
+    "supportIncluded": "Soporte incluido",
+    "renewSubscription": "Renovar suscripción",
+    "changePlan": "Cambiar de plan",
+    "quickActions": "Acciones rápidas",
+    "sendMessage": "Enviar un mensaje",
+    "apiDocs": "Documentación de la API",
+    "historyLogs": "Historial y registros",
+    "configureWebhook": "Configurar un webhook"
+  },
+  "sendMessagePage": {
+    "media": {
+      "image": "Imagen",
+      "video": "Video",
+      "audio": "Audio",
+      "document": "Documento"
+    },
+    "recipientModes": {
+      "contact": "Un contacto",
+      "multiple": "Varios contactos",
+      "group": "Un grupo"
+    },
+    "selectOrCreateGroup": "Selecciona o crea un grupo",
+    "enterPhoneNumber": "Introduce un número de teléfono",
+    "enterMessageOrMedia": "Introduce un mensaje o selecciona un archivo multimedia",
+    "apiKeyNotFound": "Clave API no encontrada. Vuelve a conectar tu WhatsApp desde la página de Sesiones.",
+    "sendError": "Error al enviar el mensaje",
+    "fileTooLarge": "Archivo demasiado grande. Tamaño máximo: {{max}} MB",
+    "groupNameRequired": "El nombre del grupo es obligatorio",
+    "addAtLeastOneParticipant": "Añade al menos un participante",
+    "createGroupError": "Error al crear el grupo",
+    "notConnectedTitle": "Sesión de WhatsApp no conectada",
+    "noSessionTitle": "Ninguna sesión de WhatsApp",
+    "notConnectedDesc": "Tu sesión de WhatsApp tiene el estado \"{{status}}\". Debes conectarla primero para enviar mensajes.",
+    "noSessionDesc": "Primero debes conectar tu WhatsApp desde la página de Sesiones para poder enviar mensajes.",
+    "goToSessions": "Ir a la página de Sesiones",
+    "apiKeyMissingTitle": "Clave API no encontrada",
+    "apiKeyMissingDesc": "Tu clave API no está disponible localmente. Vuelve a conectar tu WhatsApp para regenerarla.",
+    "title": "Enviar un mensaje de WhatsApp",
+    "sendingFrom": "Enviando desde:",
+    "recipient": "Destinatario",
+    "recipientNumber": "Número del destinatario",
+    "internationalFormat": "Se requiere formato internacional (ej: +33612345678)",
+    "recipientNumbers": "Números de los destinatarios",
+    "addNumber": "Añadir un número",
+    "maxRecipients": "50 destinatarios como máximo por envío. El mismo mensaje se envía individualmente a cada uno.",
+    "group": "Grupo",
+    "loadingGroups": "Cargando...",
+    "noGroupsCreateOne": "Ningún grupo — crea uno",
+    "selectGroup": "Selecciona un grupo",
+    "members": "miembros",
+    "newGroup": "Nuevo",
+    "groupAvailableForFuture": "Una vez creado, el grupo queda disponible para todos tus envíos futuros.",
+    "createNewGroup": "Crear un nuevo grupo",
+    "groupNamePlaceholder": "Nombre del grupo",
+    "participants": "Participantes",
+    "addParticipant": "Añadir un participante",
+    "creating": "Creando...",
+    "createGroup": "Crear grupo",
+    "privacyNotice": "Los contactos cuya configuración de privacidad impide la incorporación directa recibirán automáticamente un enlace de invitación en un mensaje privado.",
+    "messageLabel": "Mensaje (opcional si hay medios)",
+    "messagePlaceholder": "Escribe tu mensaje aquí...",
+    "maxChars": "Máximo 4096 caracteres",
+    "addMedia": "Añadir un medio (opcional)",
+    "preview": "Vista previa",
+    "removeMedia": "Eliminar medio",
+    "sending": "Enviando...",
+    "sendMessageBtn": "Enviar mensaje",
+    "trackingTitle": "Seguimiento de envíos",
+    "statusQueued": "Enviando...",
+    "statusSent": "Enviado",
+    "statusFailed": "Fallido",
+    "copyMessageId": "Copiar ID del mensaje",
+    "trackingNote": "Un envío puede tardar legítimamente más tiempo en el caso de archivos grandes (video, documento) — \"Enviando...\" no significa un fallo, solo que Baileys aún no ha confirmado la entrega.",
+    "mediaLimitsTitle": "Límites de los medios",
+    "mediaLimits": {
+      "image": "Imágenes: 16 MB máx. (JPEG, PNG, GIF, WebP)",
+      "video": "Videos: 64 MB máx. (MP4, 3GPP)",
+      "audio": "Audio: 16 MB máx. (MP3, OGG, AAC)",
+      "document": "Documentos: 100 MB máx. (PDF, DOC, TXT, etc.)"
+    }
+  },
+  "sessionsPage": {
+    "unknownError": "Se ha producido un error.",
+    "connectedSuccess": "¡WhatsApp conectado con éxito! Se ha generado tu clave API.",
+    "sessionAlreadyActive": "Sesión activa existente recuperada.",
+    "createSessionError": "Error al crear la sesión",
+    "getQrError": "Error al obtener el código QR",
+    "referralCodeRequired": "Introduce tu código de referido, o elige \"No\" si no tienes uno.",
+    "invalidReferralCode": "Este código de referido no es válido o no se encontró. Verifícalo, o continúa sin código.",
+    "activationError": "Error al activar tu sesión",
+    "defaultUser": "Usuario",
+    "status": {
+      "connected": "Conectado",
+      "pending": "Pendiente",
+      "disconnected": "Desconectado",
+      "revoked": "Revocado"
+    },
+    "title": "Mi sesión de WhatsApp",
+    "subtitle": "Conecta tu WhatsApp en un clic para obtener tu clave API",
+    "connectTitle": "Conecta tu WhatsApp",
+    "connectDesc": "Haz clic en el botón de abajo y luego escanea el código QR con el WhatsApp que quieres conectar — cualquier número funciona, no hay nada que introducir de antemano.",
+    "preparing": "Preparando...",
+    "connectWhatsapp": "Conectar WhatsApp",
+    "defaultSessionName": "Mi sesión de WhatsApp",
+    "numberPendingScan": "Número pendiente de escaneo",
+    "yourApiKey": "Tu clave API",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "copyFullKey": "Copiar la clave completa",
+    "keepKeySecret": "Mantén tu clave API en secreto.",
+    "scanQrCode": "Escanear el código QR",
+    "sessionId": "ID de sesión",
+    "connectedOn": "Conectado el",
+    "howToUseTitle": "Cómo usar tu clave API",
+    "howToUseSteps": [
+      "Copia tu clave API arriba",
+      "Añádela a tus encabezados HTTP:",
+      "Consulta la documentación para ver los endpoints disponibles",
+      "Empieza a enviar mensajes a través de la API REST"
+    ],
+    "generatingQr": "Generando el código QR...",
+    "connectingToWhatsapp": "Conectando con WhatsApp",
+    "waitingForScan": "Esperando el escaneo...",
+    "instructions": "Instrucciones",
+    "steps": [
+      "Abre WhatsApp en tu teléfono",
+      "Toca en Menú (⋮) y luego en \"Dispositivos vinculados\"",
+      "Toca en \"Vincular un dispositivo\"",
+      "Apunta tu teléfono a esta pantalla para escanear el código"
+    ],
+    "qrExpires": "El código QR expira después de 60 segundos",
+    "keyAutoGenerated": "Tras el escaneo, tu clave API se generará automáticamente",
+    "refreshQr": "Actualizar el código QR",
+    "qrNotAvailable": "Código QR no disponible",
+    "retry": "Reintentar",
+    "connectedModalTitle": "¡WhatsApp conectado!",
+    "referralQuestion": "Un último paso antes de generar tu clave API: ¿tienes un",
+    "referralCodeWord": "código de referido",
+    "yes": "Sí",
+    "no": "No",
+    "enterReferralCode": "Introduce tu código de referido",
+    "noWorriesFreeKey": "No te preocupes — tu clave se generará con los privilegios de nuestro plan gratuito.",
+    "generatingKey": "Generando la clave...",
+    "generateMyKey": "Generar mi clave API",
+    "close": "Cerrar",
+    "connectedSuccessTitle": "¡WhatsApp conectado con éxito!",
+    "keyGenerated": "Tu clave API ha sido generada.",
+    "copyApiKey": "Copiar clave API",
+    "copy": "Copiar",
+    "keyCopied": "Clave copiada al portapapeles",
+    "importantTitle": " Importante: Lee con atención",
+    "importantPoints": [
+      "Esta clave no volverá a mostrarse completa después de esto",
+      "Cópiala y guárdala en un lugar seguro (gestor de contraseñas, .env, etc.)",
+      "NUNCA la compartas públicamente (GitHub, foros, etc.)",
+      "Úsala en tus solicitudes HTTP con el encabezado:"
+    ],
+    "validUntil": "Válida hasta",
+    "nextStepsTitle": "Próximos pasos",
+    "nextSteps": {
+      "test": "Ve a <strong>Enviar mensaje</strong> para probar el envío",
+      "docs": "Consulta la <strong>Documentación</strong> para integrar la API",
+      "use": "Usa tu clave API en todas tus solicitudes HTTP"
+    },
+    "communityTitle": "🚀 ¡Únete a la comunidad Convessa!",
+    "welcomeCommunity": "¡Bienvenido a la comunidad! 🎉",
+    "communityJoined": "Ahora formas parte de la comunidad Convessa. ¡Hasta pronto!",
+    "communityDesc": "Conéctate con otros desarrolladores, comparte tus proyectos y mantente al día de las novedades.",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "whatsappPhone": "Teléfono de WhatsApp",
+    "signingUp": "Registrando...",
+    "join": "Unirme",
+    "later": "Más tarde"
+  },
+  "apiErrors": {
+    "generic": "Error de la API",
+    "noApiKey": "Clave API no encontrada. Vuelve a conectar tu WhatsApp."
+  },
+  "authErrors": {
+    "deviceAlreadyRegistered": "Este dispositivo ya tiene una cuenta. Usa el inicio de sesión.",
+    "deviceBoundToAnotherAccount": "Este dispositivo está vinculado a otra cuenta. Acceso denegado.",
+    "phoneAlreadyRegistered": "Este número ya está registrado. Usa el inicio de sesión.",
+    "deviceBlocked": "Este dispositivo ha sido bloqueado. Contacta con soporte.",
+    "phoneNotRegistered": "Ninguna cuenta con este número. Regístrate primero.",
+    "accountDisabled": "Esta cuenta ha sido deshabilitada.",
+    "invalidCode": "Código incorrecto.",
+    "expiredCode": "Código expirado. Solicita un nuevo código.",
+    "tooManyAttempts": "Demasiados intentos. Solicita un nuevo código.",
+    "whatsappUnavailable": "Servicio temporalmente no disponible. Inténtalo más tarde.",
+    "genericError": "Se ha producido un error.",
+    "networkError": "No se pudo contactar con el servidor.",
+    "popupCancelled": "Inicio de sesión cancelado.",
+    "popupBlocked": "Ventana emergente bloqueada por el navegador. Permite las ventanas emergentes para este sitio.",
+    "unauthorizedDomain": "Dominio no autorizado. Verifica la configuración de Firebase.",
+    "oauthProviderDisabled": "Este proveedor OAuth no está habilitado. Contacta con el administrador.",
+    "firebaseConnectionError": "Error al conectar con Firebase. Inténtalo de nuevo."
+  },
+  "faqPage": {
+    "heroTitle": "Preguntas frecuentes",
+    "heroSubtitle": "Encuentra rápidamente respuestas a tus preguntas sobre Convessa, nuestra API de WhatsApp y nuestros servicios.",
+    "ctaTitle": "¿No encuentras tu respuesta?",
+    "ctaSubtitle": "Nuestro equipo de soporte está aquí para ayudarte",
+    "ctaContact": "Contactar con soporte",
+    "ctaDocs": "Ver la documentación",
+    "categories": [
+      {
+        "title": "General",
+        "questions": [
+          {
+            "question": "¿Qué es Convessa?",
+            "answer": "Convessa es una plataforma SaaS que permite a los desarrolladores integrar fácilmente la API de WhatsApp en sus aplicaciones. Ofrecemos una API REST sencilla para enviar y recibir mensajes de WhatsApp sin la complejidad de una implementación directa."
+          },
+          {
+            "question": "¿Es Convessa un producto oficial de WhatsApp?",
+            "answer": "No, Convessa utiliza la API de WhatsApp Web (protocolo Baileys) para conectarse a tu cuenta. Es la misma tecnología que usa WhatsApp Web en tu navegador. No estamos afiliados a WhatsApp/Meta."
+          },
+          {
+            "question": "¿Puedo usar Convessa con WhatsApp Business?",
+            "answer": "¡Sí! Convessa funciona tanto con cuentas personales como con WhatsApp Business. Puedes usar cualquier tipo de cuenta de WhatsApp. Recomendamos WhatsApp Business para uso profesional."
+          },
+          {
+            "question": "¿En qué países está disponible Convessa?",
+            "answer": "Convessa está disponible en todos los países donde funciona WhatsApp. Nuestra plataforma admite números internacionales con el código de país (por ejemplo, +229 para Benín, +33 para Francia, etc.)"
+          }
+        ]
+      },
+      {
+        "title": "Seguridad y privacidad",
+        "questions": [
+          {
+            "question": "¿Están seguros mis datos?",
+            "answer": "Por supuesto. Usamos el cifrado de extremo a extremo de WhatsApp y no almacenamos ningún mensaje. Tus datos permanecen entre tú y WhatsApp. Solo almacenamos los metadatos necesarios para el funcionamiento del servicio (estado de los mensajes, cola)."
+          },
+          {
+            "question": "¿Dónde se almacenan mis datos?",
+            "answer": "Las sesiones de WhatsApp se cifran y almacenan de forma segura en nuestros servidores. Los mensajes nunca se almacenan: pasan directamente entre tu aplicación y WhatsApp. Cumplimos con el RGPD."
+          },
+          {
+            "question": "¿Quién puede ver mis mensajes?",
+            "answer": "¡Nadie! Gracias al cifrado de extremo a extremo de WhatsApp, solo tú y tus destinatarios pueden leer los mensajes. Ni siquiera Convessa ni WhatsApp pueden leer el contenido de tus mensajes."
+          },
+          {
+            "question": "¿Cómo protejo mi clave API?",
+            "answer": "NUNCA compartas tu clave API públicamente. Guárdala en variables de entorno (.env), usa gestores de secretos (como AWS Secrets Manager), y no la incluyas nunca en tu código fuente ni en repositorios Git."
+          }
+        ]
+      },
+      {
+        "title": "Técnico y desarrollo",
+        "questions": [
+          {
+            "question": "¿Qué lenguajes de programación son compatibles?",
+            "answer": "Convessa es una API REST estándar, así que funciona con cualquier lenguaje capaz de hacer solicitudes HTTP: JavaScript/Node.js, Python, PHP, Java, C#, Go, Ruby, etc. Ofrecemos ejemplos de código para los lenguajes más populares."
+          },
+          {
+            "question": "¿Cuál es el límite de mensajes por minuto?",
+            "answer": "Para evitar el spam, limitamos a 20 mensajes por minuto en el plan gratuito y 100 mensajes/minuto en los planes de pago. Si necesitas límites más altos, contáctanos para un plan Enterprise personalizado."
+          },
+          {
+            "question": "¿Cómo recibo mensajes entrantes?",
+            "answer": "Configura un webhook en tu panel de control. Convessa enviará una solicitud POST a tu URL cada vez que se reciba un mensaje. Recibirás los datos del mensaje en JSON (remitente, contenido, marca de tiempo, etc.)"
+          },
+          {
+            "question": "¿Puedo enviar archivos multimedia (imágenes, videos)?",
+            "answer": "¡Sí! Convessa admite el envío de imágenes (16MB máx.), videos (64MB máx.), audio (16MB máx.) y documentos (100MB máx.). Los archivos se envían en base64 a través de la API."
+          },
+          {
+            "question": "¿Hay un límite de caracteres para los mensajes?",
+            "answer": "Sí, los mensajes de WhatsApp están limitados a 4096 caracteres. Más allá de eso, el mensaje se truncará. Si necesitas enviar más texto, divídelo en varios mensajes."
+          }
+        ]
+      },
+      {
+        "title": "Precios y facturación",
+        "questions": [
+          {
+            "question": "¿Cuánto cuesta Convessa?",
+            "answer": "Ofrecemos un plan gratuito (100 mensajes/mes), un plan Pro a 29€/mes (5000 mensajes) y planes Enterprise personalizados con mensajes ilimitados. Consulta nuestra página de Precios para más detalles."
+          },
+          {
+            "question": "¿Hay costos ocultos?",
+            "answer": "¡No! El precio mostrado es el precio que pagas. Sin costos de instalación, sin cargos adicionales por mensaje más allá de tu cuota incluida. Si superas tu cuota, tu servicio simplemente se pausa hasta el próximo mes."
+          },
+          {
+            "question": "¿Puedo cambiar de plan en cualquier momento?",
+            "answer": "Sí, puedes mejorar o reducir tu plan en cualquier momento desde tu panel de control. Los cambios se aplican de inmediato. En caso de reducción de plan, conservas tu cuota hasta el final del período de facturación en curso."
+          },
+          {
+            "question": "¿Ofrecen descuentos para asociaciones?",
+            "answer": "¡Sí! Ofrecemos descuentos de hasta el 50% para organizaciones sin fines de lucro, escuelas y proyectos de código abierto. Contáctanos con los detalles de tu organización."
+          }
+        ]
+      },
+      {
+        "title": "Solución de problemas",
+        "questions": [
+          {
+            "question": "Mi código QR no funciona",
+            "answer": "Asegúrate de que: 1) Tu teléfono tenga una conexión a internet estable, 2) WhatsApp esté actualizado en tu teléfono, 3) El código QR no haya expirado (60 segundos), 4) Estés usando la función correcta en WhatsApp (Menú > Dispositivos vinculados > Vincular un dispositivo)."
+          },
+          {
+            "question": "Mis mensajes no se envían",
+            "answer": "Verifica: 1) Que tu sesión de WhatsApp esté conectada (Panel > Mi sesión), 2) Que no hayas superado tu cuota mensual, 3) Que el número del destinatario esté en formato internacional (+XXX...), 4) Que tu clave API sea correcta en tus encabezados HTTP."
+          },
+          {
+            "question": "Mi cuenta de WhatsApp fue bloqueada",
+            "answer": "El uso de API no oficiales conlleva un riesgo de bloqueo por parte de WhatsApp. Para minimizar este riesgo: 1) Usa una cuenta de WhatsApp Business dedicada, 2) NO envíes spam, 3) Respeta los límites de frecuencia, 4) Añade un retraso entre mensajes. Recomendamos la API oficial de WhatsApp Business para usos críticos."
+          },
+          {
+            "question": "Perdí mi clave API",
+            "answer": "Inicia sesión en tu panel de control. Tu clave API se muestra en la sección 'Mi sesión de WhatsApp'. Puedes copiarla en cualquier momento. Si crees que tu clave ha sido comprometida, contacta con soporte para regenerarla."
+          }
+        ]
+      },
+      {
+        "title": "Soporte",
+        "questions": [
+          {
+            "question": "¿Cómo contacto con soporte?",
+            "answer": "Soporte comunitario (plan gratuito): Discord y GitHub Discussions. Soporte por correo (plan Pro): Respuesta en 24 horas hábiles. Soporte prioritario 24/7 (plan Enterprise): correo, teléfono y Slack dedicado."
+          },
+          {
+            "question": "¿Hay documentación para desarrolladores?",
+            "answer": "¡Sí! Nuestra documentación completa está disponible en /docs. Incluye guías de inicio, la referencia completa de la API, ejemplos de código en varios lenguajes y tutoriales paso a paso."
+          },
+          {
+            "question": "¿Ofrecen integraciones con otros servicios?",
+            "answer": "Sí, Convessa se integra fácilmente con Zapier, Make (antes Integromat), n8n y otras plataformas de automatización. También ofrecemos webhooks para integrar con tus propios sistemas."
+          },
+          {
+            "question": "¿Dónde puedo ver ejemplos de uso?",
+            "answer": "Consulta nuestra sección de Ejemplos en /examples (próximamente) o nuestro repositorio de GitHub con proyectos de ejemplo en Node.js, Python, PHP y otros lenguajes."
+          }
+        ]
+      }
+    ]
+  },
+  "homePage": {
+    "loadPlansError": "Error al cargar los planes.",
+    "free": "Gratis",
+    "unlimitedUsage": "Uso ilimitado",
+    "validForDays": "Válido por {{count}} día",
+    "validForDays_plural": "Válido por {{count}} días",
+    "requestsIncluded": "{{count}} solicitud incluida",
+    "requestsIncluded_plural": "{{count}} solicitudes incluidas"
+  },
   "chatbot": {
-    "title": "Asistente",
-    "welcome": "¡Hola! Pregúntame lo que quieras sobre el servicio.",
-    "placeholder": "Escribe tu pregunta...",
+    "title": "Asistente API Convessa",
+    "status": "En línea · Listo para ayudar",
+    "placeholder": "Haz una pregunta sobre la API, endpoints, Webhooks...",
     "send": "Enviar",
-    "typing": "El asistente está escribiendo...",
-    "error": "Ha ocurrido un error, inténtalo de nuevo."
+    "error": "Lo sentimos, ocurrió un error al comunicarse con el asistente. Inténtalo de nuevo.",
+    "tooltipFirst": "¿Necesitas ayuda para comenzar con la API?",
+    "tooltipIdle": "¿Buscas información? El asistente puede guiarte.",
+    "systemHint": "El usuario está navegando por la plataforma en Español. Responde obligatoriamente en español.",
+    "suggestedQuestionsTitle": "Preguntas frecuentes:",
+    "suggestedQuestions": {
+      "connectWhatsapp": "¿Cómo conecto mi número de WhatsApp?",
+      "apiKey": "¿Dónde encuentro mi clave API?",
+      "mediaLimits": "¿Cuáles son los límites de tamaño de archivos multimedia?",
+      "webhooks": "¿Cómo configuro un Webhook?",
+      "pricing": "¿Cuáles son las tarifas y planes?",
+      "groups": "¿Cómo crear un grupo de WhatsApp?",
+      "docs": "¿Dónde encuentro la documentación y los ejemplos?",
+      "support": "¿Cómo contactar al soporte?"
+    },
+    "routes": {
+      "pricing": "Ver planes",
+      "sessions": "Ir a mis sesiones",
+      "dashboard": "Mi panel",
+      "contact": "Contactar soporte",
+      "sendMessage": "Enviar un mensaje",
+      "faq": "Preguntas frecuentes",
+      "docs": "Ver documentación"
+    },
+    "quickAnswers": {
+      "apiKey": "Tu clave API (`pk_convessa_...`) se genera automáticamente una vez que conectas tu número de WhatsApp. Encuéntrala en la pestaña [Sesiones](/sessions).",
+      "connectWhatsapp": "Para conectar WhatsApp:\n1. Ve a la pestaña [Sesiones](/sessions)\n2. Haz clic en **Conectar WhatsApp**\n3. Escanea el código QR desde tu teléfono (WhatsApp > Dispositivos vinculados).",
+      "pricing": "Convessa ofrece un plan gratuito para pruebas, un plan Pro por 29€/mes y una oferta Enterprise. Consulta todos los detalles en la página de [Tarifas](/pricing).",
+      "docs": "Toda nuestra documentación de integración de API REST y ejemplos de código están disponibles en la página de [Documentación](/docs).",
+      "groups": "Puedes crear y gestionar tus grupos de WhatsApp desde la sección [Enviar un mensaje](/send-message) o mediante los endpoints `/api/v1/groups`.",
+      "webhooks": "Configura tu Webhook en el [Panel](/dashboard) para recibir mensajes entrantes y acuses de recibo en tiempo real en tu servidor.",
+      "mediaLimits": "Límites de tamaño de archivos multimedia:\n- Imágenes: 16 MB máx. (JPEG, PNG, GIF, WebP)\n- Videos: 64 MB máx. (MP4, 3GPP)\n- Audio: 16 MB máx. (MP3, OGG, AAC)\n- Documentos: 100 MB máx. (PDF, DOC, TXT)",
+      "support": "Puedes contactar a nuestro equipo de soporte técnico en la página de [Contacto](/contact) o unirte a nuestra comunidad."
+    }
   }
 }

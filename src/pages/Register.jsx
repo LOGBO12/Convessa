@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Smartphone, AlertCircle, LogIn } from 'lucide-react';
@@ -12,7 +13,8 @@ const LOGIN_HINT_CODES = ['DEVICE_ALREADY_REGISTERED', 'PHONE_ALREADY_REGISTERED
 
 const Register = () => {
   const navigate = useNavigate();
-  usePageTitle('Créer un compte');
+  const { t } = useTranslation();
+  usePageTitle('pageTitles.register');
   const [phoneValue, setPhoneValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +24,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!phoneValue) {
-      setError('Veuillez entrer un numéro de téléphone valide.');
+      setError(t('loginPage.phoneRequired'));
       return;
     }
 
@@ -38,7 +40,7 @@ const Register = () => {
         state: { phone: cleanPhone, devOtp: result.devOtp },
       });
     } else {
-      setError(result.error || 'Erreur lors de l\'envoi du code.');
+      setError(result.error || t('loginPage.sendCodeError'));
       setErrorCode(result.code || null);
     }
 
@@ -56,7 +58,7 @@ const Register = () => {
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setError(result.error || `Erreur lors de la connexion avec ${provider}.`);
+      setError(result.error || t('loginPage.socialError', { provider }));
     }
 
     setSocialLoading(null);
@@ -90,8 +92,8 @@ const Register = () => {
         <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-200 relative overflow-hidden">
           
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h2>
-            <p className="text-gray-600">Rejoignez Convessa en quelques secondes</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('registerPage.title')}</h2>
+            <p className="text-gray-600">{t('registerPage.subtitle')}</p>
           </div>
 
           {/* Error alert */}
@@ -115,7 +117,7 @@ const Register = () => {
                       className="inline-flex items-center space-x-2 bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
                       <LogIn size={15} />
-                      <span>Se connecter</span>
+                      <span>{t('registerPage.loginHint')}</span>
                     </Link>
                   </div>
                 )}
@@ -140,7 +142,7 @@ const Register = () => {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
               )}
-              <span>Continuer avec Google</span>
+              <span>{t('loginPage.continueWithGoogle')}</span>
             </button>
 
             <button
@@ -159,7 +161,7 @@ const Register = () => {
                   />
                 </svg>
               )}
-              <span>Continuer avec GitHub</span>
+              <span>{t('loginPage.continueWithGithub')}</span>
             </button>
           </div>
 
@@ -169,7 +171,7 @@ const Register = () => {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">Ou avec votre téléphone</span>
+              <span className="px-4 bg-white text-gray-500 font-medium">{t('loginPage.orWithPhone')}</span>
             </div>
           </div>
 
@@ -178,7 +180,7 @@ const Register = () => {
             <div>
               <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
                 <Smartphone size={18} />
-                <span>Numéro de téléphone WhatsApp</span>
+                <span>{t('loginPage.whatsappPhoneLabel')}</span>
               </label>
               <PhoneInput
                 international
@@ -190,7 +192,7 @@ const Register = () => {
                 disabled={isDisabled}
               />
               <p className="mt-2 text-xs text-gray-500">
-                Nous enverrons un code de vérification sur WhatsApp
+                {t('registerPage.otpNotice')}
               </p>
             </div>
 
@@ -206,11 +208,11 @@ const Register = () => {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Envoi en cours...</span>
+                  <span>{t('loginPage.sending')}</span>
                 </>
               ) : (
                 <>
-                  <span>Recevoir le code</span>
+                  <span>{t('registerPage.receiveCode')}</span>
                   <ArrowRight size={20} />
                 </>
               )}
@@ -219,28 +221,28 @@ const Register = () => {
 
           {/* Switch to login */}
           <p className="mt-6 text-center text-sm text-gray-600">
-            Déjà un compte ?{' '}
+            {t('registerPage.hasAccount')}{' '}
             <Link to="/login" className="text-whatsapp-dark hover:text-whatsapp-dark font-semibold">
-              Se connecter
+              {t('registerPage.loginCta')}
             </Link>
           </p>
 
           {/* Terms */}
           <div className="mt-4 text-center text-xs text-gray-500">
-            En continuant, vous acceptez nos{' '}
+            {t('loginPage.termsNotice')}{' '}
             <Link to="/terms" className="text-whatsapp-dark hover:text-whatsapp-dark font-medium">
-              Conditions d'utilisation
+              {t('loginPage.termsLink')}
             </Link>{' '}
-            et notre{' '}
+            {t('loginPage.andOur')}{' '}
             <Link to="/privacy" className="text-whatsapp-dark hover:text-whatsapp-dark font-medium">
-              Politique de confidentialité
+              {t('loginPage.privacyLink')}
             </Link>
           </div>
         </div>
 
         <div className="mt-6 text-center">
           <Link to="/" className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-            Retour à l'accueil
+            {t('loginPage.backHome')}
           </Link>
         </div>
       </motion.div>

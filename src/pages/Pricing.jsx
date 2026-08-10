@@ -22,11 +22,12 @@ import { onSubscriptionActivated, connectSocket } from '../services/socket';
 import { useAuth } from '../contexts/AuthContext';
 import useUserSession from '../hooks/useUserSession';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useTranslation } from 'react-i18next';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function formatPrice(price) {
-  if (price === 0) return 'Gratuit';
+function formatPrice(price, t) {
+  if (price === 0) return t('pricingPage.free');
   return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
 }
 
@@ -36,11 +37,11 @@ function getPlanIcon(index, isPopular) {
   return Star;
 }
 
-function getUsageLabel(plan) {
-  if (plan.unlimited) return 'Messages illimités';
-  if (plan.usageType === 'duration') return `Valable ${plan.usageValue} jour${plan.usageValue > 1 ? 's' : ''}`;
-  if (plan.usageType === 'requests') return `${new Intl.NumberFormat('fr-FR').format(plan.usageValue)} messages`;
-  return 'Usage défini';
+function getUsageLabel(plan, t) {
+  if (plan.unlimited) return t('pricingPage.unlimitedMessages');
+  if (plan.usageType === 'duration') return t('pricingPage.validForDays', { count: plan.usageValue });
+  if (plan.usageType === 'requests') return t('pricingPage.messagesCount', { count: plan.usageValue, formattedCount: new Intl.NumberFormat('fr-FR').format(plan.usageValue) });
+  return t('pricingPage.definedUsage');
 }
 
 function getUsageIcon(plan) {
@@ -64,7 +65,8 @@ function loadKkiapayScript() {
 // ── Composant principal ────────────────────────────────────────────────────────
 
 export default function Pricing() {
-  usePageTitle('Tarifs & Plans');
+  const { t, i18n } = useTranslation();
+  usePageTitle('pageTitles.pricing');
   const { user }                    = useAuth();
   const { refresh: refreshSession } = useUserSession();
   const navigate                    = useNavigate();
@@ -98,7 +100,7 @@ export default function Pricing() {
   useEffect(() => {
     plansAPI.list()
       .then(res => setPlans(res.plans ?? []))
-      .catch(err => setError(err.message || 'Impossible de charger les plans'))
+      .catch(err => setError(err.message || t('pricingPage.loadPlansError')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -121,7 +123,7 @@ export default function Pricing() {
 
         setPaymentResult({
           success:  true,
-          message:  `Abonnement "${data.planName ?? ''}" activé ! Votre clé API a été renouvelée.`,
+          message:  t('pricingPage.subscriptionActivated', { planName: data.planName ?? '' }),
           apiKey:   data.apiKey ?? null,
           expiresAt: data.apiKeyExpiresAt ?? null,
         });
@@ -154,7 +156,7 @@ export default function Pricing() {
         } else if (res.status === 'failed' || res.status === 'cancelled' || attempts > 30) {
           stopPolling();
           if (res.status === 'failed') {
-            setPaymentResult({ success: false, message: 'Le paiement a échoué. Réessayez.' });
+            setPaymentResult({ success: false, message: t('pricingPage.paymentFailed') });
             setFedaModal(null);
           } else if (attempts > 30) {
             // Timeout 5min — on arrête de poller
@@ -197,7 +199,7 @@ export default function Pricing() {
         });
       }
     } catch (err) {
-      setInitError(err.message || 'Erreur lors de l\'initialisation du paiement');
+      setInitError(err.message || t('pricingPage.initPaymentError'));
     } finally {
       setInitiating(false);
     }
@@ -231,7 +233,7 @@ export default function Pricing() {
             });
             // Le socket va notifier subscription_activated
           } catch (err) {
-            setPaymentResult({ success: false, message: err.message || 'Erreur confirmation paiement' });
+            setPaymentResult({ success: false, message: err.message || t('pricingPage.confirmPaymentError') });
           } finally {
             setKkiaModal(null);
           }
@@ -241,7 +243,7 @@ export default function Pricing() {
         window.addEventListener('kkiapay-close', () => { setKkiaModal(null); }, { once: true });
       })
       .catch(() => {
-        setInitError('Impossible de charger le widget KKiaPay. Vérifiez votre connexion.');
+        setInitError(t('pricingPage.kkiapayLoadError'));
         setKkiaModal(null);
       });
   }, [kkiaModal, user]); // eslint-disable-line
@@ -265,7 +267,7 @@ export default function Pricing() {
           onClick={() => { setError(''); setLoading(true); plansAPI.list().then(r => setPlans(r.plans ?? [])).catch(e => setError(e.message)).finally(() => setLoading(false)); }}
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
-          <RefreshCw size={16} /> Réessayer
+          <RefreshCw size={16} /> {t('pricingPage.retry')}
         </button>
       </div>
     );
@@ -282,11 +284,11 @@ export default function Pricing() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Choisissez votre plan
+            {t('pricingPage.title')}
           </h1>
           
           <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Tous les plans incluent l'accès complet à l'API WhatsApp, la documentation détaillée et le support technique.
+            {t('pricingPage.subtitle')}
           </p>
         </motion.div>
       </div>
@@ -312,7 +314,7 @@ export default function Pricing() {
               <p className="font-semibold">{paymentResult.message}</p>
               {paymentResult.expiresAt && (
                 <p className="text-sm mt-1 opacity-80">
-                  Expire le : {new Date(paymentResult.expiresAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {t('pricingPage.expiresOn')} {new Date(paymentResult.expiresAt).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               )}
               {paymentResult.success && (
@@ -320,7 +322,7 @@ export default function Pricing() {
                   onClick={() => navigate('/sessions')}
                   className="mt-2 text-sm underline hover:no-underline"
                 >
-                  Voir ma session →
+                  {t('pricingPage.viewMySession')}
                 </button>
               )}
             </div>
@@ -361,7 +363,7 @@ export default function Pricing() {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
-                  <span>POPULAIRE</span>
+                  <span>{t('pricingPage.popularBadge')}</span>
                 </div>
               )}
 
@@ -372,7 +374,7 @@ export default function Pricing() {
               {/* Prix */}
               <div className="mb-8">
                 <span className="text-3xl sm:text-5xl font-bold">
-                  {isFree ? 'Gratuit' : formatPrice(plan.price)}
+                  {isFree ? t('pricingPage.free') : formatPrice(plan.price, t)}
                 </span>
               </div>
 
@@ -385,7 +387,7 @@ export default function Pricing() {
                     strokeWidth={3}
                   />
                   <span className={`${isPopular ? 'text-white' : 'text-gray-700'}`}>
-                    {getUsageLabel(plan)}
+                    {getUsageLabel(plan, t)}
                   </span>
                 </li>
                 {plan.features && plan.features.length > 0 && plan.features.slice(0, 3).map((feat, i) => (
@@ -412,7 +414,7 @@ export default function Pricing() {
                       : 'bg-whatsapp-dark text-white hover:bg-whatsapp-dark shadow-md hover:shadow-lg'
                   }`}
                 >
-                  Commencer gratuitement
+                  {t('pricingPage.startFree')}
                 </button>
               ) : (
                 <button
@@ -427,7 +429,7 @@ export default function Pricing() {
                       : 'bg-whatsapp-dark text-white hover:bg-whatsapp-dark shadow-md hover:shadow-lg'
                   }`}
                 >
-                  Choisir ce plan
+                  {t('pricingPage.choosePlan')}
                 </button>
               )}
             </motion.div>
@@ -448,8 +450,8 @@ export default function Pricing() {
               <Shield size={24} className="text-green-600" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">Paiements sécurisés</h4>
-              <p className="text-xs text-gray-600">FedaPay et KKiaPay</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t('pricingPage.trust.securePayments')}</h4>
+              <p className="text-xs text-gray-600">{t('pricingPage.trust.securePaymentsDesc')}</p>
             </div>
           </div>
           
@@ -458,8 +460,8 @@ export default function Pricing() {
               <CheckCircle size={24} className="text-blue-600" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">Activation instantanée</h4>
-              <p className="text-xs text-gray-600">Prêt en 2 minutes</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t('pricingPage.trust.instantActivation')}</h4>
+              <p className="text-xs text-gray-600">{t('pricingPage.trust.instantActivationDesc')}</p>
             </div>
           </div>
           
@@ -468,8 +470,8 @@ export default function Pricing() {
               <MessageSquare size={24} className="text-purple-600" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 text-sm">Support 24/7</h4>
-              <p className="text-xs text-gray-600">Assistance complète</p>
+              <h4 className="font-bold text-gray-900 text-sm">{t('pricingPage.trust.support247')}</h4>
+              <p className="text-xs text-gray-600">{t('pricingPage.trust.support247Desc')}</p>
             </div>
           </div>
         </div>
@@ -495,9 +497,9 @@ export default function Pricing() {
               {/* Header */}
               <div className="bg-whatsapp px-6 py-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Choisir la méthode de paiement</h2>
+                  <h2 className="text-lg font-bold text-white">{t('pricingPage.chooseGateway')}</h2>
                   <p className="text-primary-200 text-sm mt-0.5">
-                    {gatewayModal.plan.name} — {formatPrice(gatewayModal.plan.price)}
+                    {gatewayModal.plan.name} — {formatPrice(gatewayModal.plan.price, t)}
                   </p>
                 </div>
                 <button
@@ -527,7 +529,7 @@ export default function Pricing() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-900">FedaPay</p>
-                    <p className="text-sm text-gray-500">Mobile Money, Carte bancaire</p>
+                    <p className="text-sm text-gray-500">{t('pricingPage.fedapayDesc')}</p>
                   </div>
                   {initiating ? <Loader size={18} className="animate-spin text-gray-400" /> : <ExternalLink size={18} className="text-gray-400" />}
                 </button>
@@ -543,13 +545,13 @@ export default function Pricing() {
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-900">KKiaPay</p>
-                    <p className="text-sm text-gray-500">MTN, Moov, Carte, Orange</p>
+                    <p className="text-sm text-gray-500">{t('pricingPage.kkiapayDesc')}</p>
                   </div>
                   {initiating ? <Loader size={18} className="animate-spin text-gray-400" /> : <ExternalLink size={18} className="text-gray-400" />}
                 </button>
 
                 <p className="text-xs text-center text-gray-400 pt-2">
-                  Paiement sécurisé · Activation immédiate après confirmation
+                  {t('pricingPage.securePaymentNotice')}
                 </p>
               </div>
             </motion.div>
@@ -578,7 +580,7 @@ export default function Pricing() {
               {/* Header */}
               <div className="bg-orange-500 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <CreditCard size={20} /> Paiement FedaPay
+                  <CreditCard size={20} /> {t('pricingPage.fedapayPaymentTitle')}
                 </h2>
                 <button
                   onClick={() => { setFedaModal(null); stopPolling(); }}
@@ -595,17 +597,16 @@ export default function Pricing() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Fenêtre de paiement ouverte</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{t('pricingPage.paymentWindowOpenTitle')}</h3>
                   <p className="text-gray-600 text-sm">
-                    Complétez votre paiement dans la fenêtre FedaPay qui s'est ouverte.
-                    Cette page se mettra à jour automatiquement une fois le paiement confirmé.
+                    {t('pricingPage.paymentWindowOpenDesc')}
                   </p>
                 </div>
 
                 {/* Indicateur de polling */}
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-xl px-4 py-3">
                   <Loader size={15} className="animate-spin text-orange-500 flex-shrink-0" />
-                  <span>En attente de confirmation du paiement...</span>
+                  <span>{t('pricingPage.waitingConfirmation')}</span>
                 </div>
 
                 <div className="space-y-2.5 pt-1">
@@ -615,20 +616,20 @@ export default function Pricing() {
                     className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-medium transition-colors"
                   >
                     <ExternalLink size={17} />
-                    Rouvrir la fenêtre de paiement
+                    {t('pricingPage.reopenPaymentWindow')}
                   </button>
 
                   <button
                     onClick={() => { setFedaModal(null); stopPolling(); }}
                     className="w-full text-gray-500 hover:text-gray-700 text-sm py-2 transition-colors"
                   >
-                    Annuler
+                    {t('pricingPage.cancel')}
                   </button>
                 </div>
 
                 <p className="text-xs text-gray-400 flex items-center justify-center gap-1.5">
                   <Shield size={12} />
-                  Paiement sécurisé par FedaPay · Activation immédiate après confirmation
+                  {t('pricingPage.fedapaySecureNotice')}
                 </p>
               </div>
             </motion.div>
@@ -657,16 +658,16 @@ export default function Pricing() {
               <h3 className="text-lg font-bold text-gray-900 mb-2">KKiaPay</h3>
               <div className="flex items-center justify-center gap-2 text-gray-600 mb-3">
                 <Loader size={18} className="animate-spin" />
-                <span className="text-sm">Ouverture du widget de paiement...</span>
+                <span className="text-sm">{t('pricingPage.openingWidget')}</span>
               </div>
               <p className="text-xs text-gray-400">
-                Une fenêtre de paiement KKiaPay va s'ouvrir. Complétez le paiement pour activer votre abonnement.
+                {t('pricingPage.kkiapayWidgetDesc')}
               </p>
               <button
                 onClick={() => setKkiaModal(null)}
                 className="mt-5 text-sm text-gray-500 underline hover:no-underline"
               >
-                Annuler
+                {t('pricingPage.cancel')}
               </button>
             </motion.div>
           </motion.div>

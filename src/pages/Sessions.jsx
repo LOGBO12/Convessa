@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useTranslation, Trans } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Smartphone,
@@ -32,7 +33,8 @@ import {
 
 const Sessions = () => {
   const { user } = useAuth();
-  usePageTitle('Mes sessions WhatsApp');
+  const { t, i18n } = useTranslation();
+  usePageTitle('pageTitles.sessions');
   const { session: userSession, loading: sessionLoading, refresh: refreshSession } = useUserSession();
 
   const [showQRModal, setShowQRModal] = useState(false);
@@ -124,7 +126,7 @@ const Sessions = () => {
             setReferralCodeInput('');
             setActivationModal(true);
           } else {
-            setSuccessMsg('WhatsApp connecté avec succès ! Votre clé API a été générée.');
+            setSuccessMsg(t('sessionsPage.connectedSuccess'));
           }
         }
       } catch { /* ignorer les erreurs réseau passagères */ }
@@ -178,7 +180,7 @@ const Sessions = () => {
             setCommunityModal(true);
           }, 3000);
         } else {
-          setSuccessMsg('WhatsApp connecté avec succès ! Votre clé API a été générée.');
+          setSuccessMsg(t('sessionsPage.connectedSuccess'));
         }
         refreshSession();
       }
@@ -200,7 +202,7 @@ const Sessions = () => {
       console.log('[Socket] tenant_error', data);
       const currentId = activeTenantIdRef.current;
       if (!currentId || data.tenantId === currentId) {
-        const msg = data.message || data.error || 'Une erreur est survenue.';
+        const msg = data.message || data.error || t('sessionsPage.unknownError');
         setErrorFromSocket(msg);
         setShowQRModal(false);
         setPollingStatus(false);
@@ -233,7 +235,7 @@ const Sessions = () => {
 
     try {
       const response = await tenantsAPI.create({
-        name: `WhatsApp - ${user.displayName || user.email || 'Utilisateur'}`,
+        name: `WhatsApp - ${user.displayName || user.email || t('sessionsPage.defaultUser')}`,
       });
 
       activeTenantIdRef.current = response.tenantId;
@@ -244,13 +246,13 @@ const Sessions = () => {
         activeTenantIdRef.current = err.data?.tenantId ?? activeTenantIdRef.current;
         if (err.data?.status === 'connected') {
           await refreshSession();
-          setSuccessMsg('Session déjà active récupérée.');
+          setSuccessMsg(t('sessionsPage.sessionAlreadyActive'));
         } else {
           setTimeout(() => handleShowQR(), 300);
         }
       } else {
         console.error('Erreur création session:', err);
-        setError(err.message || 'Erreur lors de la création de la session');
+        setError(err.message || t('sessionsPage.createSessionError'));
       }
     } finally {
       setCreating(false);
@@ -303,7 +305,7 @@ const Sessions = () => {
       }
     } catch (err) {
       console.error('Erreur récupération QR:', err);
-      setError(err.message || 'Erreur lors de la récupération du QR code');
+      setError(err.message || t('sessionsPage.getQrError'));
       setQrLoading(false);
       setPollingStatus(false);
       stopQrPolling();
@@ -332,7 +334,7 @@ const Sessions = () => {
    */
   const handleActivate = async () => {
     if (hasReferralCode === true && !referralCodeInput.trim()) {
-      setActivationError('Veuillez saisir votre code de parrainage, ou choisir "Non" si vous n\'en avez pas.');
+      setActivationError(t('sessionsPage.referralCodeRequired'));
       return;
     }
 
@@ -361,13 +363,13 @@ const Sessions = () => {
     } catch (err) {
       console.error('Erreur activation session:', err);
       if (err.code === 'INVALID_REFERRAL_CODE') {
-        setActivationError('Ce code de parrainage est invalide ou introuvable. Vérifiez-le, ou continuez sans code.');
+        setActivationError(t('sessionsPage.invalidReferralCode'));
       } else if (err.code === 'ALREADY_ACTIVATED') {
         // Déjà activée entre-temps (ex: double clic) — on ferme simplement le modal.
         setActivationModal(false);
         await refreshSession();
       } else {
-        setActivationError(err.message || "Erreur lors de l'activation de votre session");
+        setActivationError(err.message || t('sessionsPage.activationError'));
       }
     } finally {
       setActivating(false);
@@ -422,13 +424,13 @@ const Sessions = () => {
   const getStatusConfig = (status) => {
     switch (status) {
       case 'connected':
-        return { icon: Wifi, bg: 'bg-green-50', text: 'text-green-600', label: 'Connecté' };
+        return { icon: Wifi, bg: 'bg-green-50', text: 'text-green-600', label: t('sessionsPage.status.connected') };
       case 'pending_qr':
-        return { icon: Clock, bg: 'bg-yellow-50', text: 'text-yellow-600', label: 'En attente' };
+        return { icon: Clock, bg: 'bg-yellow-50', text: 'text-yellow-600', label: t('sessionsPage.status.pending') };
       case 'disconnected':
-        return { icon: WifiOff, bg: 'bg-red-50', text: 'text-red-600', label: 'Déconnecté' };
+        return { icon: WifiOff, bg: 'bg-red-50', text: 'text-red-600', label: t('sessionsPage.status.disconnected') };
       case 'revoked':
-        return { icon: XCircle, bg: 'bg-red-50', text: 'text-red-600', label: 'Révoqué' };
+        return { icon: XCircle, bg: 'bg-red-50', text: 'text-red-600', label: t('sessionsPage.status.revoked') };
       default:
         return { icon: AlertCircle, bg: 'bg-gray-50', text: 'text-gray-600', label: status };
     }
@@ -446,9 +448,9 @@ const Sessions = () => {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Ma Session WhatsApp</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('sessionsPage.title')}</h1>
         <p className="text-gray-600 mt-2">
-          Connectez votre WhatsApp en un clic pour obtenir votre clé API
+          {t('sessionsPage.subtitle')}
         </p>
       </div>
 
@@ -489,12 +491,10 @@ const Sessions = () => {
         >
           <Smartphone className="mx-auto text-gray-400 mb-4" size={64} />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Connectez votre WhatsApp
+            {t('sessionsPage.connectTitle')}
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Cliquez sur le bouton ci-dessous, puis scannez le QR code avec le WhatsApp
-            que vous souhaitez connecter — n'importe quel numéro fonctionne, vous n'avez
-            rien à saisir à l'avance.
+            {t('sessionsPage.connectDesc')}
           </p>
 
           {error && (
@@ -509,9 +509,9 @@ const Sessions = () => {
             className="inline-flex items-center space-x-2 bg-whatsapp text-white px-8 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {creating ? (
-              <><Loader className="animate-spin" size={20} /><span>Préparation...</span></>
+              <><Loader className="animate-spin" size={20} /><span>{t('sessionsPage.preparing')}</span></>
             ) : (
-              <><QrCode size={20} /><span className="font-medium">Connecter WhatsApp</span></>
+              <><QrCode size={20} /><span className="font-medium">{t('sessionsPage.connectWhatsapp')}</span></>
             )}
           </button>
         </motion.div>
@@ -537,10 +537,10 @@ const Sessions = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">
-                      {userSession.name || 'Ma Session WhatsApp'}
+                      {userSession.name || t('sessionsPage.defaultSessionName')}
                     </h3>
                     <p className="text-gray-600">
-                      {userSession.phone && userSession.phone !== '—' ? userSession.phone : 'Numéro en attente de scan'}
+                      {userSession.phone && userSession.phone !== '—' ? userSession.phone : t('sessionsPage.numberPendingScan')}
                     </p>
                   </div>
                 </div>
@@ -562,7 +562,7 @@ const Sessions = () => {
                       <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                       </svg>
-                      <span>Votre Clé API</span>
+                      <span>{t('sessionsPage.yourApiKey')}</span>
                     </h4>
                   </div>
 
@@ -575,14 +575,14 @@ const Sessions = () => {
                         <button
                           onClick={() => setShowApiKey(!showApiKey)}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                          title={showApiKey ? "Masquer" : "Afficher"}
+                          title={showApiKey ? t('sessionsPage.hide') : t('sessionsPage.show')}
                         >
                           {showApiKey ? <EyeOff size={18} className="text-gray-600" /> : <Eye size={18} className="text-gray-600" />}
                         </button>
                         <button
                           onClick={copyApiKey}
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                          title="Copier la clé complète"
+                          title={t('sessionsPage.copyFullKey')}
                         >
                           {copiedApiKey ? <CheckCircle size={18} className="text-green-600" /> : <Copy size={18} className="text-gray-600" />}
                         </button>
@@ -590,7 +590,7 @@ const Sessions = () => {
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-600 mt-3">Gardez votre clé API secrète.</p>
+                  <p className="text-sm text-gray-600 mt-3">{t('sessionsPage.keepKeySecret')}</p>
                 </div>
                 );
               })()}
@@ -602,20 +602,20 @@ const Sessions = () => {
                   className="w-full flex items-center justify-center space-x-2 bg-whatsapp text-white px-6 py-4 rounded-lg hover:bg-whatsapp-dark transition-all shadow-md hover:shadow-lg font-medium"
                 >
                   <QrCode size={20} />
-                  <span>Scanner le QR Code</span>
+                  <span>{t('sessionsPage.scanQrCode')}</span>
                 </button>
               )}
 
               {/* Session Info */}
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-500 mb-1">ID Session</p>
+                  <p className="text-gray-500 mb-1">{t('sessionsPage.sessionId')}</p>
                   <code className="text-xs text-gray-900">{userSession.tenantId.slice(0, 12)}...</code>
                 </div>
                 {userSession.connectedAt && (
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-gray-500 mb-1">Connecté le</p>
-                    <p className="text-gray-900">{new Date(userSession.connectedAt).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-gray-500 mb-1">{t('sessionsPage.connectedOn')}</p>
+                    <p className="text-gray-900">{new Date(userSession.connectedAt).toLocaleDateString(i18n.language)}</p>
                   </div>
                 )}
               </div>
@@ -628,13 +628,13 @@ const Sessions = () => {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <span>Comment utiliser votre clé API</span>
+              <span>{t('sessionsPage.howToUseTitle')}</span>
             </h3>
             <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
-              <li>Copiez votre clé API ci-dessus</li>
-              <li>Ajoutez-la dans vos en-têtes HTTP: <code className="bg-blue-100 px-2 py-0.5 rounded">X-Api-Key: VOTRE_CLE</code></li>
-              <li>Consultez la documentation pour les endpoints disponibles</li>
-              <li>Commencez à envoyer des messages via l'API REST</li>
+              <li>{t('sessionsPage.howToUseSteps.0')}</li>
+              <li>{t('sessionsPage.howToUseSteps.1')} <code className="bg-blue-100 px-2 py-0.5 rounded">X-Api-Key: VOTRE_CLE</code></li>
+              <li>{t('sessionsPage.howToUseSteps.2')}</li>
+              <li>{t('sessionsPage.howToUseSteps.3')}</li>
             </ol>
           </div>
         </motion.div>
@@ -661,7 +661,7 @@ const Sessions = () => {
               <div className="bg-whatsapp px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center space-x-2">
                   <QrCode size={24} />
-                  <span>Scanner le QR Code</span>
+                  <span>{t('sessionsPage.scanQrCode')}</span>
                 </h2>
               </div>
 
@@ -670,8 +670,8 @@ const Sessions = () => {
                 {qrLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader className="animate-spin text-primary-600 mb-4" size={48} />
-                    <p className="text-gray-600">Génération du QR code...</p>
-                    <p className="text-xs text-gray-400 mt-2">Connexion à WhatsApp en cours</p>
+                    <p className="text-gray-600">{t('sessionsPage.generatingQr')}</p>
+                    <p className="text-xs text-gray-400 mt-2">{t('sessionsPage.connectingToWhatsapp')}</p>
                   </div>
                 ) : qrCode ? (
                   <div className="space-y-4">
@@ -683,28 +683,28 @@ const Sessions = () => {
                       {pollingStatus && (
                         <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs flex items-center space-x-2 animate-pulse">
                           <Loader className="animate-spin" size={12} />
-                          <span>En attente du scan...</span>
+                          <span>{t('sessionsPage.waitingForScan')}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Instructions */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-blue-900 mb-2">Instructions</h3>
+                      <h3 className="font-semibold text-blue-900 mb-2">{t('sessionsPage.instructions')}</h3>
                       <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                        <li>Ouvrez WhatsApp sur votre téléphone</li>
-                        <li>Appuyez sur Menu (⋮) puis sur "Appareils liés"</li>
-                        <li>Appuyez sur "Lier un appareil"</li>
-                        <li>Pointez votre téléphone vers cet écran pour scanner le code</li>
+                        <li>{t('sessionsPage.steps.0')}</li>
+                        <li>{t('sessionsPage.steps.1')}</li>
+                        <li>{t('sessionsPage.steps.2')}</li>
+                        <li>{t('sessionsPage.steps.3')}</li>
                       </ol>
                       <p className="text-xs text-blue-700 mt-3 flex items-center space-x-1">
                         <AlertCircle size={14} />
-                        <span>Le QR code expire après 60 secondes</span>
+                        <span>{t('sessionsPage.qrExpires')}</span>
                       </p>
                       {pollingStatus && (
                         <p className="text-xs text-green-700 mt-2 font-medium flex items-center space-x-1">
                           <CheckCircle size={14} />
-                          <span>Après le scan, votre clé API sera générée automatiquement</span>
+                          <span>{t('sessionsPage.keyAutoGenerated')}</span>
                         </p>
                       )}
                     </div>
@@ -716,7 +716,7 @@ const Sessions = () => {
                       className="w-full flex items-center justify-center space-x-2 border-2 border-primary-600 text-primary-600 px-4 py-3 rounded-lg hover:bg-primary-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <RefreshCw size={18} className={qrLoading ? 'animate-spin' : ''} />
-                      <span>Actualiser le QR code</span>
+                      <span>{t('sessionsPage.refreshQr')}</span>
                     </button>
 
                     {/* Erreur socket dans le modal QR */}
@@ -730,13 +730,13 @@ const Sessions = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12">
                     <AlertCircle className="text-yellow-600 mb-4" size={48} />
-                    <p className="text-gray-600 mb-4">QR code non disponible</p>
+                    <p className="text-gray-600 mb-4">{t('sessionsPage.qrNotAvailable')}</p>
                     <button
                       onClick={handleRefreshQR}
                       className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
                     >
                       <RefreshCw size={18} />
-                      <span>Réessayer</span>
+                      <span>{t('sessionsPage.retry')}</span>
                     </button>
                   </div>
                 )}
@@ -766,15 +766,15 @@ const Sessions = () => {
               <div className="bg-whatsapp px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center space-x-2">
                   <CheckCircle size={24} />
-                  <span>WhatsApp connecté !</span>
+                  <span>{t('sessionsPage.connectedModalTitle')}</span>
                 </h2>
               </div>
 
               {/* Content */}
               <div className="p-6 space-y-5">
                 <p className="text-sm text-gray-700">
-                  Une dernière étape avant de générer votre clé API : possédez-vous un
-                  <strong> code de parrainage</strong> ?
+                  {t('sessionsPage.referralQuestion')}
+                  <strong> {t('sessionsPage.referralCodeWord')}</strong> ?
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -787,7 +787,7 @@ const Sessions = () => {
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
-                    Oui
+                    {t('sessionsPage.yes')}
                   </button>
                   <button
                     type="button"
@@ -798,14 +798,14 @@ const Sessions = () => {
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
-                    Non
+                    {t('sessionsPage.no')}
                   </button>
                 </div>
 
                 {hasReferralCode === true && (
                   <div>
                     <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Entrez votre code de parrainage
+                      {t('sessionsPage.enterReferralCode')}
                     </label>
                     <input
                       id="referralCode"
@@ -821,7 +821,7 @@ const Sessions = () => {
 
                 {hasReferralCode === false && (
                   <p className="text-xs text-gray-500">
-                    Pas de souci — votre clé sera générée avec les privilèges de notre offre gratuite.
+                    {t('sessionsPage.noWorriesFreeKey')}
                   </p>
                 )}
 
@@ -840,10 +840,10 @@ const Sessions = () => {
                   {activating ? (
                     <>
                       <Loader className="animate-spin" size={18} />
-                      <span>Génération de la clé...</span>
+                      <span>{t('sessionsPage.generatingKey')}</span>
                     </>
                   ) : (
-                    <span>Générer ma clé API</span>
+                    <span>{t('sessionsPage.generateMyKey')}</span>
                   )}
                 </button>
               </div>
@@ -872,7 +872,7 @@ const Sessions = () => {
                 <button
                   onClick={handleCloseApiKeyModal}
                   className="absolute top-4 right-4 text-white/80 hover:text-white"
-                  aria-label="Fermer"
+                  aria-label={t('sessionsPage.close')}
                 >
                   <X size={20} />
                 </button>
@@ -881,8 +881,8 @@ const Sessions = () => {
                     <CheckCircle size={24} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold leading-snug">WhatsApp connecté avec succès !</h2>
-                    <p className="text-green-100 text-sm">Votre clé API a été générée.</p>
+                    <h2 className="text-lg font-bold leading-snug">{t('sessionsPage.connectedSuccessTitle')}</h2>
+                    <p className="text-green-100 text-sm">{t('sessionsPage.keyGenerated')}</p>
                   </div>
                 </div>
               </div>
@@ -892,7 +892,7 @@ const Sessions = () => {
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <Key size={16} className="text-green-700" />
-                    <span>Votre clé API</span>
+                    <span>{t('sessionsPage.yourApiKey')}</span>
                   </p>
                   <div className="bg-gray-50 rounded-lg p-3.5 border border-gray-200">
                     <div className="flex items-center justify-between gap-3">
@@ -906,15 +906,15 @@ const Sessions = () => {
                           setTimeout(() => setApiKeyModalCopied(false), 2000);
                         }}
                         className="p-2 rounded-lg hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 transition-colors flex-shrink-0"
-                        aria-label="Copier la clé API"
-                        title="Copier"
+                        aria-label={t('sessionsPage.copyApiKey')}
+                        title={t('sessionsPage.copy')}
                       >
                         {apiKeyModalCopied ? <CheckCircle size={18} className="text-green-600" /> : <Copy size={18} className="text-gray-600" />}
                       </button>
                     </div>
                   </div>
                   {apiKeyModalCopied && (
-                    <p className="text-xs text-green-700 mt-1.5">Clé copiée dans le presse-papiers</p>
+                    <p className="text-xs text-green-700 mt-1.5">{t('sessionsPage.keyCopied')}</p>
                   )}
                 </div>
 
@@ -922,12 +922,12 @@ const Sessions = () => {
                   <div className="flex items-start space-x-3">
                     <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
                     <div>
-                      <h4 className="font-bold text-red-900 mb-1 text-sm"> Important : À lire attentivement</h4>
+                      <h4 className="font-bold text-red-900 mb-1 text-sm">{t('sessionsPage.importantTitle')}</h4>
                       <ul className="text-xs text-red-800 space-y-1">
-                        <li>• Cette clé ne sera plus affichée en clair par la suite</li>
-                        <li>• Copiez-la et stockez-la dans un endroit sûr (gestionnaire de mots de passe, .env, etc.)</li>
-                        <li>• Ne la partagez JAMAIS publiquement (GitHub, forums, etc.)</li>
-                        <li>• Utilisez-la dans vos requêtes HTTP avec le header : <code className="bg-red-100 px-1 rounded">X-Api-Key</code></li>
+                        <li>• {t('sessionsPage.importantPoints.0')}</li>
+                        <li>• {t('sessionsPage.importantPoints.1')}</li>
+                        <li>• {t('sessionsPage.importantPoints.2')}</li>
+                        <li>• {t('sessionsPage.importantPoints.3')} <code className="bg-red-100 px-1 rounded">X-Api-Key</code></li>
                       </ul>
                     </div>
                   </div>
@@ -935,9 +935,9 @@ const Sessions = () => {
 
                 {apiKeyModal.expiresAt && (
                   <p className="text-xs text-gray-500">
-                    Valide jusqu'au{' '}
+                    {t('sessionsPage.validUntil')}{' '}
                     <span className="font-medium text-gray-700">
-                      {new Date(apiKeyModal.expiresAt).toLocaleDateString('fr-FR', {
+                      {new Date(apiKeyModal.expiresAt).toLocaleDateString(i18n.language, {
                         year: 'numeric', month: 'long', day: 'numeric',
                       })}
                     </span>
@@ -950,12 +950,12 @@ const Sessions = () => {
                       <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                       <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
                     </svg>
-                    <span>Prochaines étapes</span>
+                    <span>{t('sessionsPage.nextStepsTitle')}</span>
                   </h4>
                   <ol className="text-xs text-blue-900 space-y-1 list-decimal list-inside">
-                    <li>Allez dans <strong>Envoyer Message</strong> pour tester l'envoi</li>
-                    <li>Consultez la <strong>Documentation</strong> pour intégrer l'API</li>
-                    <li>Utilisez votre clé API dans toutes vos requêtes HTTP</li>
+                    <li><Trans i18nKey="sessionsPage.nextSteps.test" components={{ strong: <strong /> }} /></li>
+                    <li><Trans i18nKey="sessionsPage.nextSteps.docs" components={{ strong: <strong /> }} /></li>
+                    <li>{t('sessionsPage.nextSteps.use')}</li>
                   </ol>
                 </div>
 
@@ -963,7 +963,7 @@ const Sessions = () => {
                   onClick={handleCloseApiKeyModal}
                   className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors font-medium"
                 >
-                  Fermer
+                  {t('sessionsPage.close')}
                 </button>
               </div>
             </motion.div>
@@ -989,7 +989,7 @@ const Sessions = () => {
               {/* Header */}
               <div className="bg-whatsapp px-6 py-5">
                 <h2 className="text-xl font-bold text-white">
-                  🚀 Rejoignez la communauté Convessa !
+                  {t('sessionsPage.communityTitle')}
                 </h2>
               </div>
 
@@ -1000,28 +1000,28 @@ const Sessions = () => {
                     <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
                       <CheckCircle size={32} className="text-green-600" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Bienvenue dans la communauté ! 🎉</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{t('sessionsPage.welcomeCommunity')}</h3>
                     <p className="text-sm text-gray-600 mb-6">
-                      Vous faites maintenant partie de la communauté Convessa. À bientôt !
+                      {t('sessionsPage.communityJoined')}
                     </p>
                     <button
                       onClick={() => { setCommunityModal(false); }}
                       className="px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
                     >
-                      Fermer
+                      {t('sessionsPage.close')}
                     </button>
                   </div>
                 ) : (
                   <>
                     <p className="text-sm text-gray-600 mb-6">
-                      Connectez-vous avec d'autres développeurs, partagez vos projets et restez informé des nouveautés.
+                      {t('sessionsPage.communityDesc')}
                     </p>
 
                     <form onSubmit={handleJoinCommunity} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="community-first-name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Prénom <span className="text-red-500">*</span>
+                            {t('sessionsPage.firstName')} <span className="text-red-500">*</span>
                           </label>
                           <input
                             id="community-first-name"
@@ -1035,7 +1035,7 @@ const Sessions = () => {
                         </div>
                         <div>
                           <label htmlFor="community-last-name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Nom <span className="text-red-500">*</span>
+                            {t('sessionsPage.lastName')} <span className="text-red-500">*</span>
                           </label>
                           <input
                             id="community-last-name"
@@ -1051,7 +1051,7 @@ const Sessions = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Téléphone WhatsApp <span className="text-red-500">*</span>
+                          {t('sessionsPage.whatsappPhone')} <span className="text-red-500">*</span>
                         </label>
                         <PhoneInput
                           international
@@ -1070,9 +1070,9 @@ const Sessions = () => {
                           className="flex-1 flex items-center justify-center gap-2 bg-whatsapp text-white py-3 rounded-lg hover:bg-whatsapp-dark transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {communitySubmitting ? (
-                            <><Loader className="animate-spin" size={16} /><span>Inscription...</span></>
+                            <><Loader className="animate-spin" size={16} /><span>{t('sessionsPage.signingUp')}</span></>
                           ) : (
-                            <span>Rejoindre</span>
+                            <span>{t('sessionsPage.join')}</span>
                           )}
                         </button>
                         <button
@@ -1080,7 +1080,7 @@ const Sessions = () => {
                           onClick={() => setCommunityModal(false)}
                           className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
                         >
-                          Plus tard
+                          {t('sessionsPage.later')}
                         </button>
                       </div>
                     </form>

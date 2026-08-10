@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, AlertCircle, Lightbulb, CheckCircle } from 'lucide-react';
 import { verifyLoginOTP, sendLoginOTP } from '../services/authService';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useTranslation } from 'react-i18next';
 
 const VerifyLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  usePageTitle('Vérification');
+  const { t } = useTranslation();
+  usePageTitle('pageTitles.verify');
   const phone = location.state?.phone;
   const devOtp = location.state?.devOtp;
 
@@ -86,7 +88,7 @@ const VerifyLogin = () => {
     if (result.success) {
       navigate('/dashboard', { replace: true });
     } else {
-      setError(result.error || 'Code invalide. Veuillez réessayer.');
+      setError(result.error || t('verifyOtp.invalidCode'));
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     }
@@ -106,10 +108,10 @@ const VerifyLogin = () => {
       setResendTimer(60);
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
-      setSuccessMessage('Un nouveau code a été envoyé sur WhatsApp.');
+      setSuccessMessage(t('verifyOtp.codeResent'));
       setTimeout(() => setSuccessMessage(''), 4000);
     } else {
-      setError(result.error || 'Erreur lors du renvoi du code.');
+      setError(result.error || t('verifyOtp.resendError'));
     }
   };
 
@@ -149,8 +151,8 @@ const VerifyLogin = () => {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Code de connexion</h2>
-            <p className="text-gray-600">Entrez le code envoyé sur WhatsApp</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('verifyLoginPage.title')}</h2>
+            <p className="text-gray-600">{t('verifyLoginPage.subtitle')}</p>
             {phone && (
               <p className="text-primary-600 font-semibold text-lg mt-2">{phone}</p>
             )}
@@ -162,9 +164,9 @@ const VerifyLogin = () => {
               <div className="flex items-start space-x-3">
                 <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
                 <div className="text-yellow-800 text-sm">
-                  <strong>Mode Développement</strong>
+                  <strong>{t('verifyOtp.devModeLabel')}</strong>
                   <p className="mt-1">
-                    Code OTP de test :{' '}
+                    {t('verifyOtp.testCodeLabel')}{' '}
                     <span className="font-mono font-bold text-lg tracking-widest">{devOtp}</span>
                   </p>
                 </div>
@@ -236,7 +238,7 @@ const VerifyLogin = () => {
                 className="flex items-center justify-center space-x-2 text-whatsapp-dark mt-3"
               >
                 <div className="w-5 h-5 border-2 border-whatsapp-dark border-t-transparent rounded-full animate-spin" />
-                <span className="font-medium">Vérification en cours...</span>
+                <span className="font-medium">{t('verifyOtp.verifying')}</span>
               </motion.div>
             )}
           </div>
@@ -247,7 +249,7 @@ const VerifyLogin = () => {
               onClick={() => handleVerify(otp.join(''))}
               className="w-full mb-4 bg-whatsapp text-white py-3 rounded-xl font-semibold hover:bg-whatsapp-dark transition-all shadow-lg"
             >
-              Se connecter
+              {t('verifyLoginPage.confirmButton')}
             </button>
           )}
 
@@ -255,7 +257,7 @@ const VerifyLogin = () => {
           <div className="text-center mb-6">
             {resendTimer > 0 ? (
               <p className="text-gray-500 text-sm">
-                Renvoyer le code dans{' '}
+                {t('verifyOtp.resendIn')}{' '}
                 <span className="font-bold text-whatsapp-dark">{resendTimer}s</span>
               </p>
             ) : (
@@ -264,7 +266,7 @@ const VerifyLogin = () => {
                 disabled={resendLoading}
                 className="text-whatsapp-dark hover:text-whatsapp-dark font-semibold text-sm underline disabled:opacity-50"
               >
-                {resendLoading ? 'Envoi en cours...' : 'Renvoyer le code'}
+                {resendLoading ? t('verifyOtp.sending') : t('verifyOtp.resend')}
               </button>
             )}
           </div>
@@ -274,8 +276,7 @@ const VerifyLogin = () => {
             <div className="flex items-start space-x-3">
               <Lightbulb className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
               <p className="text-blue-800 text-sm">
-                <strong>Astuce :</strong> Vérifiez vos messages WhatsApp et entrez le code à 6
-                chiffres reçu.
+                <strong>{t('verifyOtp.tipLabel')}</strong> {t('verifyLoginPage.tipText')}
               </p>
             </div>
           </div>
@@ -288,7 +289,7 @@ const VerifyLogin = () => {
             className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
           >
             <ArrowLeft size={16} />
-            <span>Changer de numéro</span>
+            <span>{t('verifyOtp.changeNumber')}</span>
           </Link>
         </div>
       </motion.div>
