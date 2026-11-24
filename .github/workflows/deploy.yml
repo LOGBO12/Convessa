@@ -8,7 +8,7 @@ jobs:
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: 📡 Connect & Deploy via SSH
@@ -18,6 +18,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          command_timeout: 25m
           script: |
             set -e
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -33,7 +34,7 @@ jobs:
 
             echo "🐳 Rebuild & restart frontend container..."
             cd /var/www/convessa
-            docker compose up -d --build frontend
+            DOCKER_BUILDKIT=1 docker compose up -d --build frontend
 
             echo "🩺 Health check..."
             sleep 5
