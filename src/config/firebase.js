@@ -1,19 +1,19 @@
 /**
  * Configuration Firebase pour le frontend
- * Projet : Convessa (convessa-1da63)
+ * Projet : CONVESSA (convessa-b3ecd)
  */
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyBqpElvBfYFxT2pE1Ectg8tt-aXnUapDSw",
-  authDomain:        "convessa-1da63.firebaseapp.com",
-  projectId:         "convessa-1da63",
-  storageBucket:     "convessa-1da63.firebasestorage.app",
-  messagingSenderId: "411445755590",
-  appId:             "1:411445755590:web:98809e4e7c6080cf1a61c7",
-  measurementId:     "G-HF3KWXHQY",
+  apiKey:            "AIzaSyDBhRKRGnZ9Ew8LMFBBA2IIanKA3CorW4w",
+  authDomain:        "convessa-b3ecd.firebaseapp.com",
+  projectId:         "convessa-b3ecd",
+  storageBucket:     "convessa-b3ecd.firebasestorage.app",
+  messagingSenderId: "577193495652",
+  appId:             "1:577193495652:web:0cc4cae569e4ba90112371",
+  measurementId:     "G-1JMPK0FWTM",
 };
 
 const app = initializeApp(firebaseConfig);
