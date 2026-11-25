@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyDBhRKRGnZ9Ew8LMFBBA2IIanKA3CorW4w",
+  apiKey:            "AIzaSyDBhRKRGnZ9Ew8LMFBBA2lIanKA3CorW4w",
   authDomain:        "convessa-b3ecd.firebaseapp.com",
   projectId:         "convessa-b3ecd",
   storageBucket:     "convessa-b3ecd.firebasestorage.app",
